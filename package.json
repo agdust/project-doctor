@@ -1,0 +1,24 @@
+{
+  "name": "projector-doctor",
+  "version": "0.1.0",
+  "description": "Project health checks, setup and migration helpers",
+  "type": "module",
+  "bin": {
+    "projector-doctor": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check": "node --import tsx ./src/cli.ts",
+    "lint": "eslint src",
+    "format": "prettier --write src"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
