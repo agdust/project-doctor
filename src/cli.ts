@@ -2,22 +2,10 @@
 
 import { parseArgs } from "node:util";
 import { resolve } from "node:path";
-import { getAllChecks, getChecksByGroup, listChecks, listGroups } from "./registry.ts";
+import type { CheckTag } from "./types.ts";
+import { listChecks, listGroups } from "./registry.ts";
 import { runChecks } from "./utils/runner.ts";
 import { printResults } from "./utils/reporter.ts";
-
-type CliOptions = {
-  help: boolean;
-  version: boolean;
-  list: boolean;
-  group: string | undefined;
-  filter: string | undefined;
-  exclude: string | undefined;
-  parallel: boolean;
-  stopOnFail: boolean;
-  format: string;
-  path: string;
-};
 
 function printHelp(): void {
   console.log(`
@@ -27,25 +15,28 @@ Usage:
   projector-doctor [options] [path]
 
 Options:
-  -h, --help          Show this help message
-  -v, --version       Show version
-  -l, --list          List all available checks
-  -g, --group <name>  Run checks from specific group only
-  -f, --filter <pat>  Only run checks matching pattern
-  -e, --exclude <pat> Exclude checks matching pattern
-  -p, --parallel      Run checks in parallel (default: sequential)
-  -s, --stop-on-fail  Stop on first failure
-  --format <type>     Output format: text, json, markdown (default: text)
+  -h, --help              Show this help message
+  -v, --version           Show version
+  -l, --list              List all available checks
+  -g, --group <name>      Run checks from specific group only
+  -t, --tag <tag>         Only run checks with this tag (can repeat)
+  -e, --exclude-tag <tag> Exclude checks with this tag (can repeat)
 
 Examples:
-  projector-doctor                    Run all checks in current directory
-  projector-doctor ./my-project       Run checks in specific directory
-  projector-doctor -g gitignore       Run only gitignore checks
-  projector-doctor -f "*.installed"   Run only checks ending with -installed
-  projector-doctor --list             Show all available checks
+  projector-doctor                       Run all checks in current directory
+  projector-doctor ./my-project          Run checks in specific directory
+  projector-doctor -g package-json       Run only package-json checks
+  projector-doctor -t required           Run only required checks
+  projector-doctor -e opinionated        Exclude opinionated checks
+  projector-doctor --list                Show all available checks
 
 Groups:
   ${listGroups().join(", ")}
+
+Tags:
+  Scope:       universal, node, typescript, framework:svelte
+  Requirement: required, recommended, opinionated
+  Tool:        tool:eslint, tool:prettier, tool:knip, etc.
 `);
 }
 
@@ -61,10 +52,12 @@ function printCheckList(): void {
   for (const check of checks) {
     if (check.group !== currentGroup) {
       currentGroup = check.group;
-      console.log(`\n[${currentGroup}]`);
+      console.log(`\n\x1b[1m[${currentGroup}]\x1b[0m`);
     }
+    const tags = check.tags.map((t) => `\x1b[90m${t}\x1b[0m`).join(" ");
     console.log(`  ${check.name}`);
     console.log(`    ${check.description}`);
+    console.log(`    ${tags}`);
   }
   console.log("");
 }
@@ -75,62 +68,37 @@ async function main(): Promise<void> {
       help: { type: "boolean", short: "h", default: false },
       version: { type: "boolean", short: "v", default: false },
       list: { type: "boolean", short: "l", default: false },
-      group: { type: "string", short: "g" },
-      filter: { type: "string", short: "f" },
-      exclude: { type: "string", short: "e" },
-      parallel: { type: "boolean", short: "p", default: false },
-      "stop-on-fail": { type: "boolean", short: "s", default: false },
-      format: { type: "string", default: "text" },
+      group: { type: "string", short: "g", multiple: true },
+      tag: { type: "string", short: "t", multiple: true },
+      "exclude-tag": { type: "string", short: "e", multiple: true },
     },
     allowPositionals: true,
   });
 
-  const options: CliOptions = {
-    help: values.help ?? false,
-    version: values.version ?? false,
-    list: values.list ?? false,
-    group: values.group,
-    filter: values.filter,
-    exclude: values.exclude,
-    parallel: values.parallel ?? false,
-    stopOnFail: values["stop-on-fail"] ?? false,
-    format: values.format ?? "text",
-    path: positionals[0] ?? process.cwd(),
-  };
-
-  if (options.help) {
+  if (values.help) {
     printHelp();
     return;
   }
 
-  if (options.version) {
+  if (values.version) {
     printVersion();
     return;
   }
 
-  if (options.list) {
+  if (values.list) {
     printCheckList();
     return;
   }
 
-  const projectPath = resolve(options.path);
-  const checks = options.group
-    ? getChecksByGroup(options.group)
-    : getAllChecks();
+  const projectPath = resolve(positionals[0] ?? process.cwd());
 
-  if (checks.length === 0) {
-    console.error(`No checks found${options.group ? ` for group: ${options.group}` : ""}`);
-    process.exit(1);
-  }
+  console.log(`\nRunning checks on: ${projectPath}\n`);
 
-  console.log(`\nRunning ${checks.length} checks on: ${projectPath}\n`);
-
-  const results = await runChecks(checks, {
+  const results = await runChecks({
     projectPath,
-    parallel: options.parallel,
-    stopOnFail: options.stopOnFail,
-    filter: options.filter?.split(","),
-    exclude: options.exclude?.split(","),
+    groups: values.group,
+    includeTags: values.tag as CheckTag[] | undefined,
+    excludeTags: values["exclude-tag"] as CheckTag[] | undefined,
   });
 
   printResults(results);

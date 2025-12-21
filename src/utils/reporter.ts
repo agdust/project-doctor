@@ -1,7 +1,5 @@
 import type { CheckResult, CheckStatus } from "../types.ts";
 
-type ReportFormat = "text" | "json" | "markdown";
-
 const STATUS_ICONS: Record<CheckStatus, string> = {
   pass: "\u2713",
   fail: "\u2717",
@@ -18,29 +16,35 @@ const STATUS_COLORS: Record<CheckStatus, string> = {
 
 const RESET = "\x1b[0m";
 
-export function formatResult(result: CheckResult, useColor: boolean): string {
-  // TODO: Implement
-  // - Format single result with icon and message
-  // - Optionally include details
-  // - Apply color if useColor is true
-  throw new Error("Not implemented");
-}
+export function formatResult(result: CheckResult, useColor = true): string {
+  const icon = STATUS_ICONS[result.status];
+  const color = useColor ? STATUS_COLORS[result.status] : "";
+  const reset = useColor ? RESET : "";
 
-export function formatResults(
-  results: CheckResult[],
-  format: ReportFormat
-): string {
-  // TODO: Implement
-  // - Format all results according to format type
-  // - Include summary counts
-  throw new Error("Not implemented");
+  return `${color}${icon}${reset} ${result.name}: ${result.message}`;
 }
 
 export function printResults(results: CheckResult[]): void {
-  // TODO: Implement
-  // - Print formatted results to console
-  // - Show summary at end
-  throw new Error("Not implemented");
+  const useColor = process.stdout.isTTY ?? false;
+
+  for (const result of results) {
+    console.log(formatResult(result, useColor));
+  }
+
+  console.log("");
+  printSummary(results);
+}
+
+export function printSummary(results: CheckResult[]): void {
+  const summary = getSummary(results);
+  const parts: string[] = [];
+
+  if (summary.passed > 0) parts.push(`\x1b[32m${summary.passed} passed\x1b[0m`);
+  if (summary.failed > 0) parts.push(`\x1b[31m${summary.failed} failed\x1b[0m`);
+  if (summary.warnings > 0) parts.push(`\x1b[33m${summary.warnings} warnings\x1b[0m`);
+  if (summary.skipped > 0) parts.push(`\x1b[90m${summary.skipped} skipped\x1b[0m`);
+
+  console.log(`Summary: ${parts.join(", ")} (${summary.total} total)`);
 }
 
 export function getSummary(results: CheckResult[]): {
@@ -50,7 +54,11 @@ export function getSummary(results: CheckResult[]): {
   warnings: number;
   skipped: number;
 } {
-  // TODO: Implement
-  // - Count results by status
-  throw new Error("Not implemented");
+  return {
+    total: results.length,
+    passed: results.filter((r) => r.status === "pass").length,
+    failed: results.filter((r) => r.status === "fail").length,
+    warnings: results.filter((r) => r.status === "warn").length,
+    skipped: results.filter((r) => r.status === "skip").length,
+  };
 }

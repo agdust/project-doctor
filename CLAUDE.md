@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-projector-doctor is a CLI tool for running health checks on Node.js projects. It provides checks for common project configuration issues, setup helpers for initializing config files, and migration utilities.
+projector-doctor is a CLI tool for running health checks on Node.js projects. It detects project configuration issues and enforces best practices.
 
 ## Commands
 
@@ -12,42 +12,79 @@ projector-doctor is a CLI tool for running health checks on Node.js projects. It
 npm install          # Install dependencies
 npm run build        # Compile TypeScript to dist/
 npm run dev          # Watch mode compilation
-npm run check        # Run CLI directly with tsx (development)
+npm run check        # Run CLI directly with tsx
 ```
 
 ## Architecture
 
 ```
 src/
-├── cli.ts           # CLI entry point with argument parsing
-├── registry.ts      # Central registry of all check groups
-├── types.ts         # Shared types (Check, CheckResult, etc.)
-├── checks/          # Health check modules (one file per domain)
-├── setup/           # Setup helpers for initializing config files
-├── migrations/      # Migration utilities (e.g., CJS to ESM)
-└── utils/           # Shared utilities (fs, process, reporter, runner)
+├── cli.ts              # CLI entry point
+├── registry.ts         # Check group registration
+├── types.ts            # Core types (Check, CheckResult, GlobalContext, etc.)
+├── context/
+│   ├── global.ts       # GlobalContext creation
+│   ├── detect.ts       # Tool/framework detection
+│   └── file-cache.ts   # Cached file reads
+├── checks/             # Domain-organized checks
+│   ├── package-json/
+│   │   ├── context.ts  # Group context loader
+│   │   └── checks.ts   # Check implementations
+│   ├── tsconfig/
+│   ├── gitignore/
+│   ├── git/
+│   ├── eslint/
+│   ├── prettier/
+│   ├── editorconfig/
+│   ├── nvmrc/
+│   ├── docs/
+│   ├── deps/
+│   ├── env/
+│   ├── testing/
+│   └── framework/
+└── utils/
+    ├── runner.ts       # Check execution with filtering
+    └── reporter.ts     # Result formatting
 ```
 
-### Check System
+## Key Concepts
 
-Each check module in `src/checks/` exports a `checks` array of `Check` objects. Checks are registered in `src/registry.ts` with a group name and category.
+### Context System (DRY)
 
-A `Check` has:
-- `name`: unique identifier
-- `description`: what it checks
-- `run(projectPath)`: async function returning `CheckResult`
+Avoids repeated file reads:
+- **GlobalContext**: Project path, detected tools, file cache
+- **GroupContext**: Per-domain parsed data (e.g., parsed package.json)
 
-`CheckResult` contains:
-- `status`: "pass" | "fail" | "warn" | "skip"
-- `message`: human-readable result
-- `details`: optional array of additional info
+Each check group has a `context.ts` that loads data once for all checks in the group.
 
-### Adding New Checks
+### Check Definition
 
-1. Create or edit a file in `src/checks/`
-2. Export a `checks` array with your Check objects
-3. Register the group in `src/registry.ts`
+```typescript
+const check: Check<PackageJsonContext> = {
+  name: "package-json-has-name",
+  description: "Check if package.json has name field",
+  tags: ["node", "required"],
+  run: async (global, group) => {
+    if (!group.parsed?.name) return { name, status: "fail", message: "..." };
+    return { name, status: "pass", message: "..." };
+  },
+};
+```
 
-## Current State
+### Tags
 
-All check implementations are stubs (`throw new Error("Not implemented")`). The project structure and types are complete.
+- **Scope**: `universal`, `node`, `typescript`, `framework:svelte`
+- **Requirement**: `required`, `recommended`, `opinionated`
+- **Tool**: `tool:eslint`, `tool:prettier`, `tool:knip`
+
+### Adding Checks
+
+1. Find or create domain folder in `src/checks/`
+2. Add check to `checks.ts` with appropriate tags
+3. Export from the `checks` array
+4. Register in `src/registry.ts` if new domain
+
+## Design Documents
+
+- `context/checks-proposal.md` - Full check list by implementation cost
+- `context/design-check-organization.md` - Architecture decisions
