@@ -115,28 +115,6 @@ export const noSecretsCommitted: Check<GitignoreContext> = {
   },
 };
 
-export const projectTypePatterns: Check<GitignoreContext> = {
-  name: "gitignore-project-type-patterns",
-  description: "Check for framework-specific ignore patterns",
-  tags: ["node", "recommended"],
-  run: async (global, { raw, patterns }) => {
-    if (!raw) return skip("gitignore-project-type-patterns", "No .gitignore");
-
-    const missing: string[] = [];
-
-    if (global.detected.hasSvelte) {
-      if (!patterns.some((p) => p.includes(".svelte-kit"))) {
-        missing.push(".svelte-kit");
-      }
-    }
-
-    if (missing.length > 0) {
-      return warn("gitignore-project-type-patterns", `Missing patterns: ${missing.join(", ")}`);
-    }
-    return pass("gitignore-project-type-patterns", "Framework patterns present");
-  },
-};
-
 export const checks = [
   exists,
   hasNodeModules,
@@ -144,5 +122,4 @@ export const checks = [
   hasEnv,
   noDuplicates,
   noSecretsCommitted,
-  projectTypePatterns,
 ];

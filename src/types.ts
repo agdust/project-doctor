@@ -16,8 +16,7 @@ export type CheckResult = CheckResultBase & {
 export type CheckScope =
   | "universal"
   | "node"
-  | "typescript"
-  | `framework:${string}`;
+  | "typescript";
 
 export type CheckRequirement = "required" | "recommended" | "opinionated";
 
@@ -34,7 +33,6 @@ export type FileCache = {
 export type DetectedTools = {
   packageManager: "npm" | "yarn" | "pnpm" | null;
   hasTypeScript: boolean;
-  hasSvelte: boolean;
   hasEslint: boolean;
   hasPrettier: boolean;
   hasDocker: boolean;

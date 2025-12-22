@@ -47,7 +47,6 @@ export async function detectTools(files: FileCache): Promise<DetectedTools> {
   return {
     packageManager,
     hasTypeScript: hasTsconfig || "typescript" in allDeps,
-    hasSvelte: "svelte" in allDeps,
     hasEslint: hasEslintConfig || hasEslintConfigJs || "eslint" in allDeps,
     hasPrettier: hasPrettierrc || hasPrettierrcJson || "prettier" in allDeps,
     hasDocker: hasDockerfile,

@@ -36,9 +36,6 @@ import { checks as envChecks } from "./checks/env/checks.js";
 import { loadContext as loadTestingContext } from "./checks/testing/context.js";
 import { checks as testingChecks } from "./checks/testing/checks.js";
 
-import { loadContext as loadFrameworkContext } from "./checks/framework/context.js";
-import { checks as frameworkChecks } from "./checks/framework/checks.js";
-
 function createGroup<T>(
   name: string,
   loadContext: GroupContextLoader<T>,
@@ -60,7 +57,6 @@ export const checkGroups = [
   createGroup("deps", loadDepsContext, depsChecks),
   createGroup("env", loadEnvContext, envChecks),
   createGroup("testing", loadTestingContext, testingChecks),
-  createGroup("framework", loadFrameworkContext, frameworkChecks),
 ];
 
 export function getAllChecks(): Check<unknown>[] {

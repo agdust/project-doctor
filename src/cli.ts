@@ -48,7 +48,7 @@ Groups:
   ${listGroups().join(", ")}
 
 Tags:
-  Scope:       universal, node, typescript, framework:svelte
+  Scope:       universal, node, typescript
   Requirement: required, recommended, opinionated
   Tool:        tool:eslint, tool:prettier, tool:knip, etc.
 `);
