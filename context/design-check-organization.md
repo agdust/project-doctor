@@ -202,19 +202,19 @@ Tags enable powerful filtering:
 
 ```bash
 # Run only required checks
-projector-doctor --tag required
+project-doctor --tag required
 
 # Run all Node.js checks except opinionated
-projector-doctor --tag node --exclude-tag opinionated
+project-doctor --tag node --exclude-tag opinionated
 
 # Run only if ESLint is present
-projector-doctor --tag tool:eslint
+project-doctor --tag tool:eslint
 
 # Run Svelte framework checks
-projector-doctor --tag framework:svelte
+project-doctor --tag framework:svelte
 
 # Combine multiple tags (AND logic)
-projector-doctor --tag node --tag required
+project-doctor --tag node --tag required
 ```
 
 ---

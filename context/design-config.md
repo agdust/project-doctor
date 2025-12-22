@@ -9,7 +9,7 @@ Move configuration from CLI flags to a config file. Users set preferences once p
 ## Config File Location
 
 **File names (in order of precedence):**
-1. `.projector-doctorrc.json` - JSON config
+1. `.project-doctorrc.json` - JSON config
 2. `doctor` key in `package.json`
 
 **Note:** TS/JS configs may be added later if needed.

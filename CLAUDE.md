@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-projector-doctor is a CLI tool for running health checks on Node.js projects. It detects project configuration issues and enforces best practices.
+project-doctor is a CLI tool for running health checks on Node.js projects. It detects project configuration issues and enforces best practices.
 
 ## Commands
 
@@ -89,7 +89,7 @@ const check: Check<PackageJsonContext> = {
 
 ### Configuration
 
-Projects can create `.projector-doctorrc.json`:
+Projects can create `.project-doctorrc.json`:
 
 ```json
 {

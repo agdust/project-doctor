@@ -1,10 +1,10 @@
 {
-  "name": "projector-doctor",
+  "name": "project-doctor",
   "version": "0.1.0",
   "description": "Project health checks, setup and migration helpers",
   "type": "module",
   "bin": {
-    "projector-doctor": "./dist/cli.js"
+    "project-doctor": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

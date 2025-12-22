@@ -9,10 +9,10 @@ import { printResults } from "./utils/reporter.ts";
 
 function printHelp(): void {
   console.log(`
-projector-doctor - Project health checks and maintenance tools
+project-doctor - Project health checks and maintenance tools
 
 Usage:
-  projector-doctor [options] [path]
+  project-doctor [options] [path]
 
 Options:
   -h, --help              Show this help message
@@ -21,10 +21,10 @@ Options:
   -g, --group <name>      Run checks from specific group only
   -t, --tag <tag>         Only run checks with this tag (can repeat)
   -e, --exclude-tag <tag> Exclude checks with this tag (can repeat)
-  --no-config             Ignore .projector-doctorrc.json config file
+  --no-config             Ignore .project-doctorrc.json config file
 
 Config File:
-  Create .projector-doctorrc.json to set default options:
+  Create .project-doctorrc.json to set default options:
   {
     "checks": {
       "exclude": ["opinionated"],
@@ -36,13 +36,13 @@ Config File:
   }
 
 Examples:
-  projector-doctor                       Run all checks in current directory
-  projector-doctor ./my-project          Run checks in specific directory
-  projector-doctor -g package-json       Run only package-json checks
-  projector-doctor -t required           Run only required checks
-  projector-doctor -e opinionated        Exclude opinionated checks
-  projector-doctor --no-config           Ignore config file
-  projector-doctor --list                Show all available checks
+  project-doctor                       Run all checks in current directory
+  project-doctor ./my-project          Run checks in specific directory
+  project-doctor -g package-json       Run only package-json checks
+  project-doctor -t required           Run only required checks
+  project-doctor -e opinionated        Exclude opinionated checks
+  project-doctor --no-config           Ignore config file
+  project-doctor --list                Show all available checks
 
 Groups:
   ${listGroups().join(", ")}
@@ -55,7 +55,7 @@ Tags:
 }
 
 function printVersion(): void {
-  console.log("projector-doctor v0.1.0");
+  console.log("project-doctor v0.1.0");
 }
 
 function printCheckList(): void {

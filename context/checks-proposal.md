@@ -1,6 +1,6 @@
 # Comprehensive Check Proposal
 
-All checks for projector-doctor, grouped by implementation cost. Each check includes motivation for both human developers and LLM agents.
+All checks for project-doctor, grouped by implementation cost. Each check includes motivation for both human developers and LLM agents.
 
 ---
 

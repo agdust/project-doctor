@@ -17,8 +17,8 @@ async function readJsonFile<T>(path: string): Promise<T | null> {
 }
 
 export async function loadConfig(projectPath: string): Promise<Config | null> {
-  // Try .projector-doctorrc.json first
-  const rcPath = join(projectPath, ".projector-doctorrc.json");
+  // Try .project-doctorrc.json first
+  const rcPath = join(projectPath, ".project-doctorrc.json");
   const rcConfig = await readJsonFile<Config>(rcPath);
   if (rcConfig) {
     return rcConfig;
