@@ -1,3 +1,5 @@
+import type { ResolvedConfig } from "./config/types.ts";
+
 export type CheckStatus = "pass" | "fail" | "warn" | "skip";
 
 export type CheckResult = {
@@ -40,6 +42,7 @@ export type GlobalContext = {
   projectPath: string;
   detected: DetectedTools;
   files: FileCache;
+  config: ResolvedConfig;
 };
 
 export type Check<GroupCtx = unknown> = {

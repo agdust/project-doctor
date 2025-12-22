@@ -1,0 +1,10 @@
+{
+  "checks": {
+    "exclude": ["opinionated"],
+    "disable": ["changelog-exists", "contributing-exists", "license-exists"]
+  },
+  "severity": {
+    "readme-exists": "warn",
+    "env-example-exists": "warn"
+  }
+}

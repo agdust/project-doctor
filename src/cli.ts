@@ -21,6 +21,19 @@ Options:
   -g, --group <name>      Run checks from specific group only
   -t, --tag <tag>         Only run checks with this tag (can repeat)
   -e, --exclude-tag <tag> Exclude checks with this tag (can repeat)
+  --no-config             Ignore .projector-doctorrc.json config file
+
+Config File:
+  Create .projector-doctorrc.json to set default options:
+  {
+    "checks": {
+      "exclude": ["opinionated"],
+      "disable": ["changelog-exists"]
+    },
+    "severity": {
+      "license-exists": "warn"
+    }
+  }
 
 Examples:
   projector-doctor                       Run all checks in current directory
@@ -28,6 +41,7 @@ Examples:
   projector-doctor -g package-json       Run only package-json checks
   projector-doctor -t required           Run only required checks
   projector-doctor -e opinionated        Exclude opinionated checks
+  projector-doctor --no-config           Ignore config file
   projector-doctor --list                Show all available checks
 
 Groups:
@@ -71,6 +85,7 @@ async function main(): Promise<void> {
       group: { type: "string", short: "g", multiple: true },
       tag: { type: "string", short: "t", multiple: true },
       "exclude-tag": { type: "string", short: "e", multiple: true },
+      "no-config": { type: "boolean", default: false },
     },
     allowPositionals: true,
   });
@@ -96,6 +111,7 @@ async function main(): Promise<void> {
 
   const results = await runChecks({
     projectPath,
+    skipConfig: values["no-config"],
     groups: values.group,
     includeTags: values.tag as CheckTag[] | undefined,
     excludeTags: values["exclude-tag"] as CheckTag[] | undefined,

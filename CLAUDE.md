@@ -22,8 +22,11 @@ src/
 ├── cli.ts              # CLI entry point
 ├── registry.ts         # Check group registration
 ├── types.ts            # Core types (Check, CheckResult, GlobalContext, etc.)
+├── config/
+│   ├── types.ts        # Config schema and defaults
+│   └── loader.ts       # Find and parse config file
 ├── context/
-│   ├── global.ts       # GlobalContext creation
+│   ├── global.ts       # GlobalContext creation (includes config)
 │   ├── detect.ts       # Tool/framework detection
 │   └── file-cache.ts   # Cached file reads
 ├── checks/             # Domain-organized checks
@@ -84,7 +87,26 @@ const check: Check<PackageJsonContext> = {
 3. Export from the `checks` array
 4. Register in `src/registry.ts` if new domain
 
+### Configuration
+
+Projects can create `.projector-doctorrc.json`:
+
+```json
+{
+  "checks": {
+    "exclude": ["opinionated"],
+    "disable": ["changelog-exists"]
+  },
+  "severity": {
+    "license-exists": "warn"
+  }
+}
+```
+
+Config is loaded in `GlobalContext` and applied by the runner.
+
 ## Design Documents
 
 - `context/checks-proposal.md` - Full check list by implementation cost
 - `context/design-check-organization.md` - Architecture decisions
+- `context/design-config.md` - Configuration system design
