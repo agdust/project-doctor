@@ -1,19 +1,19 @@
-import type { Check, CheckResult } from "../../types.js";
+import type { Check, CheckResultBase } from "../../types.js";
 import type { PrettierContext } from "./context.js";
 
-function pass(name: string, message: string): CheckResult {
+function pass(name: string, message: string): CheckResultBase {
   return { name, status: "pass", message };
 }
 
-function fail(name: string, message: string): CheckResult {
+function fail(name: string, message: string): CheckResultBase {
   return { name, status: "fail", message };
 }
 
-function warn(name: string, message: string): CheckResult {
+function warn(name: string, message: string): CheckResultBase {
   return { name, status: "warn", message };
 }
 
-function skip(name: string, message: string): CheckResult {
+function skip(name: string, message: string): CheckResultBase {
   return { name, status: "skip", message };
 }
 

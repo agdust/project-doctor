@@ -15,6 +15,7 @@ const STATUS_COLORS: Record<CheckStatus, string> = {
 };
 
 const RESET = "\x1b[0m";
+const BOLD = "\x1b[1m";
 
 export function formatResult(result: CheckResult, useColor = true): string {
   const icon = STATUS_ICONS[result.status];
@@ -24,14 +25,34 @@ export function formatResult(result: CheckResult, useColor = true): string {
   return `${color}${icon}${reset} ${result.name}: ${result.message}`;
 }
 
-export function printResults(results: CheckResult[]): void {
-  const useColor = process.stdout.isTTY ?? false;
+function groupResults(results: CheckResult[]): Map<string, CheckResult[]> {
+  const grouped = new Map<string, CheckResult[]>();
 
   for (const result of results) {
-    console.log(formatResult(result, useColor));
+    const existing = grouped.get(result.group) ?? [];
+    existing.push(result);
+    grouped.set(result.group, existing);
   }
 
-  console.log("");
+  return grouped;
+}
+
+export function printResults(results: CheckResult[]): void {
+  const useColor = process.stdout.isTTY ?? false;
+  const grouped = groupResults(results);
+
+  for (const [groupName, groupResults] of grouped) {
+    const bold = useColor ? BOLD : "";
+    const reset = useColor ? RESET : "";
+    console.log(`${bold}${groupName}${reset}`);
+
+    for (const result of groupResults) {
+      console.log(`  ${formatResult(result, useColor)}`);
+    }
+
+    console.log("");
+  }
+
   printSummary(results);
 }
 

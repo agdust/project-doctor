@@ -2,11 +2,15 @@ import type { ResolvedConfig } from "./config/types.js";
 
 export type CheckStatus = "pass" | "fail" | "warn" | "skip";
 
-export type CheckResult = {
+export type CheckResultBase = {
   name: string;
   status: CheckStatus;
   message: string;
   details?: string[];
+};
+
+export type CheckResult = CheckResultBase & {
+  group: string;
 };
 
 export type CheckScope =
@@ -49,7 +53,7 @@ export type Check<GroupCtx = unknown> = {
   name: string;
   description: string;
   tags: CheckTag[];
-  run: (global: GlobalContext, group: GroupCtx) => Promise<CheckResult>;
+  run: (global: GlobalContext, group: GroupCtx) => Promise<CheckResultBase>;
 };
 
 export type GroupContextLoader<T> = (global: GlobalContext) => Promise<T>;

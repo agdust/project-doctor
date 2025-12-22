@@ -1,4 +1,4 @@
-import type { CheckResult, CheckTag } from "../types.js";
+import type { CheckResult, CheckResultBase, CheckTag } from "../types.js";
 import type { ResolvedConfig, SeverityOverride } from "../config/types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
@@ -114,12 +114,13 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
       try {
         // Type assertion needed because checkGroups contains mixed context types
         // but each group's checks are correctly typed for their own context
-        let result = await (check.run as (g: typeof global, c: unknown) => Promise<CheckResult>)(global, groupContext);
-        result = applySeverityOverride(result, config.severity);
-        allResults.push(result);
+        const baseResult = await (check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>)(global, groupContext);
+        const result: CheckResult = { ...baseResult, group: group.name };
+        allResults.push(applySeverityOverride(result, config.severity));
       } catch (error) {
         const errorResult: CheckResult = {
           name: check.name,
+          group: group.name,
           status: "fail",
           message: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
         };
