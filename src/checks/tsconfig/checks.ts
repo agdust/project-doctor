@@ -1,5 +1,5 @@
-import type { Check, CheckResult } from "../../types.ts";
-import type { TsConfigContext } from "./context.ts";
+import type { Check, CheckResult } from "../../types.js";
+import type { TsConfigContext } from "./context.js";
 
 function skip(name: string, message: string): CheckResult {
   return { name, status: "skip", message };

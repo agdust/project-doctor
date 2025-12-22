@@ -2,10 +2,10 @@
 
 import { parseArgs } from "node:util";
 import { resolve } from "node:path";
-import type { CheckTag } from "./types.ts";
-import { listChecks, listGroups } from "./registry.ts";
-import { runChecks } from "./utils/runner.ts";
-import { printResults } from "./utils/reporter.ts";
+import type { CheckTag } from "./types.js";
+import { listChecks, listGroups } from "./registry.js";
+import { runChecks } from "./utils/runner.js";
+import { printResults } from "./utils/reporter.js";
 
 function printHelp(): void {
   console.log(`

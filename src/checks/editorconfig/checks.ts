@@ -1,5 +1,5 @@
-import type { Check, CheckResult } from "../../types.ts";
-import type { EditorconfigContext } from "./context.ts";
+import type { Check, CheckResult } from "../../types.js";
+import type { EditorconfigContext } from "./context.js";
 
 function pass(name: string, message: string): CheckResult {
   return { name, status: "pass", message };

@@ -1,4 +1,4 @@
-import type { GlobalContext } from "../../types.ts";
+import type { GlobalContext } from "../../types.js";
 
 export type PrettierContext = {
   hasConfig: boolean;

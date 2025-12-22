@@ -1,6 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
-import type { FileCache } from "../types.ts";
+import type { FileCache } from "../types.js";
 
 export function createFileCache(projectPath: string): FileCache {
   const textCache = new Map<string, string | null>();

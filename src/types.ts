@@ -1,4 +1,4 @@
-import type { ResolvedConfig } from "./config/types.ts";
+import type { ResolvedConfig } from "./config/types.js";
 
 export type CheckStatus = "pass" | "fail" | "warn" | "skip";
 

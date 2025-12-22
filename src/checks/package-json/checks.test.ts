@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { fixtures } from "../../test/fixtures.ts";
-import { loadContext } from "./context.ts";
-import { createGlobalContext } from "../../context/global.ts";
+import { fixtures } from "../../test/fixtures.js";
+import { loadContext } from "./context.js";
+import { createGlobalContext } from "../../context/global.js";
+import { exists, valid, hasName, hasVersion, typeModule, hasEngines } from "./checks.js";
 
 describe("package-json checks", () => {
   describe("context loading", () => {
@@ -23,10 +24,75 @@ describe("package-json checks", () => {
     });
   });
 
-  describe("field checks", () => {
-    it.todo("should pass when name field exists");
-    it.todo("should fail when name field is missing");
-    it.todo("should pass when all required scripts exist");
-    it.todo("should fail when required scripts are missing");
+  describe("exists", () => {
+    it("should pass when package.json exists", async () => {
+      const global = await createGlobalContext(fixtures.healthy);
+      const ctx = await loadContext(global);
+      const result = await exists.run(global, ctx);
+
+      expect(result.status).toBe("pass");
+    });
+
+    it("should fail when package.json is missing", async () => {
+      const global = await createGlobalContext(fixtures.empty);
+      const ctx = await loadContext(global);
+      const result = await exists.run(global, ctx);
+
+      expect(result.status).toBe("fail");
+    });
+  });
+
+  describe("hasName", () => {
+    it("should pass when name field exists", async () => {
+      const global = await createGlobalContext(fixtures.healthy);
+      const ctx = await loadContext(global);
+      const result = await hasName.run(global, ctx);
+
+      expect(result.status).toBe("pass");
+    });
+
+    it("should fail when name field is missing", async () => {
+      const global = await createGlobalContext(fixtures.broken);
+      const ctx = await loadContext(global);
+      const result = await hasName.run(global, ctx);
+
+      expect(result.status).toBe("fail");
+    });
+  });
+
+  describe("typeModule", () => {
+    it("should pass when type: module is set", async () => {
+      const global = await createGlobalContext(fixtures.healthy);
+      const ctx = await loadContext(global);
+      const result = await typeModule.run(global, ctx);
+
+      expect(result.status).toBe("pass");
+    });
+
+    it("should fail when type: module is not set", async () => {
+      const global = await createGlobalContext(fixtures.minimal);
+      const ctx = await loadContext(global);
+      const result = await typeModule.run(global, ctx);
+
+      expect(result.status).toBe("fail");
+    });
+  });
+
+  describe("hasEngines", () => {
+    it("should pass when engines.node is set", async () => {
+      const global = await createGlobalContext(fixtures.healthy);
+      const ctx = await loadContext(global);
+      const result = await hasEngines.run(global, ctx);
+
+      expect(result.status).toBe("pass");
+    });
+
+    it("should fail when engines is missing", async () => {
+      const global = await createGlobalContext(fixtures.minimal);
+      const ctx = await loadContext(global);
+      const result = await hasEngines.run(global, ctx);
+
+      expect(result.status).toBe("fail");
+    });
   });
 });

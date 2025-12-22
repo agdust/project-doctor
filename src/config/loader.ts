@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { Config, ResolvedConfig } from "./types.ts";
-import { DEFAULT_CONFIG } from "./types.ts";
+import type { Config, ResolvedConfig } from "./types.js";
+import { DEFAULT_CONFIG } from "./types.js";
 
 type PackageJson = {
   doctor?: Config;

@@ -1,43 +1,43 @@
-import type { Check, CheckGroup, GlobalContext, GroupContextLoader } from "./types.ts";
+import type { Check, CheckGroup, GlobalContext, GroupContextLoader } from "./types.js";
 
-import { loadContext as loadPackageJsonContext } from "./checks/package-json/context.ts";
-import { checks as packageJsonChecks } from "./checks/package-json/checks.ts";
+import { loadContext as loadPackageJsonContext } from "./checks/package-json/context.js";
+import { checks as packageJsonChecks } from "./checks/package-json/checks.js";
 
-import { loadContext as loadTsconfigContext } from "./checks/tsconfig/context.ts";
-import { checks as tsconfigChecks } from "./checks/tsconfig/checks.ts";
+import { loadContext as loadTsconfigContext } from "./checks/tsconfig/context.js";
+import { checks as tsconfigChecks } from "./checks/tsconfig/checks.js";
 
-import { loadContext as loadGitignoreContext } from "./checks/gitignore/context.ts";
-import { checks as gitignoreChecks } from "./checks/gitignore/checks.ts";
+import { loadContext as loadGitignoreContext } from "./checks/gitignore/context.js";
+import { checks as gitignoreChecks } from "./checks/gitignore/checks.js";
 
-import { loadContext as loadGitContext } from "./checks/git/context.ts";
-import { checks as gitChecks } from "./checks/git/checks.ts";
+import { loadContext as loadGitContext } from "./checks/git/context.js";
+import { checks as gitChecks } from "./checks/git/checks.js";
 
-import { loadContext as loadEslintContext } from "./checks/eslint/context.ts";
-import { checks as eslintChecks } from "./checks/eslint/checks.ts";
+import { loadContext as loadEslintContext } from "./checks/eslint/context.js";
+import { checks as eslintChecks } from "./checks/eslint/checks.js";
 
-import { loadContext as loadPrettierContext } from "./checks/prettier/context.ts";
-import { checks as prettierChecks } from "./checks/prettier/checks.ts";
+import { loadContext as loadPrettierContext } from "./checks/prettier/context.js";
+import { checks as prettierChecks } from "./checks/prettier/checks.js";
 
-import { loadContext as loadEditorconfigContext } from "./checks/editorconfig/context.ts";
-import { checks as editorconfigChecks } from "./checks/editorconfig/checks.ts";
+import { loadContext as loadEditorconfigContext } from "./checks/editorconfig/context.js";
+import { checks as editorconfigChecks } from "./checks/editorconfig/checks.js";
 
-import { loadContext as loadNvmrcContext } from "./checks/nvmrc/context.ts";
-import { checks as nvmrcChecks } from "./checks/nvmrc/checks.ts";
+import { loadContext as loadNvmrcContext } from "./checks/nvmrc/context.js";
+import { checks as nvmrcChecks } from "./checks/nvmrc/checks.js";
 
-import { loadContext as loadDocsContext } from "./checks/docs/context.ts";
-import { checks as docsChecks } from "./checks/docs/checks.ts";
+import { loadContext as loadDocsContext } from "./checks/docs/context.js";
+import { checks as docsChecks } from "./checks/docs/checks.js";
 
-import { loadContext as loadDepsContext } from "./checks/deps/context.ts";
-import { checks as depsChecks } from "./checks/deps/checks.ts";
+import { loadContext as loadDepsContext } from "./checks/deps/context.js";
+import { checks as depsChecks } from "./checks/deps/checks.js";
 
-import { loadContext as loadEnvContext } from "./checks/env/context.ts";
-import { checks as envChecks } from "./checks/env/checks.ts";
+import { loadContext as loadEnvContext } from "./checks/env/context.js";
+import { checks as envChecks } from "./checks/env/checks.js";
 
-import { loadContext as loadTestingContext } from "./checks/testing/context.ts";
-import { checks as testingChecks } from "./checks/testing/checks.ts";
+import { loadContext as loadTestingContext } from "./checks/testing/context.js";
+import { checks as testingChecks } from "./checks/testing/checks.js";
 
-import { loadContext as loadFrameworkContext } from "./checks/framework/context.ts";
-import { checks as frameworkChecks } from "./checks/framework/checks.ts";
+import { loadContext as loadFrameworkContext } from "./checks/framework/context.js";
+import { checks as frameworkChecks } from "./checks/framework/checks.js";
 
 function createGroup<T>(
   name: string,

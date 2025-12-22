@@ -1,5 +1,5 @@
-import type { Check, CheckResult } from "../../types.ts";
-import type { EslintContext } from "./context.ts";
+import type { Check, CheckResult } from "../../types.js";
+import type { EslintContext } from "./context.js";
 
 function pass(name: string, message: string): CheckResult {
   return { name, status: "pass", message };
@@ -34,16 +34,16 @@ export const configExists: Check<EslintContext> = {
 
 export const flatConfig: Check<EslintContext> = {
   name: "eslint-flat-config",
-  description: "Check if using ESLint flat config format",
+  description: "Check if using ESLint flat config format (v9+)",
   tags: ["node", "recommended", "tool:eslint"],
-  run: async (global, { hasFlatConfig }) => {
+  run: async (global, { hasFlatConfig, flatConfigFile }) => {
     if (!global.detected.hasEslint) {
       return skip("eslint-flat-config", "ESLint not detected");
     }
     if (!hasFlatConfig) {
-      return fail("eslint-flat-config", "Not using flat config (eslint.config.js)");
+      return fail("eslint-flat-config", "Not using flat config (eslint.config.{js,mjs,ts})");
     }
-    return pass("eslint-flat-config", "Using flat config");
+    return pass("eslint-flat-config", `Using flat config: ${flatConfigFile}`);
   },
 };
 

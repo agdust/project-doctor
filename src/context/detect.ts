@@ -1,4 +1,4 @@
-import type { DetectedTools, FileCache } from "../types.ts";
+import type { DetectedTools, FileCache } from "../types.js";
 
 type PackageJson = {
   dependencies?: Record<string, string>;

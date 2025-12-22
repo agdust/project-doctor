@@ -1,7 +1,7 @@
-import type { CheckResult, CheckTag } from "../types.ts";
-import type { ResolvedConfig, SeverityOverride } from "../config/types.ts";
-import { checkGroups } from "../registry.ts";
-import { createGlobalContext, type CreateContextOptions } from "../context/global.ts";
+import type { CheckResult, CheckTag } from "../types.js";
+import type { ResolvedConfig, SeverityOverride } from "../config/types.js";
+import { checkGroups } from "../registry.js";
+import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
 
 export type RunnerOptions = {
   projectPath: string;
@@ -72,14 +72,19 @@ function applySeverityOverride(
 export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> {
   // Build config overrides from CLI options
   const configOverrides: Partial<ResolvedConfig> = {};
+
+  const checksOverride: Partial<ResolvedConfig["checks"]> = {};
   if (options.groups?.length) {
-    configOverrides.checks = { ...configOverrides.checks, groups: options.groups };
+    checksOverride.groups = options.groups;
   }
   if (options.includeTags?.length) {
-    configOverrides.checks = { ...configOverrides.checks, include: options.includeTags };
+    checksOverride.include = options.includeTags;
   }
   if (options.excludeTags?.length) {
-    configOverrides.checks = { ...configOverrides.checks, exclude: options.excludeTags };
+    checksOverride.exclude = options.excludeTags;
+  }
+  if (Object.keys(checksOverride).length > 0) {
+    configOverrides.checks = checksOverride as ResolvedConfig["checks"];
   }
 
   const contextOptions: CreateContextOptions = {
@@ -107,7 +112,9 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
       }
 
       try {
-        let result = await check.run(global, groupContext);
+        // Type assertion needed because checkGroups contains mixed context types
+        // but each group's checks are correctly typed for their own context
+        let result = await (check.run as (g: typeof global, c: unknown) => Promise<CheckResult>)(global, groupContext);
         result = applySeverityOverride(result, config.severity);
         allResults.push(result);
       } catch (error) {

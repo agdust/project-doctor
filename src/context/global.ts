@@ -1,8 +1,8 @@
-import type { GlobalContext } from "../types.ts";
-import type { ResolvedConfig } from "../config/types.ts";
-import { createFileCache } from "./file-cache.ts";
-import { detectTools } from "./detect.ts";
-import { loadAndResolveConfig } from "../config/loader.ts";
+import type { GlobalContext } from "../types.js";
+import type { ResolvedConfig } from "../config/types.js";
+import { createFileCache } from "./file-cache.js";
+import { detectTools } from "./detect.js";
+import { loadAndResolveConfig } from "../config/loader.js";
 
 export type CreateContextOptions = {
   skipConfig?: boolean;
@@ -18,7 +18,7 @@ export async function createGlobalContext(
 
   let config: ResolvedConfig;
   if (options.skipConfig) {
-    const { DEFAULT_CONFIG } = await import("../config/types.ts");
+    const { DEFAULT_CONFIG } = await import("../config/types.js");
     config = DEFAULT_CONFIG;
   } else {
     config = await loadAndResolveConfig(projectPath);

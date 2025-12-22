@@ -1,4 +1,4 @@
-import type { CheckResult, CheckStatus } from "../types.ts";
+import type { CheckResult, CheckStatus } from "../types.js";
 
 const STATUS_ICONS: Record<CheckStatus, string> = {
   pass: "\u2713",

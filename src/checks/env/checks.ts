@@ -1,5 +1,5 @@
-import type { Check, CheckResult } from "../../types.ts";
-import type { EnvContext } from "./context.ts";
+import type { Check, CheckResult } from "../../types.js";
+import type { EnvContext } from "./context.js";
 
 function pass(name: string, message: string): CheckResult {
   return { name, status: "pass", message };
