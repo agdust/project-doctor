@@ -1,7 +1,29 @@
-import type { CheckResult, CheckResultBase, CheckTag } from "../types.js";
+import type { CheckResult, CheckResultBase, CheckTag, DetectedTools } from "../types.js";
 import type { ResolvedConfig, SeverityOverride } from "../config/types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
+
+// Groups that require specific tools to be detected
+const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
+  eslint: "hasEslint",
+  prettier: "hasPrettier",
+  tsconfig: "hasTypeScript",
+};
+
+function isToolDetected(groupName: string, detected: DetectedTools): boolean {
+  const requirement = GROUP_TOOL_REQUIREMENTS[groupName];
+  if (!requirement) return true;
+  return Boolean(detected[requirement]);
+}
+
+function getToolName(groupName: string): string {
+  const names: Record<string, string> = {
+    eslint: "ESLint",
+    prettier: "Prettier",
+    tsconfig: "TypeScript",
+  };
+  return names[groupName] ?? groupName;
+}
 
 export type RunnerOptions = {
   projectPath: string;
@@ -104,6 +126,18 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
   const allResults: CheckResult[] = [];
 
   for (const group of groupsToRun) {
+    // Skip detailed checks if required tool is not detected
+    if (!isToolDetected(group.name, global.detected)) {
+      const toolName = getToolName(group.name);
+      allResults.push({
+        name: `${group.name}-not-detected`,
+        group: group.name,
+        status: "skip",
+        message: `${toolName} not detected`,
+      });
+      continue;
+    }
+
     const groupContext = await group.loadContext(global);
 
     for (const check of group.checks) {
