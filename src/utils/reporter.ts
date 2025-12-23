@@ -37,16 +37,29 @@ function groupResults(results: CheckResult[]): Map<string, CheckResult[]> {
   return grouped;
 }
 
-export function printResults(results: CheckResult[]): void {
+export type PrintOptions = {
+  fullReport?: boolean;
+};
+
+export function printResults(results: CheckResult[], options: PrintOptions = {}): void {
   const useColor = process.stdout.isTTY ?? false;
   const grouped = groupResults(results);
+  const { fullReport = false } = options;
 
   for (const [groupName, groupResults] of grouped) {
+    const issues = groupResults.filter((r) => r.status === "fail" || r.status === "warn");
+
+    // In compact mode, skip groups with no issues
+    if (!fullReport && issues.length === 0) {
+      continue;
+    }
+
     const bold = useColor ? BOLD : "";
     const reset = useColor ? RESET : "";
     console.log(`${bold}${groupName}${reset}`);
 
-    for (const result of groupResults) {
+    const resultsToShow = fullReport ? groupResults : issues;
+    for (const result of resultsToShow) {
       console.log(`  ${formatResult(result, useColor)}`);
     }
 

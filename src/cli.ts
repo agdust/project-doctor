@@ -18,6 +18,7 @@ Options:
   -h, --help              Show this help message
   -v, --version           Show version
   -l, --list              List all available checks
+  -f, --full-report       Show all checks (default: only failures/warnings)
   -g, --group <name>      Run checks from specific group only
   -t, --tag <tag>         Only run checks with this tag (can repeat)
   -e, --exclude-tag <tag> Exclude checks with this tag (can repeat)
@@ -82,6 +83,7 @@ async function main(): Promise<void> {
       help: { type: "boolean", short: "h", default: false },
       version: { type: "boolean", short: "v", default: false },
       list: { type: "boolean", short: "l", default: false },
+      "full-report": { type: "boolean", short: "f", default: false },
       group: { type: "string", short: "g", multiple: true },
       tag: { type: "string", short: "t", multiple: true },
       "exclude-tag": { type: "string", short: "e", multiple: true },
@@ -117,7 +119,7 @@ async function main(): Promise<void> {
     excludeTags: values["exclude-tag"] as CheckTag[] | undefined,
   });
 
-  printResults(results);
+  printResults(results, { fullReport: values["full-report"] });
 
   const hasFailed = results.some((r) => r.status === "fail");
   process.exit(hasFailed ? 1 : 0);
