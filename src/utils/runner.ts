@@ -1,5 +1,5 @@
 import type { CheckResult, CheckResultBase, CheckTag, DetectedTools } from "../types.js";
-import type { ResolvedConfig, SeverityOverride } from "../config/types.js";
+import type { ResolvedConfig } from "../config/types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
 
@@ -41,72 +41,40 @@ function shouldRunCheck(
   cliIncludeTags?: CheckTag[],
   cliExcludeTags?: CheckTag[]
 ): boolean {
-  // Check disabled list from config
-  if (config.checks.disable.includes(checkName)) {
+  // Check excluded checks list from config
+  if (config.excludeChecks.includes(checkName)) {
     return false;
   }
 
-  // Merge config and CLI excludes
-  const allExcludes = [...config.checks.exclude, ...(cliExcludeTags ?? [])];
-  if (allExcludes.length > 0) {
-    const hasExcluded = checkTags.some((t) => allExcludes.includes(t));
+  // Merge config and CLI exclude tags
+  const allExcludeTags = [...config.excludeTags, ...(cliExcludeTags ?? [])];
+  if (allExcludeTags.length > 0) {
+    const hasExcluded = checkTags.some((t) => allExcludeTags.includes(t));
     if (hasExcluded) return false;
   }
 
-  // Merge config and CLI includes
-  const allIncludes = [...config.checks.include, ...(cliIncludeTags ?? [])];
-  if (allIncludes.length > 0) {
-    const hasIncluded = checkTags.some((t) => allIncludes.includes(t));
+  // Merge config and CLI include tags
+  const allIncludeTags = [...config.includeTags, ...(cliIncludeTags ?? [])];
+  if (allIncludeTags.length > 0) {
+    const hasIncluded = checkTags.some((t) => allIncludeTags.includes(t));
     if (!hasIncluded) return false;
   }
 
   return true;
 }
 
-function applySeverityOverride(
-  result: CheckResult,
-  severity: Record<string, SeverityOverride>
-): CheckResult {
-  const override = severity[result.name];
-  if (!override) {
-    return result;
-  }
-
-  // Only downgrade severity, never upgrade
-  // fail -> warn or skip is ok
-  // warn -> skip is ok
-  // pass stays pass
-  if (result.status === "pass") {
-    return result;
-  }
-
-  return {
-    ...result,
-    status: override,
-    message: override === "skip"
-      ? `[skipped by config] ${result.message}`
-      : override === "warn" && result.status === "fail"
-        ? `[downgraded to warn] ${result.message}`
-        : result.message,
-  };
-}
-
 export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> {
   // Build config overrides from CLI options
   const configOverrides: Partial<ResolvedConfig> = {};
 
-  const checksOverride: Partial<ResolvedConfig["checks"]> = {};
   if (options.groups?.length) {
-    checksOverride.groups = options.groups;
+    configOverrides.groups = options.groups;
   }
   if (options.includeTags?.length) {
-    checksOverride.include = options.includeTags;
+    configOverrides.includeTags = options.includeTags;
   }
   if (options.excludeTags?.length) {
-    checksOverride.exclude = options.excludeTags;
-  }
-  if (Object.keys(checksOverride).length > 0) {
-    configOverrides.checks = checksOverride as ResolvedConfig["checks"];
+    configOverrides.excludeTags = options.excludeTags;
   }
 
   const contextOptions: CreateContextOptions = {
@@ -118,7 +86,7 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
   const config = global.config;
 
   // Determine which groups to run
-  const allGroups = [...config.checks.groups, ...(options.groups ?? [])];
+  const allGroups = [...config.groups, ...(options.groups ?? [])];
   const groupsToRun = allGroups.length > 0
     ? checkGroups.filter((g) => allGroups.includes(g.name))
     : checkGroups;
@@ -150,7 +118,7 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
         // but each group's checks are correctly typed for their own context
         const baseResult = await (check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>)(global, groupContext);
         const result: CheckResult = { ...baseResult, group: group.name };
-        allResults.push(applySeverityOverride(result, config.severity));
+        allResults.push(result);
       } catch (error) {
         const errorResult: CheckResult = {
           name: check.name,
@@ -158,7 +126,7 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
           status: "fail",
           message: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
         };
-        allResults.push(applySeverityOverride(errorResult, config.severity));
+        allResults.push(errorResult);
       }
     }
   }

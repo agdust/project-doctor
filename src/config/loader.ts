@@ -40,43 +40,10 @@ export function resolveConfig(config: Config | null): ResolvedConfig {
   }
 
   return {
-    checks: {
-      groups: config.checks?.groups ?? DEFAULT_CONFIG.checks.groups,
-      include: config.checks?.include ?? DEFAULT_CONFIG.checks.include,
-      exclude: config.checks?.exclude ?? DEFAULT_CONFIG.checks.exclude,
-      disable: config.checks?.disable ?? DEFAULT_CONFIG.checks.disable,
-    },
-    options: {
-      "package-json": {
-        requiredScripts:
-          config.options?.["package-json"]?.requiredScripts ??
-          DEFAULT_CONFIG.options["package-json"].requiredScripts,
-      },
-      docs: {
-        requiredFiles:
-          config.options?.docs?.requiredFiles ??
-          DEFAULT_CONFIG.options.docs.requiredFiles,
-        optionalFiles:
-          config.options?.docs?.optionalFiles ??
-          DEFAULT_CONFIG.options.docs.optionalFiles,
-      },
-      testing: {
-        frameworks:
-          config.options?.testing?.frameworks ??
-          DEFAULT_CONFIG.options.testing.frameworks,
-      },
-      env: {
-        exampleFile:
-          config.options?.env?.exampleFile ??
-          DEFAULT_CONFIG.options.env.exampleFile,
-      },
-      gitignore: {
-        requiredPatterns:
-          config.options?.gitignore?.requiredPatterns ??
-          DEFAULT_CONFIG.options.gitignore.requiredPatterns,
-      },
-    },
-    severity: config.severity ?? DEFAULT_CONFIG.severity,
+    groups: config.groups ?? DEFAULT_CONFIG.groups,
+    includeTags: config.includeTags ?? DEFAULT_CONFIG.includeTags,
+    excludeTags: config.excludeTags ?? DEFAULT_CONFIG.excludeTags,
+    excludeChecks: config.excludeChecks ?? DEFAULT_CONFIG.excludeChecks,
   };
 }
 

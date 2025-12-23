@@ -39,21 +39,17 @@ export async function createGlobalContext(
 
 function mergeConfigs(base: ResolvedConfig, overrides: Partial<ResolvedConfig>): ResolvedConfig {
   return {
-    checks: {
-      groups: overrides.checks?.groups?.length
-        ? [...base.checks.groups, ...overrides.checks.groups]
-        : base.checks.groups,
-      include: overrides.checks?.include?.length
-        ? [...base.checks.include, ...overrides.checks.include]
-        : base.checks.include,
-      exclude: overrides.checks?.exclude?.length
-        ? [...base.checks.exclude, ...overrides.checks.exclude]
-        : base.checks.exclude,
-      disable: overrides.checks?.disable?.length
-        ? [...base.checks.disable, ...overrides.checks.disable]
-        : base.checks.disable,
-    },
-    options: base.options,
-    severity: { ...base.severity, ...overrides.severity },
+    groups: overrides.groups?.length
+      ? [...base.groups, ...overrides.groups]
+      : base.groups,
+    includeTags: overrides.includeTags?.length
+      ? [...base.includeTags, ...overrides.includeTags]
+      : base.includeTags,
+    excludeTags: overrides.excludeTags?.length
+      ? [...base.excludeTags, ...overrides.excludeTags]
+      : base.excludeTags,
+    excludeChecks: overrides.excludeChecks?.length
+      ? [...base.excludeChecks, ...overrides.excludeChecks]
+      : base.excludeChecks,
   };
 }
