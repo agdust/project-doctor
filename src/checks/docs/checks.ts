@@ -84,16 +84,6 @@ export const changelogExists: Check<DocsContext> = {
   },
 };
 
-export const contributingExists: Check<DocsContext> = {
-  name: "contributing-exists",
-  description: "Check if CONTRIBUTING.md exists",
-  tags: ["universal", "opinionated"],
-  run: async (_global, { contributing }) => {
-    if (!contributing) return fail("contributing-exists", "CONTRIBUTING.md not found");
-    return pass("contributing-exists", "CONTRIBUTING.md exists");
-  },
-};
-
 export const checks = [
   readmeExists,
   readmeHasTitle,
@@ -101,5 +91,4 @@ export const checks = [
   readmeHasUsage,
   licenseExists,
   changelogExists,
-  contributingExists,
 ];
