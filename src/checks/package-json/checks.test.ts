@@ -2,7 +2,10 @@ import { describe, it, expect } from "vitest";
 import { fixtures } from "../../test/fixtures.js";
 import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
-import { exists, valid, hasName, hasVersion, typeModule, hasEngines } from "./checks.js";
+import { check as exists } from "./exists/check.js";
+import { check as hasName } from "./has-name/check.js";
+import { check as typeModule } from "./type-module/check.js";
+import { check as hasEngines } from "./has-engines/check.js";
 
 describe("package-json checks", () => {
   describe("context loading", () => {

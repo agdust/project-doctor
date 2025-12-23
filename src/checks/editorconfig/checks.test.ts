@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { fixtures } from "../../test/fixtures.js";
 import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
-import { exists, hasRoot, hasIndent } from "./checks.js";
+import { check as exists } from "./exists/check.js";
+import { check as hasRoot } from "./has-root/check.js";
+import { check as hasIndent } from "./has-indent/check.js";
 
 describe("editorconfig checks", () => {
   describe("exists", () => {

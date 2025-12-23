@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { fixtures } from "../../test/fixtures.js";
 import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
-import { exists, validFormat, modernVersion } from "./checks.js";
+import { check as exists } from "./exists/check.js";
+import { check as validFormat } from "./valid-format/check.js";
+import { check as modernVersion } from "./modern-version/check.js";
 
 describe("nvmrc checks", () => {
   describe("exists", () => {

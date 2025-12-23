@@ -12,7 +12,8 @@
     "check": "node --import tsx ./src/cli.ts",
     "lint": "eslint src",
     "format": "prettier --write src",
-    "test": "vitest"
+    "test": "vitest",
+    "docs": "tsx src/docs/generator.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

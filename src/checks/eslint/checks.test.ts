@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { fixtures } from "../../test/fixtures.js";
 import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
-import { configExists, flatConfig, noLegacyConfig } from "./checks.js";
+import { check as configExists } from "./config-exists/check.js";
+import { check as flatConfig } from "./flat-config/check.js";
+import { check as noLegacyConfig } from "./no-legacy-config/check.js";
 
 describe("eslint checks", () => {
   describe("context loading", () => {

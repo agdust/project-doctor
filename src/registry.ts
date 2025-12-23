@@ -1,40 +1,17 @@
 import type { Check, CheckGroup, GlobalContext, GroupContextLoader } from "./types.js";
 
-import { loadContext as loadPackageJsonContext } from "./checks/package-json/context.js";
-import { checks as packageJsonChecks } from "./checks/package-json/checks.js";
-
-import { loadContext as loadTsconfigContext } from "./checks/tsconfig/context.js";
-import { checks as tsconfigChecks } from "./checks/tsconfig/checks.js";
-
-import { loadContext as loadGitignoreContext } from "./checks/gitignore/context.js";
-import { checks as gitignoreChecks } from "./checks/gitignore/checks.js";
-
-import { loadContext as loadGitContext } from "./checks/git/context.js";
-import { checks as gitChecks } from "./checks/git/checks.js";
-
-import { loadContext as loadEslintContext } from "./checks/eslint/context.js";
-import { checks as eslintChecks } from "./checks/eslint/checks.js";
-
-import { loadContext as loadPrettierContext } from "./checks/prettier/context.js";
-import { checks as prettierChecks } from "./checks/prettier/checks.js";
-
-import { loadContext as loadEditorconfigContext } from "./checks/editorconfig/context.js";
-import { checks as editorconfigChecks } from "./checks/editorconfig/checks.js";
-
-import { loadContext as loadNvmrcContext } from "./checks/nvmrc/context.js";
-import { checks as nvmrcChecks } from "./checks/nvmrc/checks.js";
-
-import { loadContext as loadDocsContext } from "./checks/docs/context.js";
-import { checks as docsChecks } from "./checks/docs/checks.js";
-
-import { loadContext as loadDepsContext } from "./checks/deps/context.js";
-import { checks as depsChecks } from "./checks/deps/checks.js";
-
-import { loadContext as loadEnvContext } from "./checks/env/context.js";
-import { checks as envChecks } from "./checks/env/checks.js";
-
-import { loadContext as loadTestingContext } from "./checks/testing/context.js";
-import { checks as testingChecks } from "./checks/testing/checks.js";
+import { loadContext as loadPackageJsonContext, checks as packageJsonChecks } from "./checks/package-json/index.js";
+import { loadContext as loadTsconfigContext, checks as tsconfigChecks } from "./checks/tsconfig/index.js";
+import { loadContext as loadGitignoreContext, checks as gitignoreChecks } from "./checks/gitignore/index.js";
+import { loadContext as loadGitContext, checks as gitChecks } from "./checks/git/index.js";
+import { loadContext as loadEslintContext, checks as eslintChecks } from "./checks/eslint/index.js";
+import { loadContext as loadPrettierContext, checks as prettierChecks } from "./checks/prettier/index.js";
+import { loadContext as loadEditorconfigContext, checks as editorconfigChecks } from "./checks/editorconfig/index.js";
+import { loadContext as loadNvmrcContext, checks as nvmrcChecks } from "./checks/nvmrc/index.js";
+import { loadContext as loadDocsContext, checks as docsChecks } from "./checks/docs/index.js";
+import { loadContext as loadDepsContext, checks as depsChecks } from "./checks/deps/index.js";
+import { loadContext as loadEnvContext, checks as envChecks } from "./checks/env/index.js";
+import { loadContext as loadTestingContext, checks as testingChecks } from "./checks/testing/index.js";
 
 function createGroup<T>(
   name: string,

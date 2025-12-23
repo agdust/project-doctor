@@ -2,7 +2,10 @@ import { describe, it, expect } from "vitest";
 import { fixtures } from "../../test/fixtures.js";
 import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
-import { exists, validJson, strictEnabled, hasOutDir } from "./checks.js";
+import { check as exists } from "./exists/check.js";
+import { check as validJson } from "./valid-json/check.js";
+import { check as strictEnabled } from "./strict-enabled/check.js";
+import { check as hasOutDir } from "./has-outdir/check.js";
 
 describe("tsconfig checks", () => {
   describe("exists", () => {

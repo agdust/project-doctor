@@ -6,7 +6,8 @@
       "Bash(find:*)",
       "Bash(npm run build:*)",
       "Bash(node ./dist/cli.js:*)",
-      "Bash(project-doctor:*)"
+      "Bash(project-doctor:*)",
+      "Bash(npm run docs:*)"
     ]
   }
 }
