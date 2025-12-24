@@ -14,30 +14,35 @@ type FixableCheck = {
 
 type SelectOption = "fix" | "disable" | "skip";
 
-const OPTIONS: SelectOption[] = ["fix", "disable", "skip"];
+const OPTIONS: { value: SelectOption; label: string; color: string }[] = [
+  { value: "fix", label: "Apply fix", color: "\x1b[32m" },
+  { value: "disable", label: "Disable check", color: "\x1b[33m" },
+  { value: "skip", label: "Skip for now", color: "\x1b[90m" },
+];
 
 async function selectOption(): Promise<SelectOption> {
   return new Promise((resolve) => {
     let selectedIndex = 0;
 
-    const render = () => {
-      // Move cursor up and clear previous render (except first render)
+    const render = (initial = false) => {
+      if (!initial) {
+        // Move cursor up to overwrite previous render
+        process.stdout.write(`\x1b[${OPTIONS.length}A`);
+      }
       process.stdout.write("\x1b[?25l"); // Hide cursor
 
-      const line = OPTIONS.map((opt, i) => {
-        if (i === selectedIndex) {
-          return `\x1b[7m ${opt} \x1b[0m`; // Inverted colors for selection
-        }
-        return ` ${opt} `;
-      }).join("  ");
-
-      process.stdout.write(`\r\x1b[K  ${line}`);
+      for (let i = 0; i < OPTIONS.length; i++) {
+        const opt = OPTIONS[i];
+        const pointer = i === selectedIndex ? `${opt.color}❯\x1b[0m` : " ";
+        const label = i === selectedIndex ? `${opt.color}${opt.label}\x1b[0m` : `\x1b[90m${opt.label}\x1b[0m`;
+        process.stdout.write(`\x1b[K    ${pointer} ${label}\n`);
+      }
     };
 
-    render();
+    render(true);
 
     if (!process.stdin.isTTY) {
-      process.stdout.write("\n");
+      process.stdout.write("\x1b[?25h");
       resolve("skip");
       return;
     }
@@ -48,26 +53,23 @@ async function selectOption(): Promise<SelectOption> {
     const onKeypress = (key: Buffer) => {
       const char = key.toString();
 
-      // Arrow keys
-      if (char === "\x1b[D" || char === "\x1b[A") {
-        // Left or Up
+      if (char === "\x1b[A" || char === "k") {
+        // Up
         selectedIndex = (selectedIndex - 1 + OPTIONS.length) % OPTIONS.length;
         render();
-      } else if (char === "\x1b[C" || char === "\x1b[B") {
-        // Right or Down
+      } else if (char === "\x1b[B" || char === "j") {
+        // Down
         selectedIndex = (selectedIndex + 1) % OPTIONS.length;
         render();
       } else if (char === "\r" || char === "\n") {
         // Enter
         cleanup();
-        process.stdout.write("\x1b[?25h"); // Show cursor
-        process.stdout.write("\n");
-        resolve(OPTIONS[selectedIndex]);
+        process.stdout.write("\x1b[?25h");
+        resolve(OPTIONS[selectedIndex].value);
       } else if (char === "\x03") {
         // Ctrl+C
         cleanup();
-        process.stdout.write("\x1b[?25h");
-        process.stdout.write("\n");
+        process.stdout.write("\x1b[?25h\n");
         process.exit(0);
       }
     };
@@ -111,7 +113,9 @@ export async function runFixer(options: FixerOptions): Promise<void> {
   const global = await createGlobalContext(options.projectPath);
   const fixableChecks: FixableCheck[] = [];
 
-  console.log("\nScanning for issues...\n");
+  console.log();
+  console.log("\x1b[90m  Scanning for fixable issues...\x1b[0m");
+  console.log();
 
   // Run all checks and collect fixable failures
   for (const group of checkGroups) {
@@ -139,23 +143,31 @@ export async function runFixer(options: FixerOptions): Promise<void> {
   }
 
   if (fixableChecks.length === 0) {
-    console.log("\x1b[32mNo fixable issues found.\x1b[0m\n");
+    console.log("  \x1b[32m✓ No fixable issues found\x1b[0m");
+    console.log();
     return;
   }
 
-  console.log(`Found ${fixableChecks.length} fixable issue(s):\n`);
+  console.log(`  Found \x1b[1m${fixableChecks.length}\x1b[0m fixable issue${fixableChecks.length > 1 ? "s" : ""}`);
+  console.log();
 
   let fixed = 0;
   let skipped = 0;
   let disabled = 0;
 
-  for (const check of fixableChecks) {
+  for (let i = 0; i < fixableChecks.length; i++) {
+    const check = fixableChecks[i];
     const statusColor = check.result.status === "fail" ? "\x1b[31m" : "\x1b[33m";
-    const statusText = check.result.status === "fail" ? "FAIL" : "WARN";
+    const statusIcon = check.result.status === "fail" ? "✗" : "!";
 
-    console.log(`${statusColor}[${statusText}]\x1b[0m ${check.name}`);
-    console.log(`       ${check.result.message}`);
-    console.log(`  \x1b[36mFix:\x1b[0m ${check.fixDescription}`);
+    // Issue header
+    console.log("\x1b[90m  ─────────────────────────────────────────\x1b[0m");
+    console.log();
+    console.log(`  ${statusColor}${statusIcon}\x1b[0m  \x1b[1m${check.name}\x1b[0m  \x1b[90m(${i + 1}/${fixableChecks.length})\x1b[0m`);
+    console.log(`     ${check.result.message}`);
+    console.log();
+    console.log(`     \x1b[36mFix:\x1b[0m ${check.fixDescription}`);
+    console.log();
 
     let action: SelectOption = "skip";
 
@@ -165,31 +177,47 @@ export async function runFixer(options: FixerOptions): Promise<void> {
       action = await selectOption();
     }
 
+    // Clear the menu lines and show result
+    process.stdout.write(`\x1b[${OPTIONS.length}A`);
+    for (let j = 0; j < OPTIONS.length; j++) {
+      process.stdout.write("\x1b[K\n");
+    }
+    process.stdout.write(`\x1b[${OPTIONS.length}A`);
+
     if (action === "fix") {
       try {
         const fixResult = await check.runFix();
         if (fixResult.success) {
-          console.log(`  \x1b[32m✓ ${fixResult.message}\x1b[0m\n`);
+          console.log(`     \x1b[32m✓ ${fixResult.message}\x1b[0m`);
           fixed++;
         } else {
-          console.log(`  \x1b[31m✗ ${fixResult.message}\x1b[0m\n`);
+          console.log(`     \x1b[31m✗ ${fixResult.message}\x1b[0m`);
         }
       } catch (error) {
-        console.log(`  \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m\n`);
+        console.log(`     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`);
       }
     } else if (action === "disable") {
       try {
         await addToExcludeChecks(options.projectPath, check.name);
-        console.log(`  \x1b[33m⊘ Disabled ${check.name}\x1b[0m\n`);
+        console.log(`     \x1b[33m⊘ Disabled in config\x1b[0m`);
         disabled++;
       } catch (error) {
-        console.log(`  \x1b[31m✗ Error disabling: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m\n`);
+        console.log(`     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`);
       }
     } else {
-      console.log(`  \x1b[90m→ Skipped\x1b[0m\n`);
+      console.log(`     \x1b[90m→ Skipped\x1b[0m`);
       skipped++;
     }
+    console.log();
   }
 
-  console.log(`\nDone: ${fixed} fixed, ${disabled} disabled, ${skipped} skipped`);
+  // Summary
+  console.log("\x1b[90m  ─────────────────────────────────────────\x1b[0m");
+  console.log();
+  console.log("  \x1b[1mSummary\x1b[0m");
+  console.log();
+  if (fixed > 0) console.log(`     \x1b[32m✓ ${fixed} fixed\x1b[0m`);
+  if (disabled > 0) console.log(`     \x1b[33m⊘ ${disabled} disabled\x1b[0m`);
+  if (skipped > 0) console.log(`     \x1b[90m→ ${skipped} skipped\x1b[0m`);
+  console.log();
 }
