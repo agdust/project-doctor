@@ -13,6 +13,7 @@ type CheckDoc = {
   description: string;
   content: string;
   tags: string[];
+  hasFix: boolean;
 };
 
 function parseMarkdown(md: string): string {
@@ -90,12 +91,16 @@ async function findCheckDocs(): Promise<CheckDoc[]> {
             ? tagsMatch[1].split(",").map((t) => t.trim().replace(/['"]/g, ""))
             : [];
 
+          // Check if fix is available
+          const hasFix = /fix:\s*\{/.test(checkContent);
+
           docs.push({
             name,
             group,
             description,
             content: docsContent,
             tags,
+            hasFix,
           });
         } catch {
           // Not a check folder with docs, skip
@@ -123,8 +128,9 @@ async function generateDocs(): Promise<void> {
     const tagsHtml = doc.tags
       .map((t) => `<span class="tag ${t}">${t}</span>`)
       .join(" ");
+    const fixBadge = doc.hasFix ? '<span class="tag fixable">auto-fix</span>' : "";
     const content = `
-      <div>${tagsHtml}</div>
+      <div>${tagsHtml} ${fixBadge}</div>
       ${parseMarkdown(doc.content)}
     `;
     const html = htmlPage(doc.name, content, nav);
@@ -151,8 +157,9 @@ async function generateDocs(): Promise<void> {
       const tagsHtml = doc.tags
         .map((t) => `<span class="tag ${t}">${t}</span>`)
         .join(" ");
+      const fixBadge = doc.hasFix ? '<span class="tag fixable">auto-fix</span>' : "";
       indexContent += `<li>
-        <a href="${doc.name}.html">${doc.name}</a> ${tagsHtml}
+        <a href="${doc.name}.html">${doc.name}</a> ${tagsHtml} ${fixBadge}
         <div class="desc">${escapeHtml(doc.description)}</div>
       </li>\n`;
     }

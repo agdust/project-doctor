@@ -91,11 +91,13 @@ export function htmlPage(title: string, content: string, nav: string): string {
     .tag.required { background: #1a1a1a; color: #fff; }
     .tag.recommended { background: #dcfce7; color: #166534; }
     .tag.opinionated { background: #fce7f3; color: #9d174d; }
+    .tag.fixable { background: #dbeafe; color: #1e40af; }
     @media (prefers-color-scheme: dark) {
       .tag { background: #404040; color: #999; }
       .tag.required { background: #e5e5e5; color: #1a1a1a; }
       .tag.recommended { background: #166534; color: #dcfce7; }
       .tag.opinionated { background: #9d174d; color: #fce7f3; }
+      .tag.fixable { background: #1e40af; color: #dbeafe; }
     }
     .check-list { list-style: none; padding: 0; }
     .check-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
