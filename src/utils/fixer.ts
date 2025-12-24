@@ -1,4 +1,5 @@
-import { createInterface } from "node:readline";
+import { writeFile, readFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext } from "../types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
@@ -11,19 +12,94 @@ type FixableCheck = {
   runFix: () => Promise<FixResult>;
 };
 
-async function prompt(question: string): Promise<boolean> {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+type SelectOption = "fix" | "disable" | "skip";
 
+const OPTIONS: SelectOption[] = ["fix", "disable", "skip"];
+
+async function selectOption(): Promise<SelectOption> {
   return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      const normalized = answer.toLowerCase().trim();
-      resolve(normalized === "y" || normalized === "yes");
-    });
+    let selectedIndex = 0;
+
+    const render = () => {
+      // Move cursor up and clear previous render (except first render)
+      process.stdout.write("\x1b[?25l"); // Hide cursor
+
+      const line = OPTIONS.map((opt, i) => {
+        if (i === selectedIndex) {
+          return `\x1b[7m ${opt} \x1b[0m`; // Inverted colors for selection
+        }
+        return ` ${opt} `;
+      }).join("  ");
+
+      process.stdout.write(`\r\x1b[K  ${line}`);
+    };
+
+    render();
+
+    if (!process.stdin.isTTY) {
+      process.stdout.write("\n");
+      resolve("skip");
+      return;
+    }
+
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+
+    const onKeypress = (key: Buffer) => {
+      const char = key.toString();
+
+      // Arrow keys
+      if (char === "\x1b[D" || char === "\x1b[A") {
+        // Left or Up
+        selectedIndex = (selectedIndex - 1 + OPTIONS.length) % OPTIONS.length;
+        render();
+      } else if (char === "\x1b[C" || char === "\x1b[B") {
+        // Right or Down
+        selectedIndex = (selectedIndex + 1) % OPTIONS.length;
+        render();
+      } else if (char === "\r" || char === "\n") {
+        // Enter
+        cleanup();
+        process.stdout.write("\x1b[?25h"); // Show cursor
+        process.stdout.write("\n");
+        resolve(OPTIONS[selectedIndex]);
+      } else if (char === "\x03") {
+        // Ctrl+C
+        cleanup();
+        process.stdout.write("\x1b[?25h");
+        process.stdout.write("\n");
+        process.exit(0);
+      }
+    };
+
+    const cleanup = () => {
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+      process.stdin.removeListener("data", onKeypress);
+    };
+
+    process.stdin.on("data", onKeypress);
   });
+}
+
+async function addToExcludeChecks(projectPath: string, checkName: string): Promise<void> {
+  const configPath = join(projectPath, ".project-doctorrc.json");
+
+  let config: Record<string, unknown> = {};
+  try {
+    const content = await readFile(configPath, "utf-8");
+    config = JSON.parse(content);
+  } catch {
+    // No existing config, start fresh
+  }
+
+  const excludeChecks = (config.excludeChecks as string[]) ?? [];
+  if (!excludeChecks.includes(checkName)) {
+    excludeChecks.push(checkName);
+  }
+  config.excludeChecks = excludeChecks;
+
+  await writeFile(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
 }
 
 export type FixerOptions = {
@@ -71,6 +147,7 @@ export async function runFixer(options: FixerOptions): Promise<void> {
 
   let fixed = 0;
   let skipped = 0;
+  let disabled = 0;
 
   for (const check of fixableChecks) {
     const statusColor = check.result.status === "fail" ? "\x1b[31m" : "\x1b[33m";
@@ -80,12 +157,15 @@ export async function runFixer(options: FixerOptions): Promise<void> {
     console.log(`       ${check.result.message}`);
     console.log(`  \x1b[36mFix:\x1b[0m ${check.fixDescription}`);
 
-    let shouldFix = options.autoFix ?? false;
-    if (!shouldFix) {
-      shouldFix = await prompt("  Apply fix? [y/N] ");
+    let action: SelectOption = "skip";
+
+    if (options.autoFix) {
+      action = "fix";
+    } else {
+      action = await selectOption();
     }
 
-    if (shouldFix) {
+    if (action === "fix") {
       try {
         const fixResult = await check.runFix();
         if (fixResult.success) {
@@ -97,11 +177,19 @@ export async function runFixer(options: FixerOptions): Promise<void> {
       } catch (error) {
         console.log(`  \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m\n`);
       }
+    } else if (action === "disable") {
+      try {
+        await addToExcludeChecks(options.projectPath, check.name);
+        console.log(`  \x1b[33m⊘ Disabled ${check.name}\x1b[0m\n`);
+        disabled++;
+      } catch (error) {
+        console.log(`  \x1b[31m✗ Error disabling: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m\n`);
+      }
     } else {
-      console.log("  \x1b[90mSkipped\x1b[0m\n");
+      console.log(`  \x1b[90m→ Skipped\x1b[0m\n`);
       skipped++;
     }
   }
 
-  console.log(`\nDone: ${fixed} fixed, ${skipped} skipped`);
+  console.log(`\nDone: ${fixed} fixed, ${disabled} disabled, ${skipped} skipped`);
 }
