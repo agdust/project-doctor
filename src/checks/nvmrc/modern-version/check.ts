@@ -1,37 +1,16 @@
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { NvmrcContext } from "../context.js";
 import { pass, fail, warn, skip } from "../../helpers.js";
+import {
+  LTS_VERSIONS,
+  CURRENT_LTS_MAJOR,
+  MIN_SUPPORTED_MAJOR,
+  parseMajorVersion,
+} from "../constants.js";
 
 const name = "nvmrc-modern-version";
-
-// LTS versions with their codenames and EOL dates
-// https://nodejs.org/en/about/previous-releases
-const LTS_VERSIONS = [
-  { major: 18, codename: "hydrogen", eol: "2025-04-30" },
-  { major: 20, codename: "iron", eol: "2026-04-30" },
-  { major: 22, codename: "jod", eol: "2027-04-30" },
-] as const;
-
-const CURRENT_LTS_MAJOR = 22;
-const MIN_SUPPORTED_MAJOR = 18;
-
-function parseMajorVersion(version: string): number | null {
-  // Handle lts/codename format
-  const ltsMatch = version.match(/^lts\/(\w+)$/i);
-  if (ltsMatch) {
-    const codename = ltsMatch[1].toLowerCase();
-    const lts = LTS_VERSIONS.find((v) => v.codename === codename);
-    return lts?.major ?? null;
-  }
-
-  // Handle numeric versions (with or without v prefix)
-  const numMatch = version.match(/^v?(\d+)/);
-  if (numMatch) {
-    return parseInt(numMatch[1], 10);
-  }
-
-  return null;
-}
 
 export const check: Check<NvmrcContext> = {
   name,
@@ -68,5 +47,16 @@ export const check: Check<NvmrcContext> = {
     }
 
     return pass(name, `Node ${major}`);
+  },
+  fix: {
+    description: `Update .nvmrc to Node ${CURRENT_LTS_MAJOR} (current LTS)`,
+    run: async (global) => {
+      const nvmrcPath = join(global.projectPath, ".nvmrc");
+      await writeFile(nvmrcPath, `${CURRENT_LTS_MAJOR}\n`, "utf-8");
+      return {
+        success: true,
+        message: `Updated .nvmrc to Node ${CURRENT_LTS_MAJOR}`,
+      };
+    },
   },
 };

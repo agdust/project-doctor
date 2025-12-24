@@ -6,6 +6,7 @@ import type { CheckTag } from "./types.js";
 import { listChecks, listGroups } from "./registry.js";
 import { runChecks } from "./utils/runner.js";
 import { printResults } from "./utils/reporter.js";
+import { runFixer } from "./utils/fixer.js";
 
 function printHelp(): void {
   console.log(`
@@ -13,6 +14,11 @@ project-doctor - Project health checks and maintenance tools
 
 Usage:
   project-doctor [options] [path]
+  project-doctor fix [options] [path]
+
+Commands:
+  (default)    Run all checks and report issues
+  fix          Interactively fix issues that have auto-fixes
 
 Options:
   -h, --help              Show this help message
@@ -24,25 +30,24 @@ Options:
   -e, --exclude-tag <tag> Exclude checks with this tag (can repeat)
   --no-config             Ignore .project-doctorrc.json config file
 
+Fix Options:
+  -y, --yes               Auto-apply all fixes without prompting
+
 Config File:
   Create .project-doctorrc.json to set default options:
   {
-    "checks": {
-      "exclude": ["opinionated"],
-      "disable": ["changelog-exists"]
-    },
-    "severity": {
-      "license-exists": "warn"
-    }
+    "excludeTags": ["opinionated"],
+    "excludeChecks": ["changelog-exists"]
   }
 
 Examples:
   project-doctor                       Run all checks in current directory
   project-doctor ./my-project          Run checks in specific directory
+  project-doctor fix                   Interactively fix issues
+  project-doctor fix -y                Auto-fix all issues
   project-doctor -g package-json       Run only package-json checks
   project-doctor -t required           Run only required checks
   project-doctor -e opinionated        Exclude opinionated checks
-  project-doctor --no-config           Ignore config file
   project-doctor --list                Show all available checks
 
 Groups:
@@ -78,7 +83,15 @@ function printCheckList(): void {
 }
 
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const isFixCommand = args[0] === "fix";
+
+  if (isFixCommand) {
+    args.shift();
+  }
+
   const { values, positionals } = parseArgs({
+    args,
     options: {
       help: { type: "boolean", short: "h", default: false },
       version: { type: "boolean", short: "v", default: false },
@@ -88,6 +101,7 @@ async function main(): Promise<void> {
       tag: { type: "string", short: "t", multiple: true },
       "exclude-tag": { type: "string", short: "e", multiple: true },
       "no-config": { type: "boolean", default: false },
+      yes: { type: "boolean", short: "y", default: false },
     },
     allowPositionals: true,
   });
@@ -108,6 +122,14 @@ async function main(): Promise<void> {
   }
 
   const projectPath = resolve(positionals[0] ?? process.cwd());
+
+  if (isFixCommand) {
+    await runFixer({
+      projectPath,
+      autoFix: values.yes,
+    });
+    return;
+  }
 
   console.log(`\nRunning checks on: ${projectPath}\n`);
 

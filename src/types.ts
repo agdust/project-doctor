@@ -9,6 +9,11 @@ export type CheckResultBase = {
   details?: string[];
 };
 
+export type FixResult = {
+  success: boolean;
+  message: string;
+};
+
 export type CheckResult = CheckResultBase & {
   group: string;
 };
@@ -52,6 +57,10 @@ export type Check<GroupCtx = unknown> = {
   description: string;
   tags: CheckTag[];
   run: (global: GlobalContext, group: GroupCtx) => Promise<CheckResultBase>;
+  fix?: {
+    description: string;
+    run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult>;
+  };
 };
 
 export type GroupContextLoader<T> = (global: GlobalContext) => Promise<T>;
