@@ -1,8 +1,16 @@
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { PrettierContext } from "../context.js";
 import { pass, warn, skip } from "../../helpers.js";
 
 const name = "prettier-ignore-exists";
+
+const DEFAULT_PRETTIERIGNORE = `dist/
+build/
+node_modules/
+*.min.js
+`;
 
 export const check: Check<PrettierContext> = {
   name,
@@ -16,5 +24,13 @@ export const check: Check<PrettierContext> = {
       return warn(name, "No .prettierignore file");
     }
     return pass(name, ".prettierignore exists");
+  },
+  fix: {
+    description: "Create .prettierignore with defaults",
+    run: async (global) => {
+      const prettierignorePath = join(global.projectPath, ".prettierignore");
+      await writeFile(prettierignorePath, DEFAULT_PRETTIERIGNORE, "utf-8");
+      return { success: true, message: "Created .prettierignore" };
+    },
   },
 };

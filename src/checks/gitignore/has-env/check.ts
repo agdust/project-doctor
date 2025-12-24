@@ -1,3 +1,5 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -15,5 +17,15 @@ export const check: Check<GitignoreContext> = {
     );
     if (!hasIt) return fail(name, ".env files not ignored");
     return pass(name, ".env files ignored");
+  },
+  fix: {
+    description: "Add .env to .gitignore",
+    run: async (global) => {
+      const gitignorePath = join(global.projectPath, ".gitignore");
+      const content = await readFile(gitignorePath, "utf-8");
+      const newContent = content.endsWith("\n") ? content + ".env\n" : content + "\n.env\n";
+      await writeFile(gitignorePath, newContent, "utf-8");
+      return { success: true, message: "Added .env to .gitignore" };
+    },
   },
 };
