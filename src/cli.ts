@@ -7,6 +7,7 @@ import { listChecks, listGroups } from "./registry.js";
 import { runChecks } from "./utils/runner.js";
 import { printResults } from "./utils/reporter.js";
 import { runFixer } from "./utils/fixer.js";
+import { runDepsChecker } from "./utils/deps-checker.js";
 
 function printHelp(): void {
   console.log(`
@@ -15,10 +16,12 @@ project-doctor - Project health checks and maintenance tools
 Usage:
   project-doctor [options] [path]
   project-doctor fix [options] [path]
+  project-doctor deps [options] [path]
 
 Commands:
   (default)    Run all checks and report issues
   fix          Interactively fix issues that have auto-fixes
+  deps         Check dependencies for newer versions
 
 Options:
   -h, --help              Show this help message
@@ -33,6 +36,9 @@ Options:
 Fix Options:
   -y, --yes               Auto-apply all fixes without prompting
 
+Deps Options:
+  --no-dev                Exclude devDependencies from check
+
 Config File:
   Create .project-doctorrc.json to set default options:
   {
@@ -45,6 +51,8 @@ Examples:
   project-doctor ./my-project          Run checks in specific directory
   project-doctor fix                   Interactively fix issues
   project-doctor fix -y                Auto-fix all issues
+  project-doctor deps                  Check for outdated dependencies
+  project-doctor deps --no-dev         Check only production dependencies
   project-doctor -g package-json       Run only package-json checks
   project-doctor -t required           Run only required checks
   project-doctor -e opinionated        Exclude opinionated checks
@@ -85,8 +93,9 @@ function printCheckList(): void {
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const isFixCommand = args[0] === "fix";
+  const isDepsCommand = args[0] === "deps";
 
-  if (isFixCommand) {
+  if (isFixCommand || isDepsCommand) {
     args.shift();
   }
 
@@ -102,6 +111,7 @@ async function main(): Promise<void> {
       "exclude-tag": { type: "string", short: "e", multiple: true },
       "no-config": { type: "boolean", default: false },
       yes: { type: "boolean", short: "y", default: false },
+      "no-dev": { type: "boolean", default: false },
     },
     allowPositionals: true,
   });
@@ -127,6 +137,14 @@ async function main(): Promise<void> {
     await runFixer({
       projectPath,
       autoFix: values.yes,
+    });
+    return;
+  }
+
+  if (isDepsCommand) {
+    await runDepsChecker({
+      projectPath,
+      includeDev: !values["no-dev"],
     });
     return;
   }
