@@ -71,7 +71,7 @@ export async function runFixer(options: FixerOptions): Promise<void> {
         groupContext
       );
 
-      if (baseResult.status === "fail" || baseResult.status === "warn") {
+      if (baseResult.status === "fail") {
         const result: CheckResult = { ...baseResult, group: group.name };
         fixableChecks.push({
           name: check.name,
@@ -99,8 +99,8 @@ export async function runFixer(options: FixerOptions): Promise<void> {
 
   for (let i = 0; i < fixableChecks.length; i++) {
     const check = fixableChecks[i];
-    const statusColor = check.result.status === "fail" ? "\x1b[31m" : "\x1b[33m";
-    const statusIcon = check.result.status === "fail" ? "✗" : "!";
+    const statusColor = "\x1b[31m";
+    const statusIcon = "✗";
 
     // Issue header
     console.log("\x1b[90m  ─────────────────────────────────────────\x1b[0m");

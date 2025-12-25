@@ -1,6 +1,6 @@
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
-import { pass, warn, skip } from "../../helpers.js";
+import { pass, fail, skip } from "../../helpers.js";
 
 const name = "gitignore-no-duplicates";
 
@@ -19,7 +19,7 @@ export const check: Check<GitignoreContext> = {
       seen.add(p);
     }
     if (duplicates.length > 0) {
-      return warn(name, `Duplicates: ${duplicates.join(", ")}`);
+      return fail(name, `Duplicates: ${duplicates.join(", ")}`);
     }
     return pass(name, "No duplicates");
   },

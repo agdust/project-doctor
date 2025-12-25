@@ -30,7 +30,7 @@ Options:
   -h, --help              Show this help message
   -v, --version           Show version
   -l, --list              List all available checks
-  -f, --full-report       Show all checks (default: only failures/warnings)
+  -f, --full-report       Show all checks (default: only failures)
   -g, --group <name>      Run checks from specific group only
   -t, --tag <tag>         Only run checks with this tag (can repeat)
   -e, --exclude-tag <tag> Exclude checks with this tag (can repeat)

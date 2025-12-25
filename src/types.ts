@@ -1,6 +1,6 @@
 import type { ResolvedConfig } from "./config/types.js";
 
-export type CheckStatus = "pass" | "fail" | "warn" | "skip";
+export type CheckStatus = "pass" | "fail" | "skip";
 
 export type CheckResultBase = {
   name: string;

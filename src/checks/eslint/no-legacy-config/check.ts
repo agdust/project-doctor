@@ -1,6 +1,6 @@
 import type { Check } from "../../../types.js";
 import type { EslintContext } from "../context.js";
-import { pass, warn, skip } from "../../helpers.js";
+import { pass, fail, skip } from "../../helpers.js";
 
 const name = "eslint-no-legacy-config";
 
@@ -13,7 +13,7 @@ export const check: Check<EslintContext> = {
       return skip(name, "ESLint not detected");
     }
     if (hasLegacyConfig) {
-      return warn(name, "Legacy .eslintrc config found");
+      return fail(name, "Legacy .eslintrc config found");
     }
     return pass(name, "No legacy config");
   },

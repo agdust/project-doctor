@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { NvmrcContext } from "../context.js";
-import { pass, fail, warn, skip } from "../../helpers.js";
+import { pass, fail, skip } from "../../helpers.js";
 import {
   LTS_VERSIONS,
   CURRENT_LTS_MAJOR,
@@ -43,7 +43,7 @@ export const check: Check<NvmrcContext> = {
 
     // Odd version numbers are not LTS
     if (major % 2 !== 0) {
-      return warn(name, `Node ${major} is not an LTS version`);
+      return fail(name, `Node ${major} is not an LTS version`);
     }
 
     return pass(name, `Node ${major}`);

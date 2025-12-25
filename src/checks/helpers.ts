@@ -11,7 +11,3 @@ export function pass(name: string, message: string): CheckResultBase {
 export function fail(name: string, message: string): CheckResultBase {
   return { name, status: "fail", message };
 }
-
-export function warn(name: string, message: string): CheckResultBase {
-  return { name, status: "warn", message };
-}

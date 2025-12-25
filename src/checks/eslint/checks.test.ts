@@ -67,13 +67,13 @@ describe("eslint checks", () => {
       expect(result.status).toBe("pass");
     });
 
-    it("should warn when legacy config exists", async () => {
+    it("should fail when legacy config exists", async () => {
       const global = await createGlobalContext(fixtures.broken);
       global.detected.hasEslint = true;
       const ctx = await loadContext(global);
       const result = await noLegacyConfig.run(global, ctx);
 
-      expect(result.status).toBe("warn");
+      expect(result.status).toBe("fail");
     });
   });
 });

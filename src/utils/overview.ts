@@ -9,7 +9,6 @@ type OverviewResult = {
     total: number;
     passed: number;
     failed: number;
-    warnings: number;
   };
   deps: {
     total: number;
@@ -69,7 +68,6 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
       total: checkResults.length,
       passed: checkResults.filter((r) => r.status === "pass").length,
       failed: checkResults.filter((r) => r.status === "fail").length,
-      warnings: checkResults.filter((r) => r.status === "warn").length,
     },
     deps: depsResult,
   };
@@ -86,10 +84,6 @@ export function printOverview(result: OverviewResult): void {
     console.log(`  \x1b[31m✗\x1b[0m ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`);
   } else {
     console.log(`  \x1b[32m✓\x1b[0m All checks passing`);
-  }
-
-  if (checks.warnings > 0) {
-    console.log(`  \x1b[33m!\x1b[0m ${checks.warnings} warning${checks.warnings > 1 ? "s" : ""}`);
   }
 
   // Dependencies line

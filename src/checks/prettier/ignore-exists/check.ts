@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { PrettierContext } from "../context.js";
-import { pass, warn, skip } from "../../helpers.js";
+import { pass, fail, skip } from "../../helpers.js";
 
 const name = "prettier-ignore-exists";
 
@@ -21,7 +21,7 @@ export const check: Check<PrettierContext> = {
       return skip(name, "Prettier not detected");
     }
     if (!hasIgnore) {
-      return warn(name, "No .prettierignore file");
+      return fail(name, "No .prettierignore file");
     }
     return pass(name, ".prettierignore exists");
   },
