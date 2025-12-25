@@ -8,18 +8,21 @@ import { runChecks } from "./utils/runner.js";
 import { printResults } from "./utils/reporter.js";
 import { runFixer } from "./utils/fixer.js";
 import { runDepsChecker } from "./utils/deps-checker.js";
+import { runOverview } from "./utils/overview.js";
 
 function printHelp(): void {
   console.log(`
 project-doctor - Project health checks and maintenance tools
 
 Usage:
-  project-doctor [options] [path]
+  project-doctor [path]
+  project-doctor check [options] [path]
   project-doctor fix [options] [path]
   project-doctor deps [options] [path]
 
 Commands:
-  (default)    Run all checks and report issues
+  (default)    Show project health overview
+  check        Run all checks and report details
   fix          Interactively fix issues that have auto-fixes
   deps         Check dependencies for newer versions
 
@@ -47,15 +50,14 @@ Config File:
   }
 
 Examples:
-  project-doctor                       Run all checks in current directory
-  project-doctor ./my-project          Run checks in specific directory
+  project-doctor                       Show project health overview
+  project-doctor ./my-project          Show overview for specific directory
+  project-doctor check                 Run all checks with details
+  project-doctor check -g package-json Run only package-json checks
+  project-doctor check -t required     Run only required checks
   project-doctor fix                   Interactively fix issues
   project-doctor fix -y                Auto-fix all issues
   project-doctor deps                  Check for outdated dependencies
-  project-doctor deps --no-dev         Check only production dependencies
-  project-doctor -g package-json       Run only package-json checks
-  project-doctor -t required           Run only required checks
-  project-doctor -e opinionated        Exclude opinionated checks
   project-doctor --list                Show all available checks
 
 Groups:
@@ -92,10 +94,11 @@ function printCheckList(): void {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  const isCheckCommand = args[0] === "check";
   const isFixCommand = args[0] === "fix";
   const isDepsCommand = args[0] === "deps";
 
-  if (isFixCommand || isDepsCommand) {
+  if (isCheckCommand || isFixCommand || isDepsCommand) {
     args.shift();
   }
 
@@ -149,20 +152,25 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.log(`\nRunning checks on: ${projectPath}\n`);
+  if (isCheckCommand) {
+    console.log(`\nRunning checks on: ${projectPath}\n`);
 
-  const results = await runChecks({
-    projectPath,
-    skipConfig: values["no-config"],
-    groups: values.group,
-    includeTags: values.tag as CheckTag[] | undefined,
-    excludeTags: values["exclude-tag"] as CheckTag[] | undefined,
-  });
+    const results = await runChecks({
+      projectPath,
+      skipConfig: values["no-config"],
+      groups: values.group,
+      includeTags: values.tag as CheckTag[] | undefined,
+      excludeTags: values["exclude-tag"] as CheckTag[] | undefined,
+    });
 
-  printResults(results, { fullReport: values["full-report"] });
+    printResults(results, { fullReport: values["full-report"] });
 
-  const hasFailed = results.some((r) => r.status === "fail");
-  process.exit(hasFailed ? 1 : 0);
+    const hasFailed = results.some((r) => r.status === "fail");
+    process.exit(hasFailed ? 1 : 0);
+  }
+
+  // Default: show overview
+  await runOverview(projectPath);
 }
 
 main().catch((error) => {
