@@ -1,5 +1,6 @@
 import { writeFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { select } from "@inquirer/prompts";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext } from "../types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
@@ -14,73 +15,14 @@ type FixableCheck = {
 
 type SelectOption = "fix" | "disable" | "skip";
 
-const OPTIONS: { value: SelectOption; label: string; color: string }[] = [
-  { value: "fix", label: "Apply fix", color: "\x1b[32m" },
-  { value: "disable", label: "Disable check", color: "\x1b[33m" },
-  { value: "skip", label: "Skip for now", color: "\x1b[90m" },
-];
-
-async function selectOption(): Promise<SelectOption> {
-  return new Promise((resolve) => {
-    let selectedIndex = 0;
-
-    const render = (initial = false) => {
-      if (!initial) {
-        // Move cursor up to overwrite previous render
-        process.stdout.write(`\x1b[${OPTIONS.length}A`);
-      }
-      process.stdout.write("\x1b[?25l"); // Hide cursor
-
-      for (let i = 0; i < OPTIONS.length; i++) {
-        const opt = OPTIONS[i];
-        const pointer = i === selectedIndex ? `${opt.color}❯\x1b[0m` : " ";
-        const label = i === selectedIndex ? `${opt.color}${opt.label}\x1b[0m` : `\x1b[90m${opt.label}\x1b[0m`;
-        process.stdout.write(`\x1b[K    ${pointer} ${label}\n`);
-      }
-    };
-
-    render(true);
-
-    if (!process.stdin.isTTY) {
-      process.stdout.write("\x1b[?25h");
-      resolve("skip");
-      return;
-    }
-
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
-
-    const onKeypress = (key: Buffer) => {
-      const char = key.toString();
-
-      if (char === "\x1b[A" || char === "k") {
-        // Up
-        selectedIndex = (selectedIndex - 1 + OPTIONS.length) % OPTIONS.length;
-        render();
-      } else if (char === "\x1b[B" || char === "j") {
-        // Down
-        selectedIndex = (selectedIndex + 1) % OPTIONS.length;
-        render();
-      } else if (char === "\r" || char === "\n") {
-        // Enter
-        cleanup();
-        process.stdout.write("\x1b[?25h");
-        resolve(OPTIONS[selectedIndex].value);
-      } else if (char === "\x03") {
-        // Ctrl+C
-        cleanup();
-        process.stdout.write("\x1b[?25h\n");
-        process.exit(0);
-      }
-    };
-
-    const cleanup = () => {
-      process.stdin.setRawMode(false);
-      process.stdin.pause();
-      process.stdin.removeListener("data", onKeypress);
-    };
-
-    process.stdin.on("data", onKeypress);
+async function selectAction(): Promise<SelectOption> {
+  return select({
+    message: "What do you want to do?",
+    choices: [
+      { name: "Apply fix", value: "fix" as const },
+      { name: "Disable check", value: "disable" as const },
+      { name: "Skip for now", value: "skip" as const },
+    ],
   });
 }
 
@@ -174,15 +116,8 @@ export async function runFixer(options: FixerOptions): Promise<void> {
     if (options.autoFix) {
       action = "fix";
     } else {
-      action = await selectOption();
+      action = await selectAction();
     }
-
-    // Clear the menu lines and show result
-    process.stdout.write(`\x1b[${OPTIONS.length}A`);
-    for (let j = 0; j < OPTIONS.length; j++) {
-      process.stdout.write("\x1b[K\n");
-    }
-    process.stdout.write(`\x1b[${OPTIONS.length}A`);
 
     if (action === "fix") {
       try {
