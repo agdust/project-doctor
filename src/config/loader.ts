@@ -17,11 +17,11 @@ async function readJsonFile<T>(path: string): Promise<T | null> {
 }
 
 export async function loadConfig(projectPath: string): Promise<Config | null> {
-  // Try .project-doctorrc.json first
-  const rcPath = join(projectPath, ".project-doctorrc.json");
-  const rcConfig = await readJsonFile<Config>(rcPath);
-  if (rcConfig) {
-    return rcConfig;
+  // Try .project-doctor/config.json first
+  const configPath = join(projectPath, ".project-doctor", "config.json");
+  const config = await readJsonFile<Config>(configPath);
+  if (config) {
+    return config;
   }
 
   // Try package.json#doctor

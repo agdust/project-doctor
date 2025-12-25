@@ -48,7 +48,7 @@ Deps Options:
   --no-dev                Exclude devDependencies from check
 
 Config File:
-  Create .project-doctorrc.json to set default options:
+  Create .project-doctor/config.json to set default options:
   {
     "excludeTags": ["opinionated"],
     "excludeChecks": ["changelog-exists"]

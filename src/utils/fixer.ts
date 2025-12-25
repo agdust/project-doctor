@@ -1,4 +1,4 @@
-import { writeFile, readFile } from "node:fs/promises";
+import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext } from "../types.js";
@@ -27,7 +27,9 @@ async function selectAction(): Promise<SelectOption> {
 }
 
 async function addToExcludeChecks(projectPath: string, checkName: string): Promise<void> {
-  const configPath = join(projectPath, ".project-doctorrc.json");
+  const configDir = join(projectPath, ".project-doctor");
+  const configPath = join(configDir, "config.json");
+  await mkdir(configDir, { recursive: true });
 
   let config: Record<string, unknown> = {};
   try {
