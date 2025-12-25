@@ -9,6 +9,7 @@ import { printResults } from "./utils/reporter.js";
 import { runFixer } from "./utils/fixer.js";
 import { runDepsChecker } from "./utils/deps-checker.js";
 import { runOverview } from "./utils/overview.js";
+import { runSnapshot, runHistory } from "./utils/snapshot.js";
 
 function printHelp(): void {
   console.log(`
@@ -19,12 +20,16 @@ Usage:
   project-doctor check [options] [path]
   project-doctor fix [options] [path]
   project-doctor deps [options] [path]
+  project-doctor snapshot [path]
+  project-doctor history [path]
 
 Commands:
   (default)    Show project health overview
   check        Run all checks and report details
   fix          Interactively fix issues that have auto-fixes
   deps         Check dependencies for newer versions
+  snapshot     Save current status to history
+  history      View progress over time
 
 Options:
   -h, --help              Show this help message
@@ -58,6 +63,8 @@ Examples:
   project-doctor fix                   Interactively fix issues
   project-doctor fix -y                Auto-fix all issues
   project-doctor deps                  Check for outdated dependencies
+  project-doctor snapshot              Save snapshot to .project-doctor/
+  project-doctor history               View health history
   project-doctor --list                Show all available checks
 
 Groups:
@@ -97,8 +104,10 @@ async function main(): Promise<void> {
   const isCheckCommand = args[0] === "check";
   const isFixCommand = args[0] === "fix";
   const isDepsCommand = args[0] === "deps";
+  const isSnapshotCommand = args[0] === "snapshot";
+  const isHistoryCommand = args[0] === "history";
 
-  if (isCheckCommand || isFixCommand || isDepsCommand) {
+  if (isCheckCommand || isFixCommand || isDepsCommand || isSnapshotCommand || isHistoryCommand) {
     args.shift();
   }
 
@@ -149,6 +158,16 @@ async function main(): Promise<void> {
       projectPath,
       includeDev: !values["no-dev"],
     });
+    return;
+  }
+
+  if (isSnapshotCommand) {
+    await runSnapshot(projectPath);
+    return;
+  }
+
+  if (isHistoryCommand) {
+    await runHistory(projectPath);
     return;
   }
 
