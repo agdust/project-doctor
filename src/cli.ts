@@ -10,6 +10,7 @@ import { runFixer } from "./utils/fixer.js";
 import { runDepsChecker } from "./utils/deps-checker.js";
 import { runOverview } from "./utils/overview.js";
 import { runSnapshot, runHistory } from "./utils/snapshot.js";
+import { runInit } from "./utils/init.js";
 
 function printHelp(): void {
   console.log(`
@@ -22,6 +23,7 @@ Usage:
   project-doctor deps [options] [path]
   project-doctor snapshot [path]
   project-doctor history [path]
+  project-doctor init [path]
 
 Commands:
   (default)    Show project health overview
@@ -30,6 +32,7 @@ Commands:
   deps         Check dependencies for newer versions
   snapshot     Save current status to history
   history      View progress over time
+  init         Create .project-doctor/config.json
 
 Options:
   -h, --help              Show this help message
@@ -106,8 +109,9 @@ async function main(): Promise<void> {
   const isDepsCommand = args[0] === "deps";
   const isSnapshotCommand = args[0] === "snapshot";
   const isHistoryCommand = args[0] === "history";
+  const isInitCommand = args[0] === "init";
 
-  if (isCheckCommand || isFixCommand || isDepsCommand || isSnapshotCommand || isHistoryCommand) {
+  if (isCheckCommand || isFixCommand || isDepsCommand || isSnapshotCommand || isHistoryCommand || isInitCommand) {
     args.shift();
   }
 
@@ -168,6 +172,11 @@ async function main(): Promise<void> {
 
   if (isHistoryCommand) {
     await runHistory(projectPath);
+    return;
+  }
+
+  if (isInitCommand) {
+    await runInit(projectPath);
     return;
   }
 
