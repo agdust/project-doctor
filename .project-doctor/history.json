@@ -10,6 +10,13 @@
       "total": 9,
       "outdated": 4
     },
+    "audit": {
+      "critical": 0,
+      "high": 0,
+      "moderate": 0,
+      "low": 0,
+      "total": 0
+    },
     "failingChecks": [
       "package-json-has-license",
       "package-json-has-main-or-exports",

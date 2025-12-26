@@ -1,8 +1,8 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
-import { checkDeps } from "./deps-checker.js";
+import { checkDeps, type AuditResult } from "./deps-checker.js";
 import type { CheckResultBase, GlobalContext } from "../types.js";
 
 type SnapshotEntry = {
@@ -16,6 +16,7 @@ type SnapshotEntry = {
     total: number;
     outdated: number;
   } | null;
+  audit: AuditResult | null;
   failingChecks: string[];
 };
 
@@ -60,14 +61,16 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
     }
   }
 
-  // Check dependencies
+  // Check dependencies and audit
   let depsResult: SnapshotEntry["deps"] = null;
+  let auditResult: AuditResult | null = null;
   try {
     const deps = await checkDeps({ projectPath });
     depsResult = {
       total: deps.outdated.length + deps.upToDate,
       outdated: deps.outdated.length,
     };
+    auditResult = deps.audit;
   } catch {
     // No package.json or other error
   }
@@ -84,6 +87,7 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
       failed: checkResults.filter((r) => r.status === "fail").length,
     },
     deps: depsResult,
+    audit: auditResult,
     failingChecks,
   };
 }
@@ -114,6 +118,9 @@ export async function runSnapshot(projectPath: string): Promise<void> {
   if (snapshot.deps) {
     console.log(`    ${snapshot.deps.outdated} outdated dependencies`);
   }
+  if (snapshot.audit) {
+    console.log(`    ${snapshot.audit.total} vulnerabilities`);
+  }
   console.log();
   console.log(`  \x1b[90mSaved to ${HISTORY_DIR}/${HISTORY_FILE}\x1b[0m`);
   console.log();
@@ -132,8 +139,8 @@ export async function runHistory(projectPath: string): Promise<void> {
 
   console.log("  \x1b[1mProject Health History\x1b[0m");
   console.log();
-  console.log("  \x1b[90mDate          Checks     Deps\x1b[0m");
-  console.log("  \x1b[90m─────────────────────────────────\x1b[0m");
+  console.log("  \x1b[90mDate          Checks     Deps   Vulns\x1b[0m");
+  console.log("  \x1b[90m───────────────────────────────────────────\x1b[0m");
 
   for (const entry of history) {
     const checkStatus = entry.checks.failed === 0
@@ -148,7 +155,18 @@ export async function runHistory(projectPath: string): Promise<void> {
         : `\x1b[33m${entry.deps.outdated}\x1b[0m`;
     }
 
-    console.log(`  ${entry.date}    ${checkStatus} ${checkText.padEnd(8)} ${depsText}`);
+    let auditText = "\x1b[90m-\x1b[0m";
+    if (entry.audit) {
+      if (entry.audit.total === 0) {
+        auditText = "\x1b[32m✓\x1b[0m";
+      } else if (entry.audit.critical > 0 || entry.audit.high > 0) {
+        auditText = `\x1b[31m${entry.audit.total}\x1b[0m`;
+      } else {
+        auditText = `\x1b[33m${entry.audit.total}\x1b[0m`;
+      }
+    }
+
+    console.log(`  ${entry.date}    ${checkStatus} ${checkText.padEnd(8)} ${depsText.padEnd(6)} ${auditText}`);
   }
 
   // Show progress if multiple entries

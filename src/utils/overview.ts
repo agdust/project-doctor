@@ -1,6 +1,6 @@
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
-import { checkDeps } from "./deps-checker.js";
+import { checkDeps, type AuditResult } from "./deps-checker.js";
 import type { CheckResultBase, GlobalContext } from "../types.js";
 
 type OverviewResult = {
@@ -17,6 +17,7 @@ type OverviewResult = {
     minor: number;
     patch: number;
   } | null;
+  audit: AuditResult | null;
 };
 
 export async function getOverview(projectPath: string): Promise<OverviewResult> {
@@ -49,6 +50,7 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
 
   // Check dependencies
   let depsResult: OverviewResult["deps"] = null;
+  let auditResult: AuditResult | null = null;
   try {
     const deps = await checkDeps({ projectPath });
     depsResult = {
@@ -58,6 +60,7 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
       minor: deps.outdated.filter((d) => d.updateType === "minor").length,
       patch: deps.outdated.filter((d) => d.updateType === "patch").length,
     };
+    auditResult = deps.audit;
   } catch {
     // No package.json or other error
   }
@@ -70,6 +73,7 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
       failed: checkResults.filter((r) => r.status === "fail").length,
     },
     deps: depsResult,
+    audit: auditResult,
   };
 }
 
@@ -97,6 +101,22 @@ export function printOverview(result: OverviewResult): void {
       console.log(`  \x1b[33m↑\x1b[0m ${deps.outdated} outdated dependenc${deps.outdated > 1 ? "ies" : "y"} (${parts.join(", ")})`);
     } else {
       console.log(`  \x1b[32m✓\x1b[0m Dependencies up to date`);
+    }
+  }
+
+  // Vulnerabilities line
+  if (result.audit) {
+    const { audit } = result;
+    if (audit.total === 0) {
+      console.log(`  \x1b[32m✓\x1b[0m No vulnerabilities`);
+    } else {
+      const parts: string[] = [];
+      if (audit.critical > 0) parts.push(`${audit.critical} critical`);
+      if (audit.high > 0) parts.push(`${audit.high} high`);
+      if (audit.moderate > 0) parts.push(`${audit.moderate} moderate`);
+      if (audit.low > 0) parts.push(`${audit.low} low`);
+      const color = audit.critical > 0 || audit.high > 0 ? "\x1b[31m" : "\x1b[33m";
+      console.log(`  ${color}⚠\x1b[0m ${audit.total} vulnerabilit${audit.total > 1 ? "ies" : "y"} (${parts.join(", ")})`);
     }
   }
 

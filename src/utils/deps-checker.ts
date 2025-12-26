@@ -1,5 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+
+const execAsync = promisify(exec);
 
 type PackageJson = {
   dependencies?: Record<string, string>;
@@ -14,10 +18,19 @@ type VersionInfo = {
   updateType: "major" | "minor" | "patch" | "prerelease" | "unknown";
 };
 
-type DepsCheckResult = {
+export type AuditResult = {
+  critical: number;
+  high: number;
+  moderate: number;
+  low: number;
+  total: number;
+};
+
+export type DepsCheckResult = {
   outdated: VersionInfo[];
   upToDate: number;
   failed: string[];
+  audit: AuditResult | null;
 };
 
 function parseVersion(version: string): { major: number; minor: number; patch: number } | null {
@@ -148,46 +161,112 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
     return a.name.localeCompare(b.name);
   });
 
-  return { outdated, upToDate, failed };
+  // Run npm audit
+  const audit = await runAudit(projectPath);
+
+  return { outdated, upToDate, failed, audit };
+}
+
+async function runAudit(projectPath: string): Promise<AuditResult | null> {
+  try {
+    const { stdout } = await execAsync("npm audit --json", {
+      cwd: projectPath,
+      maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large audit output
+    });
+    return parseAuditOutput(stdout);
+  } catch (error) {
+    // npm audit exits with non-zero when vulnerabilities found
+    if (error && typeof error === "object" && "stdout" in error) {
+      return parseAuditOutput(error.stdout as string);
+    }
+    return null;
+  }
+}
+
+function parseAuditOutput(output: string): AuditResult | null {
+  try {
+    const data = JSON.parse(output);
+
+    // npm audit format
+    if (data.metadata?.vulnerabilities) {
+      const v = data.metadata.vulnerabilities;
+      return {
+        critical: v.critical ?? 0,
+        high: v.high ?? 0,
+        moderate: v.moderate ?? 0,
+        low: v.low ?? 0,
+        total: v.total ?? (v.critical + v.high + v.moderate + v.low),
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function printDepsReport(result: DepsCheckResult): void {
-  const { outdated, upToDate, failed } = result;
+  const { outdated, upToDate, failed, audit } = result;
 
   console.log();
 
+  // Outdated packages
   if (outdated.length === 0) {
     console.log("  \x1b[32m✓ All dependencies are up to date\x1b[0m");
+  } else {
+    console.log(`  Found \x1b[1m${outdated.length}\x1b[0m outdated package${outdated.length > 1 ? "s" : ""}`);
     console.log();
-    return;
+
+    // Group by update type
+    const major = outdated.filter((d) => d.updateType === "major");
+    const minor = outdated.filter((d) => d.updateType === "minor");
+    const patch = outdated.filter((d) => d.updateType === "patch");
+    const other = outdated.filter((d) => d.updateType === "unknown" || d.updateType === "prerelease");
+
+    const printSection = (items: VersionInfo[], label: string, color: string) => {
+      if (items.length === 0) return;
+      console.log(`  ${color}${label}\x1b[0m`);
+      for (const dep of items) {
+        const devLabel = dep.type === "devDependencies" ? " \x1b[90m(dev)\x1b[0m" : "";
+        console.log(`    ${dep.name}${devLabel}`);
+        console.log(`      \x1b[90m${dep.current}\x1b[0m → \x1b[32m${dep.latest}\x1b[0m`);
+      }
+      console.log();
+    };
+
+    printSection(major, "Major updates (breaking changes possible)", "\x1b[31m");
+    printSection(minor, "Minor updates (new features)", "\x1b[33m");
+    printSection(patch, "Patch updates (bug fixes)", "\x1b[32m");
+    printSection(other, "Other updates", "\x1b[90m");
   }
 
-  console.log(`  Found \x1b[1m${outdated.length}\x1b[0m outdated package${outdated.length > 1 ? "s" : ""}`);
+  // Security audit
+  console.log("  \x1b[90m─────────────────────────────────────────\x1b[0m");
+  console.log();
+  console.log("  \x1b[1mSecurity Audit\x1b[0m");
   console.log();
 
-  // Group by update type
-  const major = outdated.filter((d) => d.updateType === "major");
-  const minor = outdated.filter((d) => d.updateType === "minor");
-  const patch = outdated.filter((d) => d.updateType === "patch");
-  const other = outdated.filter((d) => d.updateType === "unknown" || d.updateType === "prerelease");
-
-  const printSection = (items: VersionInfo[], label: string, color: string) => {
-    if (items.length === 0) return;
-    console.log(`  ${color}${label}\x1b[0m`);
-    for (const dep of items) {
-      const devLabel = dep.type === "devDependencies" ? " \x1b[90m(dev)\x1b[0m" : "";
-      console.log(`    ${dep.name}${devLabel}`);
-      console.log(`      \x1b[90m${dep.current}\x1b[0m → \x1b[32m${dep.latest}\x1b[0m`);
+  if (!audit) {
+    console.log("    \x1b[90mCould not run npm audit\x1b[0m");
+  } else if (audit.total === 0) {
+    console.log("    \x1b[32m✓ No vulnerabilities found\x1b[0m");
+  } else {
+    if (audit.critical > 0) {
+      console.log(`    \x1b[31m${audit.critical} critical\x1b[0m`);
     }
-    console.log();
-  };
-
-  printSection(major, "Major updates (breaking changes possible)", "\x1b[31m");
-  printSection(minor, "Minor updates (new features)", "\x1b[33m");
-  printSection(patch, "Patch updates (bug fixes)", "\x1b[32m");
-  printSection(other, "Other updates", "\x1b[90m");
+    if (audit.high > 0) {
+      console.log(`    \x1b[31m${audit.high} high\x1b[0m`);
+    }
+    if (audit.moderate > 0) {
+      console.log(`    \x1b[33m${audit.moderate} moderate\x1b[0m`);
+    }
+    if (audit.low > 0) {
+      console.log(`    \x1b[90m${audit.low} low\x1b[0m`);
+    }
+  }
 
   // Summary
+  console.log();
   console.log("  \x1b[90m─────────────────────────────────────────\x1b[0m");
   console.log();
   console.log(`  \x1b[1mSummary\x1b[0m`);
@@ -195,6 +274,9 @@ export function printDepsReport(result: DepsCheckResult): void {
   console.log(`    ${upToDate} up to date`);
   if (failed.length > 0) {
     console.log(`    ${failed.length} failed to check`);
+  }
+  if (audit) {
+    console.log(`    ${audit.total} vulnerabilit${audit.total === 1 ? "y" : "ies"}`);
   }
   console.log();
 }
