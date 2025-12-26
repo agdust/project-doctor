@@ -1,6 +1,7 @@
 import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
+import JSON5 from "json5";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext } from "../types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
@@ -28,13 +29,13 @@ async function selectAction(): Promise<SelectOption> {
 
 async function addToExcludeChecks(projectPath: string, checkName: string): Promise<void> {
   const configDir = join(projectPath, ".project-doctor");
-  const configPath = join(configDir, "config.json");
+  const configPath = join(configDir, "config.json5");
   await mkdir(configDir, { recursive: true });
 
   let config: Record<string, unknown> = {};
   try {
     const content = await readFile(configPath, "utf-8");
-    config = JSON.parse(content);
+    config = JSON5.parse(content);
   } catch {
     // No existing config, start fresh
   }
@@ -45,7 +46,7 @@ async function addToExcludeChecks(projectPath: string, checkName: string): Promi
   }
   config.excludeChecks = excludeChecks;
 
-  await writeFile(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+  await writeFile(configPath, JSON5.stringify(config, null, 2) + "\n", "utf-8");
 }
 
 export type FixerOptions = {

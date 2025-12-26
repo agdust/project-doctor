@@ -32,7 +32,7 @@ Commands:
   deps         Check dependencies for newer versions
   snapshot     Save current status to history
   history      View progress over time
-  init         Create .project-doctor/config.json
+  init         Create .project-doctor/config.json5
 
 Options:
   -h, --help              Show this help message
@@ -51,10 +51,10 @@ Deps Options:
   --no-dev                Exclude devDependencies from check
 
 Config File:
-  Create .project-doctor/config.json to set default options:
+  Create .project-doctor/config.json5 to set default options:
   {
-    "excludeTags": ["opinionated"],
-    "excludeChecks": ["changelog-exists"]
+    excludeTags: ["opinionated"],
+    excludeChecks: ["changelog-exists"],
   }
 
 Examples:

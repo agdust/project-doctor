@@ -2,12 +2,22 @@ import { mkdir, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 
 const CONFIG_DIR = ".project-doctor";
-const CONFIG_FILE = "config.json";
+const CONFIG_FILE = "config.json5";
 
-const DEFAULT_CONFIG = {
-  excludeTags: [],
-  excludeChecks: [],
-};
+const DEFAULT_CONFIG = `{
+  // Skip checks with these tags
+  // excludeTags: ["opinionated"],
+
+  // Skip specific checks by name
+  // excludeChecks: ["changelog-exists"],
+
+  // Only run checks from these groups
+  // groups: ["package-json", "typescript"],
+
+  // Only run checks with these tags
+  // includeTags: ["required"],
+}
+`;
 
 export async function runInit(projectPath: string): Promise<void> {
   const configDir = join(projectPath, CONFIG_DIR);
@@ -26,14 +36,8 @@ export async function runInit(projectPath: string): Promise<void> {
   }
 
   await mkdir(configDir, { recursive: true });
-  await writeFile(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2) + "\n", "utf-8");
+  await writeFile(configPath, DEFAULT_CONFIG, "utf-8");
 
   console.log(`  \x1b[32m✓\x1b[0m Created ${CONFIG_DIR}/${CONFIG_FILE}`);
-  console.log();
-  console.log("  \x1b[90mAvailable options:\x1b[0m");
-  console.log("    excludeTags    - Skip checks with these tags");
-  console.log("    excludeChecks  - Skip specific checks by name");
-  console.log("    groups         - Only run checks from these groups");
-  console.log("    includeTags    - Only run checks with these tags");
   console.log();
 }

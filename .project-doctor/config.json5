@@ -1,0 +1,13 @@
+{
+  // Skip checks with these tags
+  // excludeTags: ["opinionated"],
+
+  // Skip specific checks by name
+  // excludeChecks: ["changelog-exists"],
+
+  // Only run checks from these groups
+  // groups: ["package-json", "typescript"],
+
+  // Only run checks with these tags
+  // includeTags: ["required"],
+}
