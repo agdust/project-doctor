@@ -9,7 +9,8 @@
       "Bash(project-doctor:*)",
       "Bash(npm run docs:*)",
       "Bash(grep:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(wc:*)"
     ]
   }
 }
