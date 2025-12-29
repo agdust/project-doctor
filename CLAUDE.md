@@ -45,9 +45,18 @@ src/
 │   ├── env/
 │   ├── testing/
 │   └── framework/
-└── utils/
-    ├── runner.ts       # Check execution with filtering
-    └── reporter.ts     # Result formatting
+├── utils/
+│   ├── runner.ts       # Check execution with filtering
+│   └── reporter.ts     # Result formatting
+└── eslint-config/      # ESLint configuration builder module
+    ├── types.ts        # Core types (Preset, ResolvedRule, etc.)
+    ├── presets/        # Composable preset definitions
+    ├── builder/        # Combines presets → resolved rules
+    ├── generator/      # Outputs eslint.config.js content
+    ├── reader/         # Parses existing ESLint configs
+    ├── differ/         # Diff computation and terminal display
+    ├── wizard/         # Interactive @inquirer/prompts wizard
+    └── commands/       # CLI command handlers (init, add, show, diff)
 ```
 
 ## Key Concepts
@@ -110,3 +119,4 @@ Config is loaded in `GlobalContext` and applied by the runner.
 - `context/checks-proposal.md` - Full check list by implementation cost
 - `context/design-check-organization.md` - Architecture decisions
 - `context/design-config.md` - Configuration system design
+- `context/design-eslint-config.md` - ESLint config builder module design
