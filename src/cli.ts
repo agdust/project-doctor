@@ -15,6 +15,7 @@ import { runEslintInit } from "./eslint-config/commands/init.js";
 import { runEslintShow } from "./eslint-config/commands/show.js";
 import { runEslintAdd } from "./eslint-config/commands/add.js";
 import { runEslintDiff } from "./eslint-config/commands/diff.js";
+import { runMainWizard } from "./eslint-config/commands/main.js";
 
 function printHelp(): void {
   console.log(`
@@ -113,16 +114,18 @@ function printEslintHelp(): void {
 project-doctor eslint - ESLint configuration builder
 
 Usage:
+  project-doctor eslint [path]                    Interactive wizard
   project-doctor eslint init [options] [path]
   project-doctor eslint add <preset> [path]
   project-doctor eslint show [options] [path]
   project-doctor eslint diff [options] [path]
 
 Commands:
-  init         Generate new ESLint flat config
-  add          Add a preset to existing config
-  show         Show available presets and current config
-  diff         Show diff between current and proposed config
+  (no command)   Launch interactive wizard
+  init           Generate new ESLint flat config
+  add            Add a preset to existing config
+  show           Show available presets and current config
+  diff           Show diff between current and proposed config
 
 Init Options:
   -w, --wizard     Interactive wizard mode
@@ -169,14 +172,35 @@ async function main(): Promise<void> {
   // Handle eslint subcommand separately
   if (isEslintCommand) {
     args.shift(); // remove "eslint"
-    const subcommand = args[0];
-    args.shift(); // remove subcommand
+    const firstArg = args[0];
 
-    const projectPath = resolve(args.find((a) => !a.startsWith("-")) ?? process.cwd());
+    // Check if first arg is a path (not a subcommand)
+    const isPath =
+      firstArg &&
+      !firstArg.startsWith("-") &&
+      (firstArg.startsWith("/") ||
+        firstArg.startsWith("./") ||
+        firstArg.startsWith("..") ||
+        firstArg.includes("/") ||
+        firstArg === ".");
+
+    // Determine subcommand and project path
+    let subcommand: string | undefined;
+    let projectPath: string;
+
+    if (isPath) {
+      // First arg is a path, no subcommand - launch wizard
+      subcommand = undefined;
+      projectPath = resolve(firstArg);
+    } else {
+      subcommand = firstArg;
+      args.shift(); // remove subcommand
+      projectPath = resolve(args.find((a) => !a.startsWith("-")) ?? process.cwd());
+    }
+
     const hasWizard = args.includes("--wizard") || args.includes("-w");
     const hasDryRun = args.includes("--dry-run");
     const hasForce = args.includes("--force");
-    const hasPresets = args.includes("--presets");
     const hasPresetsFlag = args.includes("--presets");
     const hasRulesFlag = args.includes("--rules");
 
@@ -203,7 +227,19 @@ async function main(): Promise<void> {
       case "diff":
         await runEslintDiff(projectPath, { presets: presetsArg });
         return;
+      case "help":
+      case "-h":
+      case "--help":
+        printEslintHelp();
+        return;
+      case undefined:
+      case "":
+        // No subcommand - launch interactive wizard
+        await runMainWizard(projectPath);
+        return;
       default:
+        console.log(`\x1b[31mUnknown eslint subcommand: ${subcommand}\x1b[0m`);
+        console.log();
         printEslintHelp();
         return;
     }

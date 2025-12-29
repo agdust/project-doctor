@@ -13,3 +13,4 @@ export * from "./commands/init.js";
 export * from "./commands/show.js";
 export * from "./commands/add.js";
 export * from "./commands/diff.js";
+export * from "./commands/main.js";
