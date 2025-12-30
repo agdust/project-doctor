@@ -11,9 +11,13 @@ import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { input } from "./prompts.js";
 import { color } from "./ui.js";
-import { BACK, isBack } from "./types.js";
+import { isBack } from "./types.js";
+import { createMatcher } from "../../typing-challenge/typing-challenge.js";
 
 const CHALLENGE_PHRASE = "i allow eslint overwriting";
+
+// Create matcher with up to 3 typos allowed
+const matchesChallenge = createMatcher(CHALLENGE_PHRASE, { maxTypos: 3 });
 
 // Eslint config file patterns to check for uncommitted changes
 const ESLINT_CONFIG_PATTERNS = [
@@ -78,29 +82,6 @@ export function checkGitStatus(projectPath: string): SafetyStatus {
     // Git command failed - treat as no pending changes
     return { hasGitRepo: true, hasPendingChanges: false, pendingFiles: [] };
   }
-}
-
-/**
- * Normalize user input for challenge comparison
- * - Lowercase
- * - Remove extra spaces
- * - Remove punctuation
- */
-function normalizeInput(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, "") // Remove non-letters except spaces
-    .replace(/\s+/g, " ") // Collapse multiple spaces
-    .trim();
-}
-
-/**
- * Check if user input matches the challenge phrase
- */
-function matchesChallenge(userInput: string): boolean {
-  const normalized = normalizeInput(userInput);
-  const expected = normalizeInput(CHALLENGE_PHRASE);
-  return normalized === expected;
 }
 
 // Track if user has already confirmed in this session
