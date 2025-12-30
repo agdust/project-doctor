@@ -1,8 +1,11 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig } from "./types.js";
 import { DEFAULT_CONFIG } from "./types.js";
+
+const CONFIG_DIR = ".project-doctor";
+const CONFIG_FILE = "config.json";
 
 type PackageJson = {
   doctor?: Config;
@@ -61,10 +64,29 @@ export function resolveConfig(config: Config | null): ResolvedConfig {
     includeTags: config.includeTags ?? DEFAULT_CONFIG.includeTags,
     excludeTags: config.excludeTags ?? DEFAULT_CONFIG.excludeTags,
     excludeChecks: config.excludeChecks ?? DEFAULT_CONFIG.excludeChecks,
+    eslintOverwriteConfirmed: config.eslintOverwriteConfirmed ?? DEFAULT_CONFIG.eslintOverwriteConfirmed,
   };
 }
 
 export async function loadAndResolveConfig(projectPath: string): Promise<ResolvedConfig> {
   const config = await loadConfig(projectPath);
   return resolveConfig(config);
+}
+
+/**
+ * Update config with new values, merging with existing config
+ */
+export async function updateConfig(projectPath: string, updates: Partial<Config>): Promise<void> {
+  const configDir = join(projectPath, CONFIG_DIR);
+  const configPath = join(configDir, CONFIG_FILE);
+
+  // Load existing config (if any)
+  const existing = await loadConfig(projectPath);
+  const merged: Config = { ...existing, ...updates };
+
+  // Ensure config directory exists
+  await mkdir(configDir, { recursive: true });
+
+  // Write merged config
+  await writeFile(configPath, JSON.stringify(merged, null, 2) + "\n", "utf-8");
 }

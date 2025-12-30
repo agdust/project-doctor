@@ -51,5 +51,6 @@ function mergeConfigs(base: ResolvedConfig, overrides: Partial<ResolvedConfig>):
     excludeChecks: overrides.excludeChecks?.length
       ? [...base.excludeChecks, ...overrides.excludeChecks]
       : base.excludeChecks,
+    eslintOverwriteConfirmed: overrides.eslintOverwriteConfirmed ?? base.eslintOverwriteConfirmed,
   };
 }

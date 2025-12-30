@@ -4,6 +4,9 @@
  * Checks git status and requires user confirmation if:
  * - No git repo initialized (risk of data loss)
  * - Uncommitted changes to eslint config files
+ *
+ * Confirmation is cached in the project config so users don't
+ * have to type the challenge phrase every time.
  */
 
 import { existsSync } from "node:fs";
@@ -13,6 +16,7 @@ import { input } from "./prompts.js";
 import { color } from "./ui.js";
 import { isBack } from "./types.js";
 import { createMatcher } from "../../typing-challenge/typing-challenge.js";
+import { loadConfig, updateConfig } from "../../config/loader.js";
 
 const CHALLENGE_PHRASE = "i allow eslint overwriting";
 
@@ -84,7 +88,7 @@ export function checkGitStatus(projectPath: string): SafetyStatus {
   }
 }
 
-// Track if user has already confirmed in this session
+// Track if user has already confirmed in this session (in-memory cache)
 let sessionConfirmed = false;
 
 /**
@@ -95,12 +99,33 @@ export function resetSessionConfirmation(): void {
 }
 
 /**
+ * Check if user has previously confirmed via config
+ */
+async function isConfirmedInConfig(projectPath: string): Promise<boolean> {
+  const config = await loadConfig(projectPath);
+  return config?.eslintOverwriteConfirmed === true;
+}
+
+/**
+ * Save confirmation to config
+ */
+async function saveConfirmationToConfig(projectPath: string): Promise<void> {
+  await updateConfig(projectPath, { eslintOverwriteConfirmed: true });
+}
+
+/**
  * Run safety check and prompt for confirmation if needed
  * Returns true if safe to proceed, false if user cancelled
  */
 export async function ensureSafeToModify(projectPath: string): Promise<boolean> {
   // Skip if already confirmed this session
   if (sessionConfirmed) {
+    return true;
+  }
+
+  // Skip if already confirmed in config
+  if (await isConfirmedInConfig(projectPath)) {
+    sessionConfirmed = true;
     return true;
   }
 
@@ -118,6 +143,7 @@ export async function ensureSafeToModify(projectPath: string): Promise<boolean> 
     const confirmed = await promptChallenge("To proceed without git protection");
     if (!confirmed) return false;
 
+    await saveConfirmationToConfig(projectPath);
     sessionConfirmed = true;
     return true;
   }
@@ -138,6 +164,7 @@ export async function ensureSafeToModify(projectPath: string): Promise<boolean> 
     const confirmed = await promptChallenge("To proceed and overwrite these changes");
     if (!confirmed) return false;
 
+    await saveConfirmationToConfig(projectPath);
     sessionConfirmed = true;
     return true;
   }
