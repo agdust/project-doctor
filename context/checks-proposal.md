@@ -167,6 +167,56 @@ These checks enforce specific patterns or are framework-dependent.
 
 ---
 
+## Tier 7: Supply Chain Security
+
+Checks to prevent supply chain attacks via npm dependencies.
+
+| Check | Motivation (Human) | Motivation (LLM Agent) |
+|-------|-------------------|----------------------|
+| `npm-no-postinstall-scripts` | Prevent malicious install scripts | Know install is safe |
+| `npm-postinstall-allowlist` | Only allowed packages run scripts | Controlled script execution |
+| `npm-deps-age-minimum` | Reject packages published < X days ago | Avoid typosquatting/new malicious packages |
+| `npm-deps-download-threshold` | Reject packages with < X weekly downloads | Avoid unpopular/suspicious packages |
+| `npm-deps-maintainer-count` | Flag single-maintainer critical deps | Supply chain risk awareness |
+| `npm-no-deprecated-deps` | No deprecated packages | Avoid unmaintained code |
+| `npm-deps-license-check` | All deps have compatible licenses | Legal compliance |
+| `npm-deps-source-available` | Deps have public repo | Auditable dependencies |
+| `npm-lockfile-integrity` | Lockfile hashes valid | Detect tampering |
+| `npm-registry-official` | Using official npm registry | No malicious mirrors |
+| `npm-no-http-deps` | No http:// git deps | Secure transport only |
+| `npm-deps-no-wildcards` | No `*` or `latest` versions | Reproducible builds |
+| `npm-ignore-scripts-config` | `.npmrc` has `ignore-scripts=true` | Scripts disabled by default |
+| `npm-deps-provenance` | Deps have build provenance | Verified build origin |
+
+---
+
+## Tier 8: Docker Analysis
+
+Checks for Docker image optimization and security.
+
+| Check | Motivation (Human) | Motivation (LLM Agent) |
+|-------|-------------------|----------------------|
+| `docker-image-size-limit` | Image under threshold (e.g., 500MB) | Deployment efficiency |
+| `docker-base-image-slim` | Using alpine/slim variants | Minimal attack surface |
+| `docker-base-image-pinned` | Using specific tag, not `latest` | Reproducible builds |
+| `docker-base-image-official` | Using official images only | Trusted base |
+| `docker-no-root-user` | Running as non-root USER | Security best practice |
+| `docker-healthcheck-defined` | HEALTHCHECK instruction present | Container orchestration |
+| `docker-multistage-build` | Using multi-stage for smaller images | Optimized final image |
+| `docker-no-secrets-in-layers` | No secrets copied into image | Secrets not in history |
+| `docker-labels-present` | Metadata labels defined | Image documentation |
+| `docker-no-add-use-copy` | Prefer COPY over ADD | Predictable behavior |
+| `docker-apt-no-cache` | `apt-get clean` or `--no-install-recommends` | Smaller layers |
+| `docker-node-modules-excluded` | node_modules in .dockerignore | Smaller build context |
+| `docker-prod-deps-only` | Only production deps in final image | Smaller image |
+| `docker-security-scan-clean` | No CVEs from trivy/grype scan | Secure base image |
+| `docker-no-privileged-ports` | Not exposing ports < 1024 | Non-root compatible |
+| `docker-read-only-fs` | Can run with read-only root fs | Security hardening |
+| `docker-no-cap-add` | No extra capabilities needed | Minimal privileges |
+| `docker-distroless-compatible` | Can use distroless base | Maximum security |
+
+---
+
 ## Implementation Priority Recommendation
 
 ### Phase 1: Core Health (implement first)
@@ -191,6 +241,19 @@ These checks enforce specific patterns or are framework-dependent.
 - Dead code detection
 - Framework-specific checks
 
+### Phase 5: Supply Chain Security
+- `npm-no-postinstall-scripts`
+- `npm-deps-age-minimum`
+- `npm-lockfile-integrity`
+- `npm-ignore-scripts-config`
+
+### Phase 6: Docker Analysis
+- `docker-image-size-limit`
+- `docker-base-image-slim`
+- `docker-no-root-user`
+- `docker-multistage-build`
+- `docker-security-scan-clean`
+
 ---
 
 ## Check Categories for CLI
@@ -200,6 +263,8 @@ Suggested groupings for `--group` flag:
 - `essential` - Tier 1 + core Tier 2
 - `quality` - Linting, formatting, types
 - `security` - Audit, secrets, vulnerabilities
+- `supply-chain` - npm supply chain security checks
+- `docker` - Docker optimization and security
 - `maintenance` - Unused code, outdated deps
 - `performance` - Bundle size, lighthouse
 - `docs` - README, CHANGELOG, API docs
