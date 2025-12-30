@@ -69,3 +69,6 @@ export {
   formatRuleValue,
   color,
 } from "./ui.js";
+
+// Safety checks
+export { ensureSafeToModify, checkGitStatus, resetSessionConfirmation } from "./safety.js";

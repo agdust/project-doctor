@@ -14,7 +14,6 @@ import {
   runApp,
   createScreen,
   select,
-  confirm,
   BACK,
   EXIT,
   isBack,
@@ -22,21 +21,19 @@ import {
   type AppController,
   printSection,
   printSuccess,
-  printWarning,
   printCancelled,
   progressBar,
   formatRuleValue,
   color,
+  ensureSafeToModify,
 } from "../cli/cli.js";
 
 import { readExistingConfig } from "../reader/reader.js";
 import { buildConfig } from "../builder/builder.js";
 import { generateConfigFile } from "../generator/generator.js";
-import { computeDiff } from "../differ/differ.js";
-import { formatDiff } from "../differ/formatter.js";
 import { getAllPresets, getPreset } from "../presets/presets.js";
 import { getStats } from "../../eslint-db/index.js";
-import type { ParsedConfig, PresetId, WizardSelections } from "../types.js";
+import type { ParsedConfig, PresetId } from "../types.js";
 import type { RuleStrictness, RuleConcern } from "../../eslint-db/types.js";
 
 // App context passed through screens
@@ -70,13 +67,12 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
   }
   console.log();
 
-  type Action = "analyze" | "add" | "diff" | "wizard" | "quick" | "presets" | "rules" | "current";
+  type Action = "analyze" | "add" | "wizard" | "quick" | "presets" | "rules" | "current";
 
   const choices = existing
     ? [
         { name: "📊 Analyze config", value: "analyze" as Action, description: "Compare against recommended" },
         { name: "➕ Add a preset", value: "add" as Action, description: "Add security, performance, strict" },
-        { name: "📋 Show diff", value: "diff" as Action, description: "See differences from recommended" },
         { name: "🔄 Regenerate config", value: "wizard" as Action, description: "Start fresh with wizard" },
         { name: "📦 View presets", value: "presets" as Action, description: "List available presets" },
         { name: "📚 View rule stats", value: "rules" as Action, description: "Database statistics" },
@@ -106,9 +102,6 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
       break;
     case "add":
       app.push(addPresetScreen, { ...ctx, existing: existing! });
-      break;
-    case "diff":
-      app.push(diffScreen, { ...ctx, existing: existing! });
       break;
     case "wizard":
       app.push(wizardScreen, { ...ctx, existing });
@@ -215,54 +208,21 @@ const addPresetScreen = createScreen<AnalyzeContext>("add-preset", "Add Preset",
 
   const presetId = presetIdResult as PresetId;
   const preset = getPreset(presetId);
-  const selectedPresets: PresetId[] = ["base", "typescript", presetId];
-  const newConfig = buildConfig({ presets: selectedPresets });
 
-  const diff = computeDiff(ctx.existing.rules, newConfig.rules);
-  console.log();
-  console.log(formatDiff(diff));
-
-  if (diff.entries.length === 0) {
-    printSuccess("Preset rules already present");
-    return BACK;
-  }
-
-  const apply = await confirm({ message: "Apply these changes?" });
-
-  if (isBack(apply) || !apply) {
+  // Safety check before modifying
+  const safe = await ensureSafeToModify(ctx.projectPath);
+  if (!safe) {
     printCancelled();
     return BACK;
   }
 
+  // Apply immediately
+  const selectedPresets: PresetId[] = ["base", "typescript", presetId];
+  const newConfig = buildConfig({ presets: selectedPresets });
   const fileContent = generateConfigFile(newConfig);
   await writeFile(ctx.existing.filePath, fileContent, "utf-8");
+
   printSuccess(`Updated config with ${preset.name} preset`);
-
-  return BACK;
-});
-
-// ============================================================================
-// Diff Screen
-// ============================================================================
-
-const diffScreen = createScreen<AnalyzeContext>("diff", "Show Diff", async (ctx) => {
-  printSection("Diff vs Recommended");
-
-  const presets: PresetId[] = ["base", "typescript"];
-  console.log(`  Comparing against: ${color.cyan(presets.join(", "))}`);
-  console.log();
-
-  const proposedConfig = buildConfig({ presets });
-  const diff = computeDiff(ctx.existing.rules, proposedConfig.rules);
-  console.log(formatDiff(diff));
-
-  // Wait for user to acknowledge
-  await select({
-    message: "",
-    choices: [],
-    includeBack: true,
-    backLabel: "Back to main menu",
-  });
 
   return BACK;
 });
@@ -275,17 +235,6 @@ type WizardContext = AppContext & { existing: ParsedConfig | null };
 
 const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard", async (ctx) => {
   printSection("Configuration Wizard");
-
-  if (ctx.existing) {
-    const overwrite = await confirm({
-      message: "This will replace your existing config. Continue?",
-      default: false,
-    });
-    if (isBack(overwrite) || !overwrite) {
-      printCancelled();
-      return BACK;
-    }
-  }
 
   // Project type
   const projectType = await select({
@@ -359,6 +308,14 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
     presets.push("performance");
   }
 
+  // Safety check before modifying
+  const safe = await ensureSafeToModify(ctx.projectPath);
+  if (!safe) {
+    printCancelled();
+    return BACK;
+  }
+
+  // Apply immediately
   const config = buildConfig({ presets });
   const fileContent = generateConfigFile(config);
 
@@ -366,13 +323,6 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
   console.log(`  Presets: ${color.cyan(presets.join(", "))}`);
   console.log(`  Rules: ${color.bold(String(config.rules.length))}`);
   console.log();
-
-  const apply = await confirm({ message: "Apply these changes?" });
-
-  if (isBack(apply) || !apply) {
-    printCancelled();
-    return BACK;
-  }
 
   const configPath = join(ctx.projectPath, "eslint.config.js");
   await writeFile(configPath, fileContent, "utf-8");
@@ -388,6 +338,14 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
 const quickSetupScreen = createScreen<AppContext>("quick", "Quick Setup", async (ctx) => {
   printSection("Quick Setup");
 
+  // Safety check before modifying
+  const safe = await ensureSafeToModify(ctx.projectPath);
+  if (!safe) {
+    printCancelled();
+    return BACK;
+  }
+
+  // Apply immediately
   const presets: PresetId[] = ["base", "typescript"];
   const config = buildConfig({ presets });
   const fileContent = generateConfigFile(config);
@@ -395,13 +353,6 @@ const quickSetupScreen = createScreen<AppContext>("quick", "Quick Setup", async 
   console.log(`  Using presets: ${color.cyan(presets.join(", "))}`);
   console.log(`  Rules: ${color.bold(String(config.rules.length))}`);
   console.log();
-
-  const apply = await confirm({ message: "Apply these changes?" });
-
-  if (isBack(apply) || !apply) {
-    printCancelled();
-    return BACK;
-  }
 
   const configPath = join(ctx.projectPath, "eslint.config.js");
   await writeFile(configPath, fileContent, "utf-8");
