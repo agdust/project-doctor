@@ -42,6 +42,7 @@ export type DetectedTools = {
   hasPrettier: boolean;
   hasDocker: boolean;
   hasKnip: boolean;
+  hasSizeLimit: boolean;
   isMonorepo: boolean;
 };
 

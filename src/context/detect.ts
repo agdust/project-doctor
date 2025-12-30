@@ -51,6 +51,7 @@ export async function detectTools(files: FileCache): Promise<DetectedTools> {
     hasPrettier: hasPrettierrc || hasPrettierrcJson || "prettier" in allDeps,
     hasDocker: hasDockerfile,
     hasKnip: "knip" in allDeps,
+    hasSizeLimit: "size-limit" in allDeps,
     isMonorepo: Boolean(packageJson?.workspaces),
   };
 }
