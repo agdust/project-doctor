@@ -3,9 +3,7 @@ import { join } from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig } from "./types.js";
 import { DEFAULT_CONFIG } from "./types.js";
-
-const CONFIG_DIR = ".project-doctor";
-const CONFIG_FILE = "config.json";
+import { CONFIG_DIR, CONFIG_FILE } from "./constants.js";
 
 type PackageJson = {
   doctor?: Config;
