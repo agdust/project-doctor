@@ -1,6 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runWizard, confirmApply } from "../wizard/wizard.js";
+import { runWizard, confirmApply, WizardCancelledError } from "../wizard/wizard.js";
 import { buildConfig } from "../builder/builder.js";
 import { generateConfigFile } from "../generator/generator.js";
 import { readExistingConfig } from "../reader/reader.js";
@@ -17,6 +17,20 @@ export type InitOptions = {
 };
 
 export async function runEslintInit(projectPath: string, options: InitOptions): Promise<void> {
+  try {
+    await runEslintInitInner(projectPath, options);
+  } catch (error) {
+    if (error instanceof WizardCancelledError) {
+      console.log();
+      console.log("  \x1b[90mCancelled\x1b[0m");
+      console.log();
+      return;
+    }
+    throw error;
+  }
+}
+
+async function runEslintInitInner(projectPath: string, options: InitOptions): Promise<void> {
   console.log();
   console.log("\x1b[1mESLint Config Generator\x1b[0m");
   console.log();

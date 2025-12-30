@@ -4,11 +4,25 @@ import { buildConfig } from "../builder/builder.js";
 import { generateConfigFile } from "../generator/generator.js";
 import { computeDiff } from "../differ/differ.js";
 import { formatDiff } from "../differ/formatter.js";
-import { confirmApply } from "../wizard/wizard.js";
+import { confirmApply, WizardCancelledError } from "../wizard/wizard.js";
 import { isValidPresetId, getPreset } from "../presets/presets.js";
 import type { PresetId } from "../types.js";
 
 export async function runEslintAdd(projectPath: string, presetArg: string): Promise<void> {
+  try {
+    await runEslintAddInner(projectPath, presetArg);
+  } catch (error) {
+    if (error instanceof WizardCancelledError) {
+      console.log();
+      console.log("  \x1b[90mCancelled\x1b[0m");
+      console.log();
+      return;
+    }
+    throw error;
+  }
+}
+
+async function runEslintAddInner(projectPath: string, presetArg: string): Promise<void> {
   console.log();
 
   if (!presetArg) {

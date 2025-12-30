@@ -1,55 +1,113 @@
-import { select, checkbox, confirm } from "@inquirer/prompts";
+/**
+ * Wizard helpers for one-shot CLI commands (init, add)
+ *
+ * These are simpler than the full interactive CLI and are used
+ * when running commands like `project-doctor eslint init --wizard`
+ */
+
+import {
+  select as inquirerSelect,
+  checkbox as inquirerCheckbox,
+  confirm as inquirerConfirm,
+} from "@inquirer/prompts";
 import type { WizardSelections, PresetId } from "../types.js";
 import type { RuleStrictness, RuleConcern } from "../../eslint-db/types.js";
+
+// User cancelled the wizard
+export class WizardCancelledError extends Error {
+  constructor() {
+    super("Wizard cancelled");
+    this.name = "WizardCancelledError";
+  }
+}
+
+function isCancellation(error: unknown): boolean {
+  if (error instanceof Error) {
+    const name = error.name.toLowerCase();
+    const msg = error.message.toLowerCase();
+    return (
+      name.includes("cancel") ||
+      name.includes("exit") ||
+      name.includes("abort") ||
+      msg.includes("cancel") ||
+      msg.includes("abort")
+    );
+  }
+  return false;
+}
+
+async function select<T>(message: string, choices: Array<{ name: string; value: T }>): Promise<T> {
+  try {
+    return await inquirerSelect({ message, choices });
+  } catch (error) {
+    if (isCancellation(error)) {
+      throw new WizardCancelledError();
+    }
+    throw error;
+  }
+}
+
+async function checkbox<T>(
+  message: string,
+  choices: Array<{ name: string; value: T; checked?: boolean }>
+): Promise<T[]> {
+  try {
+    return await inquirerCheckbox({ message, choices });
+  } catch (error) {
+    if (isCancellation(error)) {
+      throw new WizardCancelledError();
+    }
+    throw error;
+  }
+}
+
+async function confirm(message: string, defaultValue = true): Promise<boolean> {
+  try {
+    return await inquirerConfirm({ message, default: defaultValue });
+  } catch (error) {
+    if (isCancellation(error)) {
+      throw new WizardCancelledError();
+    }
+    throw error;
+  }
+}
 
 export async function runWizard(): Promise<WizardSelections> {
   console.log();
   console.log("\x1b[1mESLint Configuration Wizard\x1b[0m");
   console.log("\x1b[90mBuild a customized ESLint configuration\x1b[0m");
+  console.log("\x1b[90mPress Esc or Ctrl+C to cancel\x1b[0m");
   console.log();
 
   // Project type
-  const projectType = await select({
-    message: "What type of project is this?",
-    choices: [
-      { name: "TypeScript", value: "ts" },
-      { name: "JavaScript", value: "js" },
-    ],
-  });
+  const projectType = await select("What type of project is this?", [
+    { name: "TypeScript", value: "ts" },
+    { name: "JavaScript", value: "js" },
+  ]);
 
   // Strictness level
-  const strictness = await select<RuleStrictness>({
-    message: "How strict should the linting be?",
-    choices: [
-      { name: "Essential - Only catch real bugs", value: "essential" },
-      { name: "Recommended - Best practices (default)", value: "recommended" },
-      { name: "Strict - Stricter than recommended", value: "strict" },
-      { name: "Pedantic - Maximum strictness", value: "pedantic" },
-    ],
-    default: "recommended",
-  });
+  const strictness = await select<RuleStrictness>("How strict should the linting be?", [
+    { name: "Essential - Only catch real bugs", value: "essential" },
+    { name: "Recommended - Best practices (default)", value: "recommended" },
+    { name: "Strict - Stricter than recommended", value: "strict" },
+    { name: "Pedantic - Maximum strictness", value: "pedantic" },
+  ]);
 
   // Concerns to include
-  const concerns = await checkbox<RuleConcern>({
-    message: "Which concerns should be covered?",
-    choices: [
-      { name: "Error prevention", value: "error-prevention", checked: true },
-      { name: "Best practices", value: "best-practice", checked: true },
-      { name: "Security", value: "security", checked: true },
-      { name: "Performance", value: "performance" },
-      { name: "Style (formatting)", value: "style" },
-      { name: "Type safety", value: "type-safety", checked: projectType === "ts" },
-      { name: "Maintainability", value: "maintainability" },
-    ],
-  });
+  const concerns = await checkbox<RuleConcern>("Which concerns should be covered?", [
+    { name: "Error prevention", value: "error-prevention", checked: true },
+    { name: "Best practices", value: "best-practice", checked: true },
+    { name: "Security", value: "security", checked: true },
+    { name: "Performance", value: "performance" },
+    { name: "Style (formatting)", value: "style" },
+    { name: "Type safety", value: "type-safety", checked: projectType === "ts" },
+    { name: "Maintainability", value: "maintainability" },
+  ]);
 
   // Type checking
   let typeChecking = false;
   if (projectType === "ts") {
-    typeChecking = await confirm({
-      message: "Enable type-aware linting? (slower but catches more issues)",
-      default: false,
-    });
+    typeChecking = await confirm("Enable type-aware linting? (slower but catches more issues)", false);
   }
 
   // Build preset list based on selections
@@ -84,24 +142,16 @@ export async function runWizard(): Promise<WizardSelections> {
 }
 
 export async function confirmApply(): Promise<boolean> {
-  return confirm({
-    message: "Apply these changes?",
-    default: true,
-  });
+  return confirm("Apply these changes?", true);
 }
 
 export async function selectPresets(): Promise<PresetId[]> {
-  const selected = await checkbox<PresetId>({
-    message: "Select presets to include:",
-    choices: [
-      { name: "Base - Essential error prevention", value: "base", checked: true },
-      { name: "TypeScript - TS-specific rules", value: "typescript", checked: true },
-      { name: "Strict - Stricter than recommended", value: "strict" },
-      { name: "Style - Formatting rules (@stylistic)", value: "style" },
-      { name: "Security - Security vulnerability prevention", value: "security" },
-      { name: "Performance - Performance optimization", value: "performance" },
-    ],
-  });
-
-  return selected;
+  return checkbox<PresetId>("Select presets to include:", [
+    { name: "Base - Essential error prevention", value: "base", checked: true },
+    { name: "TypeScript - TS-specific rules", value: "typescript", checked: true },
+    { name: "Strict - Stricter than recommended", value: "strict" },
+    { name: "Style - Formatting rules (@stylistic)", value: "style" },
+    { name: "Security - Security vulnerability prevention", value: "security" },
+    { name: "Performance - Performance optimization", value: "performance" },
+  ]);
 }
