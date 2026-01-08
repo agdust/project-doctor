@@ -4,6 +4,7 @@ import { select } from "@inquirer/prompts";
 import JSON5 from "json5";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext, CheckTag } from "../types.js";
 import { checkGroups } from "../registry.js";
+import { sortByChainAndPriority } from "./fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
 
 type FixableCheck = {
@@ -102,8 +103,10 @@ export async function runFixer(options: FixerOptions): Promise<void> {
     }
   }
 
-  // Sort by priority: important+easy first, then other-important+easy, etc.
-  fixableChecks.sort((a, b) => getFixPriority(a.tags) - getFixPriority(b.tags));
+  // Sort by: 1) dependency chain order, 2) priority (important+easy first)
+  const sortedChecks = sortByChainAndPriority(fixableChecks, (check) => getFixPriority(check.tags));
+  fixableChecks.length = 0;
+  fixableChecks.push(...sortedChecks);
 
   if (fixableChecks.length === 0) {
     console.log("  \x1b[32m✓ No fixable issues found\x1b[0m");
