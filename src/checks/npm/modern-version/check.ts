@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
-import type { NvmrcContext } from "../context.js";
+import type { NpmContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import {
   LTS_VERSIONS,
@@ -10,19 +10,19 @@ import {
   parseMajorVersion,
 } from "../constants.js";
 
-const name = "nvmrc-modern-version";
+const name = "npm-nvmrc-modern-version";
 
-export const check: Check<NvmrcContext> = {
+export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc specifies a modern, supported Node version",
   tags: ["node", "recommended"],
-  run: async (_global, { raw, version }) => {
-    if (!raw) return skip(name, "No .nvmrc");
-    if (!version) return skip(name, "Empty .nvmrc");
+  run: async (_global, { nvmrc }) => {
+    if (!nvmrc.raw) return skip(name, "No .nvmrc");
+    if (!nvmrc.version) return skip(name, "Empty .nvmrc");
 
-    const major = parseMajorVersion(version);
+    const major = parseMajorVersion(nvmrc.version);
     if (major === null) {
-      return skip(name, `Cannot parse version: ${version}`);
+      return skip(name, `Cannot parse version: ${nvmrc.version}`);
     }
 
     if (major < MIN_SUPPORTED_MAJOR) {

@@ -1,18 +1,18 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
-import type { NvmrcContext } from "../context.js";
+import type { NpmContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
 import { CURRENT_LTS_MAJOR } from "../constants.js";
 
-const name = "nvmrc-exists";
+const name = "npm-nvmrc-exists";
 
-export const check: Check<NvmrcContext> = {
+export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc file exists",
   tags: ["node", "recommended"],
-  run: async (_global, { raw }) => {
-    if (!raw) return fail(name, ".nvmrc not found");
+  run: async (_global, { nvmrc }) => {
+    if (!nvmrc.raw) return fail(name, ".nvmrc not found");
     return pass(name, ".nvmrc exists");
   },
   fix: {

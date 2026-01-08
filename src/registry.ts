@@ -7,7 +7,7 @@ import { loadContext as loadGitContext, checks as gitChecks } from "./checks/git
 import { loadContext as loadEslintContext, checks as eslintChecks } from "./checks/eslint/index.js";
 import { loadContext as loadPrettierContext, checks as prettierChecks } from "./checks/prettier/index.js";
 import { loadContext as loadEditorconfigContext, checks as editorconfigChecks } from "./checks/editorconfig/index.js";
-import { loadContext as loadNvmrcContext, checks as nvmrcChecks } from "./checks/nvmrc/index.js";
+import { loadContext as loadNpmContext, checks as npmChecks } from "./checks/npm/index.js";
 import { loadContext as loadDocsContext, checks as docsChecks } from "./checks/docs/index.js";
 import { loadContext as loadDepsContext, checks as depsChecks } from "./checks/deps/index.js";
 import { loadContext as loadEnvContext, checks as envChecks } from "./checks/env/index.js";
@@ -30,7 +30,7 @@ export const checkGroups = [
   createGroup("eslint", loadEslintContext, eslintChecks),
   createGroup("prettier", loadPrettierContext, prettierChecks),
   createGroup("editorconfig", loadEditorconfigContext, editorconfigChecks),
-  createGroup("nvmrc", loadNvmrcContext, nvmrcChecks),
+  createGroup("npm", loadNpmContext, npmChecks),
   createGroup("docs", loadDocsContext, docsChecks),
   createGroup("deps", loadDepsContext, depsChecks),
   createGroup("env", loadEnvContext, envChecks),
