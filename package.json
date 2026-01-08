@@ -13,7 +13,8 @@
     "lint": "eslint src",
     "format": "prettier --write src",
     "test": "vitest",
-    "docs": "tsx src/docs/generator.ts"
+    "docs": "sx src/docs/generator.ts",
+    "claude": "claude --dangerously-skip-permissions"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
