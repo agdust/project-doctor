@@ -76,6 +76,22 @@ export function buildChainIndex(): Map<
 }
 
 /**
+ * Get the root dependency for a check (first element in its chain).
+ * Returns the check itself if it has no dependencies.
+ */
+export function getChainRoot(checkName: string): string {
+  for (const chain of fixChains) {
+    const idx = chain.indexOf(checkName);
+    if (idx > 0) {
+      // Return the first element of this chain
+      return chain[0];
+    }
+  }
+  // No dependencies - this check is its own root
+  return checkName;
+}
+
+/**
  * Get all checks that must be fixed before this check.
  */
 export function getDependencies(checkName: string): string[] {

@@ -4,7 +4,7 @@ import { select } from "@inquirer/prompts";
 import JSON5 from "json5";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext, CheckTag } from "../types.js";
 import { checkGroups } from "../registry.js";
-import { sortByChainAndPriority } from "./fix-chains.js";
+import { sortByChainAndPriority, getChainRoot } from "./fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
 
 type FixableCheck = {
@@ -18,13 +18,16 @@ type FixableCheck = {
 
 // Priority scoring for fix order: lower score = higher priority
 // Importance: required=0, recommended=1, opinionated=2
-// Effort: low=0, medium=1, high=2
+// Effort: low=0, medium=1, high=2 (from chain root)
 // Priority = importance * 3 + effort
-function getFixPriority(tags: CheckTag[]): number {
+function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
   const importance = tags.includes("required") ? 0
     : tags.includes("recommended") ? 1 : 2;
-  const effort = tags.includes("effort:low") ? 0
-    : tags.includes("effort:medium") ? 1 : 2;
+
+  // Use root's effort level - the true effort is determined by the chain root
+  const effortTags = rootTags ?? tags;
+  const effort = effortTags.includes("effort:low") ? 0
+    : effortTags.includes("effort:medium") ? 1 : 2;
 
   return importance * 3 + effort;
 }
@@ -103,8 +106,19 @@ export async function runFixer(options: FixerOptions): Promise<void> {
     }
   }
 
-  // Sort by: 1) dependency chain order, 2) priority (important+easy first)
-  const sortedChecks = sortByChainAndPriority(fixableChecks, (check) => getFixPriority(check.tags));
+  // Build a map of check name → tags for chain root lookups
+  const tagsByName = new Map<string, CheckTag[]>();
+  for (const check of fixableChecks) {
+    tagsByName.set(check.name, check.tags);
+  }
+
+  // Sort by: 1) dependency chain order, 2) priority using chain root's effort
+  const sortedChecks = sortByChainAndPriority(fixableChecks, (check) => {
+    // Use the chain root's effort level for priority calculation
+    const rootName = getChainRoot(check.name);
+    const rootTags = tagsByName.get(rootName) ?? check.tags;
+    return getFixPriority(check.tags, rootTags);
+  });
   fixableChecks.length = 0;
   fixableChecks.push(...sortedChecks);
 

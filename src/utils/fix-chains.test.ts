@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getDependencies,
+  getChainRoot,
   compareByChain,
   sortByChainAndPriority,
 } from "./fix-chains.js";
@@ -28,6 +29,21 @@ describe("fix-chains", () => {
       expect(getDependencies("editorconfig-has-root")).toEqual([
         "editorconfig-exists",
       ]);
+    });
+  });
+
+  describe("getChainRoot", () => {
+    it("returns the check itself if it has no dependencies", () => {
+      expect(getChainRoot("size-limit-installed")).toBe("size-limit-installed");
+      expect(getChainRoot("readme-exists")).toBe("readme-exists");
+      expect(getChainRoot("unknown-check")).toBe("unknown-check");
+    });
+
+    it("returns the first element of the chain for dependent checks", () => {
+      expect(getChainRoot("size-limit-configured")).toBe("size-limit-installed");
+      expect(getChainRoot("size-limit-script")).toBe("size-limit-installed");
+      expect(getChainRoot("readme-has-title")).toBe("readme-exists");
+      expect(getChainRoot("tsconfig-strict-enabled")).toBe("tsconfig-exists");
     });
   });
 
