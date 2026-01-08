@@ -1,5 +1,6 @@
 import { writeFile, readFile, mkdir } from "node:fs/promises";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { select } from "@inquirer/prompts";
 import JSON5 from "json5";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext, CheckTag } from "../types.js";
@@ -13,6 +14,7 @@ type FixableCheck = {
   tags: CheckTag[];
   result: CheckResult;
   fixDescription: string;
+  why: string | null;
   runFix: () => Promise<FixResult>;
 };
 
@@ -32,17 +34,56 @@ function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
   return importance * 3 + effort;
 }
 
-type SelectOption = "fix" | "disable" | "skip";
+type SelectOption = "fix" | "disable" | "skip" | "why";
 
-async function selectAction(): Promise<SelectOption> {
+async function selectAction(hasWhy: boolean): Promise<SelectOption> {
+  const choices: Array<{ name: string; value: SelectOption }> = [
+    { name: "Apply fix", value: "fix" },
+    { name: "Disable check", value: "disable" },
+    { name: "Skip for now", value: "skip" },
+  ];
+
+  if (hasWhy) {
+    choices.splice(1, 0, { name: "Why?", value: "why" });
+  }
+
   return select({
     message: "What do you want to do?",
-    choices: [
-      { name: "Apply fix", value: "fix" as const },
-      { name: "Disable check", value: "disable" as const },
-      { name: "Skip for now", value: "skip" as const },
-    ],
+    choices,
   });
+}
+
+// Get the package src directory (works both in dev and when installed)
+// __dirname is either src/utils or dist/utils, so go up two levels to package root
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PACKAGE_ROOT = join(__dirname, "..", "..");
+const CHECKS_SRC = join(PACKAGE_ROOT, "src", "checks");
+
+/**
+ * Extract the "Why" section from a check's docs.md file.
+ * Returns the content between "## Why" and the next "##" heading.
+ */
+async function loadWhyFromDocs(group: string, checkName: string): Promise<string | null> {
+  // Check name like "gitignore-exists" → folder "exists" in group "gitignore"
+  // Check name like "package-json-has-name" → folder "has-name" in group "package-json"
+  const checkFolder = checkName.startsWith(`${group}-`)
+    ? checkName.slice(group.length + 1)
+    : checkName;
+
+  const docsPath = join(CHECKS_SRC, group, checkFolder, "docs.md");
+
+  try {
+    const content = await readFile(docsPath, "utf-8");
+    const whyMatch = content.match(/## Why\n\n([\s\S]*?)(?=\n## |$)/);
+    if (whyMatch) {
+      return whyMatch[1].trim();
+    }
+  } catch {
+    // No docs file
+  }
+
+  return null;
 }
 
 async function addToExcludeChecks(projectPath: string, checkName: string): Promise<void> {
@@ -94,12 +135,14 @@ export async function runFixer(options: FixerOptions): Promise<void> {
 
       if (baseResult.status === "fail") {
         const result: CheckResult = { ...baseResult, group: group.name };
+        const why = await loadWhyFromDocs(group.name, check.name);
         fixableChecks.push({
           name: check.name,
           group: group.name,
           tags: check.tags,
           result,
           fixDescription: check.fix.description,
+          why,
           runFix: () => (check.fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> }).run(global, groupContext),
         });
       }
@@ -154,7 +197,25 @@ export async function runFixer(options: FixerOptions): Promise<void> {
     if (options.autoFix) {
       action = "fix";
     } else {
-      action = await selectAction();
+      // Loop to allow "Why?" to show info and re-prompt
+      while (true) {
+        action = await selectAction(!!check.why);
+        if (action === "why" && check.why) {
+          console.log();
+          console.log("\x1b[90m     ─────────────────────────────────────\x1b[0m");
+          console.log();
+          // Format and display the why content with proper indentation
+          const lines = check.why.split("\n");
+          for (const line of lines) {
+            console.log(`     ${line}`);
+          }
+          console.log();
+          console.log("\x1b[90m     ─────────────────────────────────────\x1b[0m");
+          console.log();
+          continue;
+        }
+        break;
+      }
     }
 
     if (action === "fix") {
