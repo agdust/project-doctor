@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import { createNpmCache, computeLockfileHash, type NpmCache } from "./npm-cache.js";
 
 const execAsync = promisify(exec);
 
@@ -58,12 +59,25 @@ function getUpdateType(current: string, latest: string): VersionInfo["updateType
   return "unknown";
 }
 
-async function fetchLatestVersion(packageName: string): Promise<string | null> {
+async function fetchLatestVersion(packageName: string, cache: NpmCache | null): Promise<string | null> {
+  // Try cache first
+  if (cache) {
+    const cached = cache.getVersion(packageName);
+    if (cached) return cached;
+  }
+
   try {
     const response = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
     if (!response.ok) return null;
     const data = await response.json();
-    return data.version ?? null;
+    const version = data.version ?? null;
+
+    // Cache the result
+    if (version && cache) {
+      cache.setVersion(packageName, version);
+    }
+
+    return version;
   } catch {
     return null;
   }
@@ -72,11 +86,16 @@ async function fetchLatestVersion(packageName: string): Promise<string | null> {
 export type DepsCheckerOptions = {
   projectPath: string;
   includeDev?: boolean;
+  noCache?: boolean;
 };
 
 export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckResult> {
-  const { projectPath, includeDev = true } = options;
+  const { projectPath, includeDev = true, noCache = false } = options;
   const packageJsonPath = join(projectPath, "package.json");
+
+  // Initialize cache (unless bypassed)
+  const cache = noCache ? null : await createNpmCache(projectPath);
+  const lockfileHash = noCache ? "" : await computeLockfileHash(projectPath);
 
   let pkg: PackageJson;
   try {
@@ -110,7 +129,7 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
     const batch = deps.slice(i, i + batchSize);
     const results = await Promise.all(
       batch.map(async (dep) => {
-        const latest = await fetchLatestVersion(dep.name);
+        const latest = await fetchLatestVersion(dep.name, cache);
         return { dep, latest };
       })
     );
@@ -162,22 +181,48 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
   });
 
   // Run npm audit
-  const audit = await runAudit(projectPath);
+  const audit = await runAudit(projectPath, cache, lockfileHash);
+
+  // Flush cache to disk
+  if (cache) {
+    await cache.flush();
+  }
 
   return { outdated, upToDate, failed, audit };
 }
 
-async function runAudit(projectPath: string): Promise<AuditResult | null> {
+async function runAudit(
+  projectPath: string,
+  cache: NpmCache | null,
+  lockfileHash: string
+): Promise<AuditResult | null> {
+  // Try cache first
+  if (cache && lockfileHash) {
+    const cached = cache.getAudit(lockfileHash);
+    if (cached) return cached;
+  }
+
   try {
     const { stdout } = await execAsync("npm audit --json", {
       cwd: projectPath,
       maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large audit output
     });
-    return parseAuditOutput(stdout);
+    const result = parseAuditOutput(stdout);
+
+    // Cache the result
+    if (result && cache && lockfileHash) {
+      cache.setAudit(result, lockfileHash);
+    }
+
+    return result;
   } catch (error) {
     // npm audit exits with non-zero when vulnerabilities found
     if (error && typeof error === "object" && "stdout" in error) {
-      return parseAuditOutput(error.stdout as string);
+      const result = parseAuditOutput(error.stdout as string);
+      if (result && cache && lockfileHash) {
+        cache.setAudit(result, lockfileHash);
+      }
+      return result;
     }
     return null;
   }

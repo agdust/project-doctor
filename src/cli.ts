@@ -56,6 +56,7 @@ Fix Options:
 
 Deps Options:
   --no-dev                Exclude devDependencies from check
+  --no-cache              Bypass cache, always fetch fresh data
 
 Config File:
   Create .project-doctor/config.json5 to set default options:
@@ -258,6 +259,7 @@ async function main(): Promise<void> {
       "no-config": { type: "boolean", default: false },
       yes: { type: "boolean", short: "y", default: false },
       "no-dev": { type: "boolean", default: false },
+      "no-cache": { type: "boolean", default: false },
     },
     allowPositionals: true,
   });
@@ -291,6 +293,7 @@ async function main(): Promise<void> {
     await runDepsChecker({
       projectPath,
       includeDev: !values["no-dev"],
+      noCache: values["no-cache"],
     });
     return;
   }

@@ -4,6 +4,7 @@ import { check as hasDist } from "./has-dist/check.js";
 import { check as hasEnv } from "./has-env/check.js";
 import { check as noDuplicates } from "./no-duplicates/check.js";
 import { check as noSecretsCommitted } from "./no-secrets-committed/check.js";
+import { check as hasProjectDoctorDir } from "./has-project-doctor-dir/check.js";
 
 export { loadContext } from "./context.js";
 
@@ -14,4 +15,5 @@ export const checks = [
   hasEnv,
   noDuplicates,
   noSecretsCommitted,
+  hasProjectDoctorDir,
 ];
