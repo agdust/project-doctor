@@ -84,6 +84,7 @@ Groups:
 Tags:
   Scope:       universal, node, typescript
   Requirement: required, recommended, opinionated
+  Effort:      effort:low, effort:medium, effort:high
   Tool:        tool:eslint, tool:prettier, tool:knip, etc.
 `);
 }

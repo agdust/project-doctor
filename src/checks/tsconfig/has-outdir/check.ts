@@ -7,7 +7,7 @@ const name = "tsconfig-has-outdir";
 export const check: Check<TsConfigContext> = {
   name,
   description: "Check if tsconfig.json has outDir configured",
-  tags: ["typescript", "recommended"],
+  tags: ["typescript", "recommended", "effort:low"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No tsconfig.json");
     if (!parsed.compilerOptions?.outDir) {

@@ -7,7 +7,7 @@ const name = "tsconfig-valid-json";
 export const check: Check<TsConfigContext> = {
   name,
   description: "Check if tsconfig.json is valid JSON",
-  tags: ["typescript", "required"],
+  tags: ["typescript", "required", "effort:low"],
   run: async (_global, { raw, parseError }) => {
     if (!raw) return skip(name, "No tsconfig.json");
     if (parseError) return fail(name, `Invalid JSON: ${parseError}`);

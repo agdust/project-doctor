@@ -32,7 +32,7 @@ SOFTWARE.
 export const check: Check<DocsContext> = {
   name,
   description: "Check if LICENSE file exists",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:low"],
   run: async (_global, { license }) => {
     if (!license) return fail(name, "LICENSE file not found");
     return pass(name, "LICENSE file exists");

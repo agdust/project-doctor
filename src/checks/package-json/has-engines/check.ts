@@ -7,7 +7,7 @@ const name = "package-json-has-engines";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json specifies Node engine version",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:low"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.engines?.node) return fail(name, "Missing engines.node");

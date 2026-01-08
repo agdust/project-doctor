@@ -7,7 +7,7 @@ const name = "package-json-scripts-format";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if format script exists",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:medium"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.scripts?.format) return fail(name, "No format script");

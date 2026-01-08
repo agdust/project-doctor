@@ -7,7 +7,7 @@ const name = "knip-installed";
 export const check: Check<DepsContext> = {
   name,
   description: "Check if knip is installed for dead code detection",
-  tags: ["node", "recommended", "tool:knip"],
+  tags: ["node", "recommended", "tool:knip", "effort:medium"],
   run: async (global, _ctx) => {
     if (!global.detected.hasKnip) {
       return fail(name, "knip not installed");

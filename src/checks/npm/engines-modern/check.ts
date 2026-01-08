@@ -28,7 +28,7 @@ function extractMinMajor(value: string): number | null {
 export const check: Check<NpmContext> = {
   name,
   description: "Check if engines.node specifies a modern, supported Node version",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:medium"],
   run: async (_global, { engines }) => {
     if (!engines.node) {
       return skip(name, "No engines.node defined");

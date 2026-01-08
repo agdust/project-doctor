@@ -7,7 +7,7 @@ const name = "tsconfig-paths-valid";
 export const check: Check<TsConfigContext> = {
   name,
   description: "Check if path aliases have baseUrl configured",
-  tags: ["typescript", "recommended"],
+  tags: ["typescript", "recommended", "effort:low"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No tsconfig.json");
     const opts = parsed.compilerOptions;

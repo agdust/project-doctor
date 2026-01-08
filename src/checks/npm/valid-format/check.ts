@@ -7,7 +7,7 @@ const name = "npm-nvmrc-valid-format";
 export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc has valid Node version format",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:low"],
   run: async (_global, { nvmrc }) => {
     if (!nvmrc.raw) return skip(name, "No .nvmrc");
     if (!nvmrc.version) return fail(name, "Empty .nvmrc");

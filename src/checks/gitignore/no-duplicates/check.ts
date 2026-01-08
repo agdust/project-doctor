@@ -7,7 +7,7 @@ const name = "gitignore-no-duplicates";
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check for duplicate patterns in .gitignore",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:low"],
   run: async (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
     const seen = new Set<string>();

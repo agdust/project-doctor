@@ -15,7 +15,7 @@ node_modules/
 export const check: Check<PrettierContext> = {
   name,
   description: "Check if .prettierignore exists",
-  tags: ["node", "recommended", "tool:prettier"],
+  tags: ["node", "recommended", "tool:prettier", "effort:low"],
   run: async (global, { hasIgnore }) => {
     if (!global.detected.hasPrettier) {
       return skip(name, "Prettier not detected");

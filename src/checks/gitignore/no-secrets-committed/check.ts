@@ -7,7 +7,7 @@ const name = "gitignore-no-secrets-committed";
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check that common secret files are ignored",
-  tags: ["universal", "required"],
+  tags: ["universal", "required", "effort:medium"],
   run: async (global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
 

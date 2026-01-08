@@ -7,7 +7,7 @@ const name = "vitest-config-exists";
 export const check: Check<TestingContext> = {
   name,
   description: "Check if Vitest is configured",
-  tags: ["node", "recommended", "tool:vitest"],
+  tags: ["node", "recommended", "tool:vitest", "effort:high"],
   run: async (_global, { hasVitest }) => {
     if (!hasVitest) return fail(name, "No vitest.config.ts");
     return pass(name, "Vitest configured");

@@ -7,7 +7,7 @@ const name = "package-json-type-module";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has type: module for ESM",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:medium"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (parsed.type !== "module") return fail(name, "Not using ESM (type: module)");

@@ -10,7 +10,7 @@ const name = "npm-nvmrc-exists";
 export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc file exists",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:low"],
   run: async (_global, { nvmrc }) => {
     if (!nvmrc.raw) return fail(name, ".nvmrc not found");
     return pass(name, ".nvmrc exists");

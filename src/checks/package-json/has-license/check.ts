@@ -7,7 +7,7 @@ const name = "package-json-has-license";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has license field",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:low"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.license) return fail(name, "Missing license field");

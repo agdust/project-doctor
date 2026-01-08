@@ -20,7 +20,7 @@ insert_final_newline = true
 export const check: Check<EditorconfigContext> = {
   name,
   description: "Check if .editorconfig exists",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:low"],
   run: async (_global, { raw }) => {
     if (!raw) return fail(name, ".editorconfig not found");
     return pass(name, ".editorconfig exists");

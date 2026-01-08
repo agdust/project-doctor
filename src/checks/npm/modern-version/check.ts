@@ -15,7 +15,7 @@ const name = "npm-nvmrc-modern-version";
 export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc specifies a modern, supported Node version",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:low"],
   run: async (_global, { nvmrc }) => {
     if (!nvmrc.raw) return skip(name, "No .nvmrc");
     if (!nvmrc.version) return skip(name, "Empty .nvmrc");

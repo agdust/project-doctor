@@ -15,7 +15,7 @@ const DEFAULT_ENV_EXAMPLE = `# Environment variables
 export const check: Check<EnvContext> = {
   name,
   description: "Check if .env.example exists",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:low"],
   run: async (_global, { exampleRaw }) => {
     if (!exampleRaw) return fail(name, ".env.example not found");
     return pass(name, ".env.example exists");

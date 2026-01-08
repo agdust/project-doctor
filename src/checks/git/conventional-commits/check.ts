@@ -7,7 +7,7 @@ const name = "conventional-commits";
 export const check: Check<GitContext> = {
   name,
   description: "Check if commitlint or conventional commit tooling is configured",
-  tags: ["universal", "opinionated"],
+  tags: ["universal", "opinionated", "effort:medium"],
   run: async (global, { isRepo }) => {
     if (!isRepo) return skip(name, "Not a git repo");
 

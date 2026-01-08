@@ -7,7 +7,7 @@ const name = "size-limit-configured";
 export const check: Check<BundleSizeContext> = {
   name,
   description: "Check if size-limit has limits configured",
-  tags: ["node", "recommended", "tool:size-limit"],
+  tags: ["node", "recommended", "tool:size-limit", "effort:medium"],
   run: async (global, ctx) => {
     if (!global.detected.hasSizeLimit) {
       return skip(name, "size-limit not installed");

@@ -7,7 +7,7 @@ const name = "eslint-no-legacy-config";
 export const check: Check<EslintContext> = {
   name,
   description: "Check that no legacy .eslintrc files exist",
-  tags: ["node", "recommended", "tool:eslint"],
+  tags: ["node", "recommended", "tool:eslint", "effort:high"],
   run: async (global, { hasLegacyConfig }) => {
     if (!global.detected.hasEslint) {
       return skip(name, "ESLint not detected");

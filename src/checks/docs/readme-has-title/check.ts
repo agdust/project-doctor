@@ -7,7 +7,7 @@ const name = "readme-has-title";
 export const check: Check<DocsContext> = {
   name,
   description: "Check if README.md has a title",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:low"],
   run: async (_global, { readme }) => {
     if (!readme) return skip(name, "No README.md");
     if (!readme.startsWith("#")) {

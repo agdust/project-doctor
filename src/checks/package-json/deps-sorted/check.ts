@@ -7,7 +7,7 @@ const name = "package-json-deps-sorted";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if dependencies are sorted alphabetically",
-  tags: ["node", "opinionated"],
+  tags: ["node", "opinionated", "effort:low"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
 

@@ -7,7 +7,7 @@ const name = "knip-config";
 export const check: Check<DepsContext> = {
   name,
   description: "Check if knip configuration exists",
-  tags: ["node", "recommended", "tool:knip"],
+  tags: ["node", "recommended", "tool:knip", "effort:medium"],
   run: async (global, _ctx) => {
     if (!global.detected.hasKnip) {
       return skip(name, "knip not installed");

@@ -7,7 +7,7 @@ const name = "playwright-config-exists";
 export const check: Check<TestingContext> = {
   name,
   description: "Check if Playwright is configured",
-  tags: ["node", "recommended", "tool:playwright"],
+  tags: ["node", "recommended", "tool:playwright", "effort:high"],
   run: async (_global, { hasPlaywright }) => {
     if (!hasPlaywright) return fail(name, "No playwright.config.ts");
     return pass(name, "Playwright configured");

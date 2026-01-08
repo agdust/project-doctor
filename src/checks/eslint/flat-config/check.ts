@@ -7,7 +7,7 @@ const name = "eslint-flat-config";
 export const check: Check<EslintContext> = {
   name,
   description: "Check if using ESLint flat config format (v9+)",
-  tags: ["node", "recommended", "tool:eslint"],
+  tags: ["node", "recommended", "tool:eslint", "effort:high"],
   run: async (global, { hasFlatConfig, flatConfigFile }) => {
     if (!global.detected.hasEslint) {
       return skip(name, "ESLint not detected");

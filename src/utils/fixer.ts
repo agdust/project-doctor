@@ -2,17 +2,31 @@ import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
 import JSON5 from "json5";
-import type { CheckResult, CheckResultBase, FixResult, GlobalContext } from "../types.js";
+import type { CheckResult, CheckResultBase, FixResult, GlobalContext, CheckTag } from "../types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 
 type FixableCheck = {
   name: string;
   group: string;
+  tags: CheckTag[];
   result: CheckResult;
   fixDescription: string;
   runFix: () => Promise<FixResult>;
 };
+
+// Priority scoring for fix order: lower score = higher priority
+// Importance: required=0, recommended=1, opinionated=2
+// Effort: low=0, medium=1, high=2
+// Priority = importance * 3 + effort
+function getFixPriority(tags: CheckTag[]): number {
+  const importance = tags.includes("required") ? 0
+    : tags.includes("recommended") ? 1 : 2;
+  const effort = tags.includes("effort:low") ? 0
+    : tags.includes("effort:medium") ? 1 : 2;
+
+  return importance * 3 + effort;
+}
 
 type SelectOption = "fix" | "disable" | "skip";
 
@@ -79,6 +93,7 @@ export async function runFixer(options: FixerOptions): Promise<void> {
         fixableChecks.push({
           name: check.name,
           group: group.name,
+          tags: check.tags,
           result,
           fixDescription: check.fix.description,
           runFix: () => (check.fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> }).run(global, groupContext),
@@ -86,6 +101,9 @@ export async function runFixer(options: FixerOptions): Promise<void> {
       }
     }
   }
+
+  // Sort by priority: important+easy first, then other-important+easy, etc.
+  fixableChecks.sort((a, b) => getFixPriority(a.tags) - getFixPriority(b.tags));
 
   if (fixableChecks.length === 0) {
     console.log("  \x1b[32m✓ No fixable issues found\x1b[0m");

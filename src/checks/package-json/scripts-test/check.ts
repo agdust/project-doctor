@@ -7,7 +7,7 @@ const name = "package-json-scripts-test";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if test script exists",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:medium"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.scripts?.test) return fail(name, "No test script");

@@ -7,7 +7,7 @@ const name = "readme-has-usage-section";
 export const check: Check<DocsContext> = {
   name,
   description: "Check if README.md has usage instructions",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:medium"],
   run: async (_global, { readme }) => {
     if (!readme) return skip(name, "No README.md");
     const hasUsage = /##.*usage/i.test(readme) || /##.*example/i.test(readme);

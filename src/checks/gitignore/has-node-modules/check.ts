@@ -9,7 +9,7 @@ const name = "gitignore-has-node-modules";
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check if node_modules is ignored",
-  tags: ["node", "required"],
+  tags: ["node", "required", "effort:low"],
   run: async (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
     const hasIt = patterns.some((p) => p === "node_modules" || p === "node_modules/");

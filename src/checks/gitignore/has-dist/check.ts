@@ -9,7 +9,7 @@ const name = "gitignore-has-dist";
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check if dist/build output is ignored",
-  tags: ["node", "recommended"],
+  tags: ["node", "recommended", "effort:low"],
   run: async (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
     const hasIt = patterns.some((p) =>

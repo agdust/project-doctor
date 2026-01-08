@@ -27,7 +27,9 @@ export type CheckRequirement = "required" | "recommended" | "opinionated";
 
 export type CheckTool = `tool:${string}`;
 
-export type CheckTag = CheckScope | CheckRequirement | CheckTool;
+export type CheckEffort = "effort:low" | "effort:medium" | "effort:high";
+
+export type CheckTag = CheckScope | CheckRequirement | CheckTool | CheckEffort;
 
 export type FileCache = {
   readText(relativePath: string): Promise<string | null>;

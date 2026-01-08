@@ -9,7 +9,7 @@ const name = "gitignore-has-env";
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check if .env files are ignored",
-  tags: ["universal", "required"],
+  tags: ["universal", "required", "effort:low"],
   run: async (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
     const hasIt = patterns.some((p) =>

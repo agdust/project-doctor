@@ -7,7 +7,7 @@ const name = "git-hooks-installed";
 export const check: Check<GitContext> = {
   name,
   description: "Check for git hooks setup (husky, lefthook, etc.)",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:medium"],
   run: async (global, { isRepo }) => {
     if (!isRepo) return skip(name, "Not a git repo");
 

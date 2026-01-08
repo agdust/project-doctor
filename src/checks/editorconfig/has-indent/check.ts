@@ -15,7 +15,7 @@ indent_size = 2
 export const check: Check<EditorconfigContext> = {
   name,
   description: "Check if .editorconfig has indent settings",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:low"],
   run: async (_global, { raw, hasIndent }) => {
     if (!raw) return skip(name, "No .editorconfig");
     if (!hasIndent) return fail(name, "No indent settings");

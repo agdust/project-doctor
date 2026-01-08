@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 export const check: Check<DocsContext> = {
   name,
   description: "Check if CHANGELOG.md exists",
-  tags: ["universal", "recommended"],
+  tags: ["universal", "recommended", "effort:low"],
   run: async (_global, { changelog }) => {
     if (!changelog) return fail(name, "CHANGELOG.md not found");
     return pass(name, "CHANGELOG.md exists");

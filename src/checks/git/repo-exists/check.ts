@@ -7,7 +7,7 @@ const name = "git-repo-exists";
 export const check: Check<GitContext> = {
   name,
   description: "Check if project is a git repository",
-  tags: ["universal", "required"],
+  tags: ["universal", "required", "effort:low"],
   run: async (_global, { isRepo }) => {
     if (!isRepo) return fail(name, "Not a git repository");
     return pass(name, "Git repository found");

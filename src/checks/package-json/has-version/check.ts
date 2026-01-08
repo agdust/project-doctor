@@ -7,7 +7,7 @@ const name = "package-json-has-version";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has version field",
-  tags: ["node", "required"],
+  tags: ["node", "required", "effort:low"],
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.version) return fail(name, "Missing version field");
