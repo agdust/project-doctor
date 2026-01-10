@@ -24,19 +24,19 @@ project-doctor - Project health checks and maintenance tools
 
 Usage:
   project-doctor [path]
-  project-doctor app [path]
   project-doctor check [options] [path]
   project-doctor fix [options] [path]
   project-doctor deps [options] [path]
+  project-doctor overview [path]
   project-doctor snapshot [path]
   project-doctor history [path]
   project-doctor init [path]
   project-doctor eslint <subcommand> [options] [path]
 
 Commands:
-  (default)    Show project health overview
-  app          Interactive multi-screen app
+  (default)    Interactive wizard to fix issues
   check        Run all checks and report details
+  overview     Show project health summary
   fix          Fix issues (interactive, or auto with -y)
   deps         Check dependencies for newer versions
   snapshot     Save current status to history
@@ -70,12 +70,12 @@ Config File:
   }
 
 Examples:
-  project-doctor                       Show project health overview
-  project-doctor ./my-project          Show overview for specific directory
+  project-doctor                       Launch interactive wizard
+  project-doctor ./my-project          Launch wizard for specific directory
+  project-doctor overview              Show project health summary
   project-doctor check                 Run all checks with details
   project-doctor check -g package-json Run only package-json checks
   project-doctor check -t required     Run only required checks
-  project-doctor fix                   Interactively fix issues
   project-doctor fix -y                Auto-fix all issues
   project-doctor deps                  Check for outdated dependencies
   project-doctor snapshot              Save snapshot to .project-doctor/
@@ -163,16 +163,16 @@ Examples:
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const isAppCommand = args[0] === "app";
   const isCheckCommand = args[0] === "check";
   const isFixCommand = args[0] === "fix";
   const isDepsCommand = args[0] === "deps";
+  const isOverviewCommand = args[0] === "overview";
   const isSnapshotCommand = args[0] === "snapshot";
   const isHistoryCommand = args[0] === "history";
   const isInitCommand = args[0] === "init";
   const isEslintCommand = args[0] === "eslint";
 
-  if (isAppCommand || isCheckCommand || isFixCommand || isDepsCommand || isSnapshotCommand || isHistoryCommand || isInitCommand) {
+  if (isCheckCommand || isFixCommand || isDepsCommand || isOverviewCommand || isSnapshotCommand || isHistoryCommand || isInitCommand) {
     args.shift();
   }
 
@@ -287,8 +287,8 @@ async function main(): Promise<void> {
 
   const projectPath = resolve(positionals[0] ?? process.cwd());
 
-  if (isAppCommand) {
-    await runProjectDoctorApp(projectPath);
+  if (isOverviewCommand) {
+    await runOverview(projectPath);
     return;
   }
 
@@ -344,8 +344,8 @@ async function main(): Promise<void> {
     process.exit(hasFailed ? 1 : 0);
   }
 
-  // Default: show overview
-  await runOverview(projectPath);
+  // Default: launch interactive wizard
+  await runProjectDoctorApp(projectPath);
 }
 
 main().catch((error) => {

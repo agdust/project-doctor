@@ -81,9 +81,9 @@ describe("CLI", () => {
     });
   });
 
-  describe("overview (default)", () => {
+  describe("overview command", () => {
     it("should show overview for healthy project", async () => {
-      const { stdout, code } = await runCli(fixtures.healthy);
+      const { stdout, code } = await runCli(`overview ${fixtures.healthy}`);
 
       expect(code).toBe(0);
       expect(stdout).toContain("healthy-project");
