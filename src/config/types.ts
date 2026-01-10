@@ -1,24 +1,44 @@
+/**
+ * Configuration Types
+ *
+ * ESLint-style configuration for project-doctor.
+ *
+ * @example
+ * ```json5
+ * {
+ *   checks: { "changelog-exists": "off" },
+ *   tags: { "opinionated": "off" },
+ *   groups: { "eslint": "off" },
+ * }
+ * ```
+ */
+
+/** Severity level: "off" to disable, "error" is default */
+export type Severity = "off" | "error";
+
+/** User config (partial, from file) */
 export type Config = {
-  groups?: string[];
-  includeTags?: string[];
-  excludeTags?: string[];
-  excludeChecks?: string[];
-  // User has confirmed they allow eslint config overwriting
+  /** Per-check configuration */
+  checks?: Record<string, Severity>;
+  /** Per-tag configuration */
+  tags?: Record<string, Severity>;
+  /** Per-group configuration */
+  groups?: Record<string, Severity>;
+  /** User confirmed ESLint config overwriting */
   eslintOverwriteConfirmed?: boolean;
 };
 
+/** Resolved config (complete, with defaults) */
 export type ResolvedConfig = {
-  groups: string[];
-  includeTags: string[];
-  excludeTags: string[];
-  excludeChecks: string[];
+  checks: Record<string, Severity>;
+  tags: Record<string, Severity>;
+  groups: Record<string, Severity>;
   eslintOverwriteConfirmed: boolean;
 };
 
 export const DEFAULT_CONFIG: ResolvedConfig = {
-  groups: [],
-  includeTags: [],
-  excludeTags: [],
-  excludeChecks: [],
+  checks: {},
+  tags: {},
+  groups: {},
   eslintOverwriteConfirmed: false,
 };

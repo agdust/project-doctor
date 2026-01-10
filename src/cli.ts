@@ -62,10 +62,11 @@ Deps Options:
   --no-cache              Bypass cache, always fetch fresh data
 
 Config File:
-  Create .project-doctor/config.json5 to set default options:
+  Create .project-doctor/config.json5:
   {
-    excludeTags: ["opinionated"],
-    excludeChecks: ["changelog-exists"],
+    checks: { "changelog-exists": "off" },
+    tags: { "opinionated": "off" },
+    groups: { "eslint": "off" },
   }
 
 Examples:

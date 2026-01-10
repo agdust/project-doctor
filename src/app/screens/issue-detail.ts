@@ -4,35 +4,11 @@
  * Shows single issue with fix options.
  */
 
-import { writeFile, readFile, mkdir } from "node:fs/promises";
-import { join } from "node:path";
-import JSON5 from "json5";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action } from "../../cli-framework/index.js";
 import { blank, title, muted, text, divider, success, error } from "../../cli-framework/index.js";
+import { setCheckSeverity } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
-
-async function addToExcludeChecks(projectPath: string, checkName: string): Promise<void> {
-  const configDir = join(projectPath, ".project-doctor");
-  const configPath = join(configDir, "config.json5");
-  await mkdir(configDir, { recursive: true });
-
-  let config: Record<string, unknown> = {};
-  try {
-    const content = await readFile(configPath, "utf-8");
-    config = JSON5.parse(content);
-  } catch {
-    // No existing config
-  }
-
-  const excludeChecks = (config.excludeChecks as string[]) ?? [];
-  if (!excludeChecks.includes(checkName)) {
-    excludeChecks.push(checkName);
-  }
-  config.excludeChecks = excludeChecks;
-
-  await writeFile(configPath, JSON5.stringify(config, null, 2) + "\n", "utf-8");
-}
 
 export const issueDetailScreen: Screen<AppContext> = {
   id: "issue-detail",
@@ -98,7 +74,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     // Why? (if available)
     if (issue.why) {
       opts.push(
-        action("why", "Why?", async (c) => {
+        action("why", "Why?", async () => {
           return "why";
         }, "Learn why this check matters")
       );
@@ -108,7 +84,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     opts.push(
       action("disable", "Disable check", async (c) => {
         try {
-          await addToExcludeChecks(c.projectPath, issue.name);
+          await setCheckSeverity(c.projectPath, issue.name, "off");
           blank();
           muted("Disabled in config", 3);
           c.stats.disabled++;
@@ -118,7 +94,7 @@ export const issueDetailScreen: Screen<AppContext> = {
         blank();
 
         return moveToNextIssue(c);
-      }, "Add to excludeChecks in config")
+      }, "Set to 'off' in config")
     );
 
     // Skip

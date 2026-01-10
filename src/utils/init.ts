@@ -5,17 +5,14 @@ const CONFIG_DIR = ".project-doctor";
 const CONFIG_FILE = "config.json5";
 
 const DEFAULT_CONFIG = `{
-  // Skip checks with these tags
-  // excludeTags: ["opinionated"],
+  // Disable specific checks
+  // checks: { "changelog-exists": "off" },
 
-  // Skip specific checks by name
-  // excludeChecks: ["changelog-exists"],
+  // Disable checks by tag
+  // tags: { "opinionated": "off" },
 
-  // Only run checks from these groups
-  // groups: ["package-json", "typescript"],
-
-  // Only run checks with these tags
-  // includeTags: ["required"],
+  // Disable entire groups
+  // groups: { "eslint": "off" },
 }
 `;
 

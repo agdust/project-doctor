@@ -1,5 +1,6 @@
 import type { CheckResult, CheckResultBase, CheckTag, DetectedTools } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
+import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
 
@@ -28,9 +29,12 @@ function getToolName(groupName: string): string {
 export type RunnerOptions = {
   projectPath: string;
   skipConfig?: boolean;
-  // CLI overrides (merged with config)
+  // CLI overrides
+  /** Only run these groups (CLI filter) */
   groups?: string[];
+  /** Only run checks with these tags (CLI filter) */
   includeTags?: CheckTag[];
+  /** Skip checks with these tags (CLI filter) */
   excludeTags?: CheckTag[];
 };
 
@@ -38,25 +42,23 @@ function shouldRunCheck(
   checkName: string,
   checkTags: CheckTag[],
   config: ResolvedConfig,
-  cliIncludeTags?: CheckTag[],
-  cliExcludeTags?: CheckTag[]
+  cliIncludeTags?: CheckTag[]
 ): boolean {
-  // Check excluded checks list from config
-  if (config.excludeChecks.includes(checkName)) {
+  // Check if this check is turned off in config
+  if (isCheckOff(config, checkName)) {
     return false;
   }
 
-  // Merge config and CLI exclude tags
-  const allExcludeTags = [...config.excludeTags, ...(cliExcludeTags ?? [])];
-  if (allExcludeTags.length > 0) {
-    const hasExcluded = checkTags.some((t) => allExcludeTags.includes(t));
-    if (hasExcluded) return false;
+  // Check if any of the check's tags are turned off in config
+  for (const tag of checkTags) {
+    if (isTagOff(config, tag)) {
+      return false;
+    }
   }
 
-  // Merge config and CLI include tags
-  const allIncludeTags = [...config.includeTags, ...(cliIncludeTags ?? [])];
-  if (allIncludeTags.length > 0) {
-    const hasIncluded = checkTags.some((t) => allIncludeTags.includes(t));
+  // CLI include tags filter (only run checks with these tags)
+  if (cliIncludeTags && cliIncludeTags.length > 0) {
+    const hasIncluded = checkTags.some((t) => cliIncludeTags.includes(t));
     if (!hasIncluded) return false;
   }
 
@@ -67,14 +69,12 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
   // Build config overrides from CLI options
   const configOverrides: Partial<ResolvedConfig> = {};
 
-  if (options.groups?.length) {
-    configOverrides.groups = options.groups;
-  }
-  if (options.includeTags?.length) {
-    configOverrides.includeTags = options.includeTags;
-  }
+  // Convert CLI exclude tags to tags config format
   if (options.excludeTags?.length) {
-    configOverrides.excludeTags = options.excludeTags;
+    configOverrides.tags = {};
+    for (const tag of options.excludeTags) {
+      configOverrides.tags[tag] = "off";
+    }
   }
 
   const contextOptions: CreateContextOptions = {
@@ -86,10 +86,17 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
   const config = global.config;
 
   // Determine which groups to run
-  const allGroups = [...config.groups, ...(options.groups ?? [])];
-  const groupsToRun = allGroups.length > 0
-    ? checkGroups.filter((g) => allGroups.includes(g.name))
-    : checkGroups;
+  // If CLI specifies groups, only run those (filter)
+  // Otherwise run all groups except those turned off in config
+  let groupsToRun = checkGroups;
+
+  if (options.groups?.length) {
+    // CLI filter: only run specified groups
+    groupsToRun = checkGroups.filter((g) => options.groups!.includes(g.name));
+  } else {
+    // Config filter: skip groups turned off
+    groupsToRun = checkGroups.filter((g) => !isGroupOff(config, g.name));
+  }
 
   const allResults: CheckResult[] = [];
 
@@ -109,7 +116,7 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
     const groupContext = await group.loadContext(global);
 
     for (const check of group.checks) {
-      if (!shouldRunCheck(check.name, check.tags, config, options.includeTags, options.excludeTags)) {
+      if (!shouldRunCheck(check.name, check.tags, config, options.includeTags)) {
         continue;
       }
 
