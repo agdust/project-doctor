@@ -15,6 +15,7 @@ import type {
   NavOption,
 } from "./types.js";
 import { back } from "./types.js";
+import { clear } from "./renderer.js";
 
 const BACK_VALUE = "__back__";
 
@@ -63,6 +64,9 @@ export class App<TCtx> {
   private async runScreen(screen: Screen<TCtx>): Promise<void> {
     // Lifecycle: onEnter
     await screen.onEnter?.(this.state.context);
+
+    // Clear screen before rendering
+    clear();
 
     // Render screen content
     screen.render(this.state.context);
