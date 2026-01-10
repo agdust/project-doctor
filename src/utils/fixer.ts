@@ -1,12 +1,12 @@
 import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { select } from "@inquirer/prompts";
 import JSON5 from "json5";
 import type { CheckResult, CheckResultBase, FixResult, GlobalContext, CheckTag } from "../types.js";
 import { checkGroups } from "../registry.js";
 import { sortByChainAndPriority, getChainRoot } from "./fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
+import { runWizard, type WizardStep } from "./interactive-wizard/index.js";
 
 type FixableCheck = {
   name: string;
@@ -17,6 +17,16 @@ type FixableCheck = {
   why: string | null;
   runFix: () => Promise<FixResult>;
 };
+
+type FixerContext = {
+  projectPath: string;
+  checks: FixableCheck[];
+  fixed: number;
+  skipped: number;
+  disabled: number;
+};
+
+type FixAction = "fix" | "why" | "disable" | "skip";
 
 // Priority scoring for fix order: lower score = higher priority
 // Importance: required=0, recommended=1, opinionated=2
@@ -32,25 +42,6 @@ function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
     : effortTags.includes("effort:medium") ? 1 : 2;
 
   return importance * 3 + effort;
-}
-
-type SelectOption = "fix" | "disable" | "skip" | "why";
-
-async function selectAction(hasWhy: boolean): Promise<SelectOption> {
-  const choices: Array<{ name: string; value: SelectOption }> = [
-    { name: "Apply fix", value: "fix" },
-    { name: "Disable check", value: "disable" },
-    { name: "Skip for now", value: "skip" },
-  ];
-
-  if (hasWhy) {
-    choices.splice(1, 0, { name: "Why?", value: "why" });
-  }
-
-  return select({
-    message: "What do you want to do?",
-    choices,
-  });
 }
 
 // Get the package src directory (works both in dev and when installed)
@@ -108,6 +99,92 @@ async function addToExcludeChecks(projectPath: string, checkName: string): Promi
   await writeFile(configPath, JSON5.stringify(config, null, 2) + "\n", "utf-8");
 }
 
+/**
+ * Create wizard steps from fixable checks
+ */
+function createFixSteps(checks: FixableCheck[]): WizardStep<FixerContext, FixAction>[] {
+  return checks.map((check, index) => ({
+    id: check.name,
+    render: (ctx, stepIndex, totalSteps) => {
+      const statusColor = "\x1b[31m";
+      const statusIcon = "✗";
+
+      console.log("\x1b[90m  ─────────────────────────────────────────\x1b[0m");
+      console.log();
+      console.log(`  ${statusColor}${statusIcon}\x1b[0m  \x1b[1m${check.name}\x1b[0m  \x1b[90m(${stepIndex}/${totalSteps})\x1b[0m`);
+      console.log(`     ${check.result.message}`);
+      console.log();
+      console.log(`     \x1b[36mFix:\x1b[0m ${check.fixDescription}`);
+      console.log();
+    },
+    getActions: () => {
+      const actions: Array<{ value: FixAction; label: string }> = [
+        { value: "fix", label: "Apply fix" },
+      ];
+
+      if (check.why) {
+        actions.push({ value: "why", label: "Why?" });
+      }
+
+      actions.push(
+        { value: "disable", label: "Disable check" },
+        { value: "skip", label: "Skip for now" }
+      );
+
+      return actions;
+    },
+    onAction: async (action, ctx) => {
+      if (action === "why" && check.why) {
+        console.log();
+        console.log("\x1b[90m     ─────────────────────────────────────\x1b[0m");
+        console.log();
+        const lines = check.why.split("\n");
+        for (const line of lines) {
+          console.log(`     ${line}`);
+        }
+        console.log();
+        console.log("\x1b[90m     ─────────────────────────────────────\x1b[0m");
+        console.log();
+        return false; // Repeat this step to show menu again
+      }
+
+      if (action === "fix") {
+        try {
+          const fixResult = await check.runFix();
+          if (fixResult.success) {
+            console.log(`     \x1b[32m✓ ${fixResult.message}\x1b[0m`);
+            ctx.fixed++;
+          } else {
+            console.log(`     \x1b[31m✗ ${fixResult.message}\x1b[0m`);
+          }
+        } catch (error) {
+          console.log(`     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`);
+        }
+        console.log();
+        return true;
+      }
+
+      if (action === "disable") {
+        try {
+          await addToExcludeChecks(ctx.projectPath, check.name);
+          console.log(`     \x1b[33m⊘ Disabled in config\x1b[0m`);
+          ctx.disabled++;
+        } catch (error) {
+          console.log(`     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`);
+        }
+        console.log();
+        return true;
+      }
+
+      // skip
+      console.log(`     \x1b[90m→ Skipped\x1b[0m`);
+      console.log();
+      ctx.skipped++;
+      return true;
+    },
+  }));
+}
+
 export type FixerOptions = {
   projectPath: string;
   autoFix?: boolean;
@@ -162,63 +239,21 @@ export async function runFixer(options: FixerOptions): Promise<void> {
     const rootTags = tagsByName.get(rootName) ?? check.tags;
     return getFixPriority(check.tags, rootTags);
   });
-  fixableChecks.length = 0;
-  fixableChecks.push(...sortedChecks);
 
-  if (fixableChecks.length === 0) {
+  if (sortedChecks.length === 0) {
     console.log("  \x1b[32m✓ No fixable issues found\x1b[0m");
     console.log();
     return;
   }
 
-  console.log(`  Found \x1b[1m${fixableChecks.length}\x1b[0m fixable issue${fixableChecks.length > 1 ? "s" : ""}`);
+  console.log(`  Found \x1b[1m${sortedChecks.length}\x1b[0m fixable issue${sortedChecks.length > 1 ? "s" : ""}`);
   console.log();
 
-  let fixed = 0;
-  let skipped = 0;
-  let disabled = 0;
-
-  for (let i = 0; i < fixableChecks.length; i++) {
-    const check = fixableChecks[i];
-    const statusColor = "\x1b[31m";
-    const statusIcon = "✗";
-
-    // Issue header
-    console.log("\x1b[90m  ─────────────────────────────────────────\x1b[0m");
-    console.log();
-    console.log(`  ${statusColor}${statusIcon}\x1b[0m  \x1b[1m${check.name}\x1b[0m  \x1b[90m(${i + 1}/${fixableChecks.length})\x1b[0m`);
-    console.log(`     ${check.result.message}`);
-    console.log();
-    console.log(`     \x1b[36mFix:\x1b[0m ${check.fixDescription}`);
-    console.log();
-
-    let action: SelectOption = "skip";
-
-    if (options.autoFix) {
-      action = "fix";
-    } else {
-      // Loop to allow "Why?" to show info and re-prompt
-      while (true) {
-        action = await selectAction(!!check.why);
-        if (action === "why" && check.why) {
-          console.log();
-          console.log("\x1b[90m     ─────────────────────────────────────\x1b[0m");
-          console.log();
-          // Format and display the why content with proper indentation
-          const lines = check.why.split("\n");
-          for (const line of lines) {
-            console.log(`     ${line}`);
-          }
-          console.log();
-          console.log("\x1b[90m     ─────────────────────────────────────\x1b[0m");
-          console.log();
-          continue;
-        }
-        break;
-      }
-    }
-
-    if (action === "fix") {
+  // Auto-fix mode: run all fixes without prompts
+  if (options.autoFix) {
+    let fixed = 0;
+    for (const check of sortedChecks) {
+      console.log(`  Fixing ${check.name}...`);
       try {
         const fixResult = await check.runFix();
         if (fixResult.success) {
@@ -230,28 +265,45 @@ export async function runFixer(options: FixerOptions): Promise<void> {
       } catch (error) {
         console.log(`     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`);
       }
-    } else if (action === "disable") {
-      try {
-        await addToExcludeChecks(options.projectPath, check.name);
-        console.log(`     \x1b[33m⊘ Disabled in config\x1b[0m`);
-        disabled++;
-      } catch (error) {
-        console.log(`     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`);
-      }
-    } else {
-      console.log(`     \x1b[90m→ Skipped\x1b[0m`);
-      skipped++;
     }
     console.log();
+    console.log(`  \x1b[32m✓ ${fixed} fixed\x1b[0m`);
+    console.log();
+    return;
   }
 
-  // Summary
-  console.log("\x1b[90m  ─────────────────────────────────────────\x1b[0m");
-  console.log();
-  console.log("  \x1b[1mSummary\x1b[0m");
-  console.log();
-  if (fixed > 0) console.log(`     \x1b[32m✓ ${fixed} fixed\x1b[0m`);
-  if (disabled > 0) console.log(`     \x1b[33m⊘ ${disabled} disabled\x1b[0m`);
-  if (skipped > 0) console.log(`     \x1b[90m→ ${skipped} skipped\x1b[0m`);
-  console.log();
+  // Interactive mode: use wizard
+  const context: FixerContext = {
+    projectPath: options.projectPath,
+    checks: sortedChecks,
+    fixed: 0,
+    skipped: 0,
+    disabled: 0,
+  };
+
+  const steps = createFixSteps(sortedChecks);
+
+  await runWizard(steps, {
+    context,
+    allowBack: true,
+    backLabel: "← Previous issue",
+    onComplete: (ctx) => {
+      // Summary
+      console.log("\x1b[90m  ─────────────────────────────────────────\x1b[0m");
+      console.log();
+      console.log("  \x1b[1mSummary\x1b[0m");
+      console.log();
+      if (ctx.fixed > 0) console.log(`     \x1b[32m✓ ${ctx.fixed} fixed\x1b[0m`);
+      if (ctx.disabled > 0) console.log(`     \x1b[33m⊘ ${ctx.disabled} disabled\x1b[0m`);
+      if (ctx.skipped > 0) console.log(`     \x1b[90m→ ${ctx.skipped} skipped\x1b[0m`);
+      console.log();
+    },
+    onCancel: (ctx) => {
+      console.log();
+      console.log("  \x1b[33m⚠ Cancelled\x1b[0m");
+      console.log();
+      if (ctx.fixed > 0) console.log(`     \x1b[32m✓ ${ctx.fixed} fixed before cancel\x1b[0m`);
+      console.log();
+    },
+  });
 }
