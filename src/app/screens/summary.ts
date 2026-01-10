@@ -6,15 +6,13 @@
 
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action } from "../../cli-framework/index.js";
-import { blank, title, text, divider } from "../../cli-framework/index.js";
+import { blank, title, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const summaryScreen: Screen<AppContext> = {
   id: "summary",
 
   render: (ctx) => {
-    divider();
-    blank();
     title("Summary");
     blank();
 

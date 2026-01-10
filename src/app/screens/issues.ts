@@ -6,7 +6,7 @@
 
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, separator } from "../../cli-framework/index.js";
-import { blank, title, muted, text, divider } from "../../cli-framework/index.js";
+import { blank, title, muted, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 function getEffortLabel(tags: string[]): string {
@@ -26,7 +26,6 @@ export const issuesScreen: Screen<AppContext> = {
   id: "issues",
 
   render: (ctx) => {
-    blank();
     title(`Issues (${ctx.issues.length})`);
     blank();
 
@@ -63,9 +62,6 @@ export const issuesScreen: Screen<AppContext> = {
       }
       blank();
     }
-
-    divider();
-    blank();
   },
 
   options: (ctx): Option<AppContext>[] => {

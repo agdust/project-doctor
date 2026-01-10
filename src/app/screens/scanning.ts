@@ -15,7 +15,6 @@ export const scanningScreen: Screen<AppContext> = {
   id: "scanning",
 
   render: (ctx) => {
-    blank();
     if (ctx.scanned) {
       success("Scan complete");
     } else {

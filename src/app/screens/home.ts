@@ -6,7 +6,7 @@
 
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { nav, action, separator } from "../../cli-framework/index.js";
-import { blank, title, muted, status } from "../../cli-framework/index.js";
+import { blank, muted, status } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const homeScreen: Screen<AppContext> = {
@@ -14,9 +14,8 @@ export const homeScreen: Screen<AppContext> = {
   noBack: true, // Root screen
 
   render: (ctx) => {
-    blank();
-    title(`${ctx.projectName}`);
-    muted("project-doctor");
+    // Project info
+    muted(`Project: ${ctx.projectName}`);
     blank();
 
     // Health status

@@ -6,7 +6,7 @@
 
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action } from "../../cli-framework/index.js";
-import { blank, title, muted, text, divider } from "../../cli-framework/index.js";
+import { blank, title, muted, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const whyScreen: Screen<AppContext> = {
@@ -15,13 +15,11 @@ export const whyScreen: Screen<AppContext> = {
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
     if (!issue) {
-      blank();
       title("No issue selected");
       blank();
       return;
     }
 
-    blank();
     title(`Why: ${issue.name}`);
     blank();
 
@@ -35,8 +33,6 @@ export const whyScreen: Screen<AppContext> = {
       muted("No detailed explanation available.");
     }
 
-    blank();
-    divider();
     blank();
   },
 

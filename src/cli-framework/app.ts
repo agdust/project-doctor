@@ -15,7 +15,7 @@ import type {
   NavOption,
 } from "./types.js";
 import { back } from "./types.js";
-import { clear } from "./renderer.js";
+import { clear, bigTitle, blank } from "./renderer.js";
 
 const BACK_VALUE = "__back__";
 
@@ -65,8 +65,10 @@ export class App<TCtx> {
     // Lifecycle: onEnter
     await screen.onEnter?.(this.state.context);
 
-    // Clear screen before rendering
+    // Clear screen and show app header
     clear();
+    bigTitle(this.config.name);
+    blank();
 
     // Render screen content
     screen.render(this.state.context);

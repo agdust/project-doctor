@@ -108,6 +108,18 @@ export function header(appName: string, subtitle?: string): void {
 }
 
 /**
+ * Print large app name using unicode block characters
+ */
+export function bigTitle(appName: string): void {
+  // Use bold + larger visual presence with box drawing
+  const line = "─".repeat(appName.length + 4);
+  console.log();
+  console.log(`  ${c.dim}╭${line}╮${c.reset}`);
+  console.log(`  ${c.dim}│${c.reset}  ${c.bold}${appName}${c.reset}  ${c.dim}│${c.reset}`);
+  console.log(`  ${c.dim}╰${line}╯${c.reset}`);
+}
+
+/**
  * Print a status line with icon
  */
 export function status(

@@ -6,7 +6,7 @@
 
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action } from "../../cli-framework/index.js";
-import { blank, title, muted, text, divider, success, error } from "../../cli-framework/index.js";
+import { blank, title, muted, text, success, error } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
 
@@ -16,7 +16,6 @@ export const issueDetailScreen: Screen<AppContext> = {
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
     if (!issue) {
-      blank();
       title("No more issues");
       muted("All issues have been addressed.");
       blank();
@@ -26,8 +25,6 @@ export const issueDetailScreen: Screen<AppContext> = {
     const total = ctx.issues.length;
     const current = ctx.currentIssueIndex + 1;
 
-    divider();
-    blank();
     text(`\x1b[31m✗\x1b[0m  \x1b[1m${issue.name}\x1b[0m  \x1b[90m(${current}/${total})\x1b[0m`);
     text(`   ${issue.result.message}`);
     blank();

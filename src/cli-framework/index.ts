@@ -60,6 +60,7 @@ export {
   info,
   keyValue,
   header,
+  bigTitle,
   status,
   clear,
   colors,
