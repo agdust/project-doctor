@@ -119,4 +119,39 @@ Config is loaded in `GlobalContext` and applied by the runner.
 - `context/checks-proposal.md` - Full check list by implementation cost
 - `context/design-check-organization.md` - Architecture decisions
 - `context/design-config.md` - Configuration system design
-- `context/design-eslint-config.md` - ESLint config builder module design
+- `context/design-cli-framework.md` - Multi-screen CLI framework design
+- `context/design-eslint-config.md` - ESLint config builder module design (POSTPONED)
+
+## Current Focus
+
+**Priority: Production-grade CLI UX**
+
+Building a multi-screen CLI framework that makes project-doctor pleasant to use:
+- Screen-based navigation with hierarchy
+- ESC to go back, Ctrl+C to exit gracefully
+- "Why?" explanations for every check
+- Back button always available
+- Progressive disclosure (summary → details on demand)
+
+**Postponed:** ESLint configuration module (complex, focus on simple checks first)
+
+## CLI Framework (`src/cli-framework/`)
+
+Reusable multi-screen CLI app framework:
+
+```
+src/cli-framework/
+├── types.ts          # Screen, Option, AppState types
+├── app.ts            # App class, navigation, lifecycle
+├── input.ts          # Keyboard input handling
+├── renderer.ts       # Console output helpers
+└── index.ts          # Public exports
+```
+
+Key concepts:
+- **Screen**: UI state with render() and getOptions()
+- **ActionOption**: Does something (fix, skip, disable)
+- **NavigationOption**: Opens another screen
+- **Screen Stack**: Browser-like history for back navigation
+
+See `context/design-cli-framework.md` for full design.
