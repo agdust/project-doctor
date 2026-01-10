@@ -6,7 +6,7 @@ import type { CheckTag } from "./types.js";
 import { listChecks, listGroups } from "./registry.js";
 import { runChecks } from "./utils/runner.js";
 import { printResults } from "./utils/reporter.js";
-import { runFixer } from "./utils/fixer.js";
+import { runAutoFix } from "./utils/fixer.js";
 import { runDepsChecker } from "./utils/deps-checker.js";
 import { runOverview } from "./utils/overview.js";
 import { runSnapshot, runHistory } from "./utils/snapshot.js";
@@ -35,9 +35,9 @@ Usage:
 
 Commands:
   (default)    Show project health overview
-  app          Interactive multi-screen app (recommended)
+  app          Interactive multi-screen app
   check        Run all checks and report details
-  fix          Interactively fix issues that have auto-fixes
+  fix          Fix issues (interactive, or auto with -y)
   deps         Check dependencies for newer versions
   snapshot     Save current status to history
   history      View progress over time
@@ -292,10 +292,13 @@ async function main(): Promise<void> {
   }
 
   if (isFixCommand) {
-    await runFixer({
-      projectPath,
-      autoFix: values.yes,
-    });
+    if (values.yes) {
+      // Auto-fix mode: run all fixes without prompts
+      await runAutoFix({ projectPath });
+    } else {
+      // Interactive mode: use the app
+      await runProjectDoctorApp(projectPath);
+    }
     return;
   }
 
