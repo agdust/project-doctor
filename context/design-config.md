@@ -18,7 +18,13 @@ Allow users to customize check behavior per project using an ESLint-style config
 ## Config Schema
 
 ```typescript
-type Severity = "off" | "error";
+/**
+ * Severity level:
+ * - "off" - permanently disabled
+ * - "error" - enabled (default)
+ * - "skip-until-YYYY-MM-DD" - skipped until date, then becomes "error"
+ */
+type Severity = "off" | "error" | `skip-until-${string}`;
 
 type Config = {
   // Disable specific checks by name
@@ -74,6 +80,18 @@ type Config = {
   groups: { "eslint": "off" },
 }
 ```
+
+### Temporarily skip until a date
+```json5
+{
+  checks: {
+    // Will be skipped until June 1st 2025, then becomes "error"
+    "tsconfig-strict-enabled": "skip-until-2025-06-01",
+  },
+}
+```
+
+**Validation:** If the date is invalid or more than 3 years in the future, it's treated as "error" (not skipped).
 
 ---
 

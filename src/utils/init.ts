@@ -13,6 +13,9 @@ const DEFAULT_CONFIG = `{
 
   // Disable entire groups
   // groups: { "eslint": "off" },
+
+  // Temporarily skip until a date (reverts to "error" after)
+  // checks: { "some-check": "skip-until-2025-06-01" },
 }
 `;
 

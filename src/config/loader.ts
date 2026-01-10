@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity } from "./types.js";
-import { DEFAULT_CONFIG } from "./types.js";
+import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
 import { CONFIG_DIR, CONFIG_FILE } from "./constants.js";
 
 type PackageJson = {
@@ -70,19 +70,33 @@ export async function loadAndResolveConfig(projectPath: string): Promise<Resolve
   return resolveConfig(config);
 }
 
+/**
+ * Check if a severity value means "off" (disabled/skipped)
+ * - "off" -> true
+ * - "skip-until-YYYY-MM-DD" -> true if date not passed, false if expired
+ * - "error" or anything else -> false
+ */
+function isSeverityOff(value: Severity | undefined): boolean {
+  if (!value) return false;
+  if (value === "off") return true;
+  if (value === "error") return false;
+  // Check skip-until pattern
+  return isSkipUntilActive(value);
+}
+
 /** Check if a check is disabled */
 export function isCheckOff(config: ResolvedConfig, checkName: string): boolean {
-  return config.checks[checkName] === "off";
+  return isSeverityOff(config.checks[checkName]);
 }
 
 /** Check if a tag is disabled */
 export function isTagOff(config: ResolvedConfig, tagName: string): boolean {
-  return config.tags[tagName] === "off";
+  return isSeverityOff(config.tags[tagName]);
 }
 
 /** Check if a group is disabled */
 export function isGroupOff(config: ResolvedConfig, groupName: string): boolean {
-  return config.groups[groupName] === "off";
+  return isSeverityOff(config.groups[groupName]);
 }
 
 /** Update config with new values, merging with existing config */

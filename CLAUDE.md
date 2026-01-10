@@ -129,10 +129,16 @@ Projects can create `.project-doctor/config.json5`:
 
   // Disable entire groups
   groups: { "eslint": "off" },
+
+  // Temporarily skip until a date (reverts to "error" after)
+  checks: { "tsconfig-strict-enabled": "skip-until-2025-06-01" },
 }
 ```
 
-Severity values: `"off"` or `"error"` (warn may be added later)
+Severity values:
+- `"off"` - permanently disabled
+- `"error"` - enabled (default)
+- `"skip-until-YYYY-MM-DD"` - skipped until date, then becomes "error"
 
 ### Adding Checks
 
