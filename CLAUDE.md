@@ -13,6 +13,7 @@ npm install          # Install dependencies
 npm run build        # Compile TypeScript to dist/
 npm run dev          # Watch mode compilation
 npm run check        # Run CLI directly with tsx
+npm test             # Run tests
 ```
 
 ## Architecture
@@ -24,39 +25,50 @@ src/
 ├── types.ts            # Core types (Check, CheckResult, GlobalContext, etc.)
 ├── config/
 │   ├── types.ts        # Config schema and defaults
-│   └── loader.ts       # Find and parse config file
+│   ├── constants.ts    # Config file paths
+│   └── loader.ts       # Find, parse, and update config
 ├── context/
 │   ├── global.ts       # GlobalContext creation (includes config)
 │   ├── detect.ts       # Tool/framework detection
 │   └── file-cache.ts   # Cached file reads
-├── checks/             # Domain-organized checks
-│   ├── package-json/
-│   │   ├── context.ts  # Group context loader
-│   │   └── checks.ts   # Check implementations
-│   ├── tsconfig/
-│   ├── gitignore/
-│   ├── git/
-│   ├── eslint/
-│   ├── prettier/
-│   ├── editorconfig/
-│   ├── nvmrc/
-│   ├── docs/
-│   ├── deps/
-│   ├── env/
-│   ├── testing/
-│   └── framework/
+├── checks/             # Domain-organized checks (55+ checks)
+│   ├── package-json/   # 16 checks
+│   ├── tsconfig/       # 6 checks
+│   ├── gitignore/      # 7 checks
+│   ├── git/            # 1 check
+│   ├── eslint/         # 3 checks
+│   ├── prettier/       # 2 checks
+│   ├── editorconfig/   # 3 checks
+│   ├── npm/            # 6 checks
+│   ├── docs/           # 6 checks
+│   ├── deps/           # 3 checks
+│   ├── env/            # 2 checks
+│   ├── testing/        # 4 checks
+│   └── bundle-size/    # 3 checks
+├── cli-framework/      # Reusable multi-screen CLI framework
+│   ├── types.ts        # Screen, Option, AppState types
+│   ├── app.ts          # App class, navigation, lifecycle
+│   ├── renderer.ts     # Console output helpers
+│   └── index.ts        # Public exports
+├── app/                # Project Doctor app screens
+│   ├── types.ts        # AppContext, FixableIssue types
+│   ├── loader.ts       # Scans project, creates context
+│   ├── index.ts        # Main app entry
+│   └── screens/        # Individual screens
+│       ├── home.ts
+│       ├── issues.ts
+│       ├── issue-detail.ts
+│       ├── why.ts
+│       ├── summary.ts
+│       └── scanning.ts
 ├── utils/
 │   ├── runner.ts       # Check execution with filtering
-│   └── reporter.ts     # Result formatting
+│   ├── reporter.ts     # Result formatting
+│   ├── fixer.ts        # Auto-fix with priority sorting
+│   └── fix-chains.ts   # Fix dependency ordering
 └── eslint-config/      # ESLint configuration builder module
-    ├── types.ts        # Core types (Preset, ResolvedRule, etc.)
-    ├── presets/        # Composable preset definitions
-    ├── builder/        # Combines presets → resolved rules
-    ├── generator/      # Outputs eslint.config.js content
-    ├── reader/         # Parses existing ESLint configs
-    ├── differ/         # Diff computation and terminal display
-    ├── wizard/         # Interactive @inquirer/prompts wizard
-    └── commands/       # CLI command handlers (init, add, show, diff)
+    ├── commands/       # CLI command handlers (init, add, show, diff)
+    └── ...
 ```
 
 ## Key Concepts
@@ -64,7 +76,7 @@ src/
 ### Context System (DRY)
 
 Avoids repeated file reads:
-- **GlobalContext**: Project path, detected tools, file cache
+- **GlobalContext**: Project path, detected tools, file cache, config
 - **GroupContext**: Per-domain parsed data (e.g., parsed package.json)
 
 Each check group has a `context.ts` that loads data once for all checks in the group.
@@ -75,83 +87,90 @@ Each check group has a `context.ts` that loads data once for all checks in the g
 const check: Check<PackageJsonContext> = {
   name: "package-json-has-name",
   description: "Check if package.json has name field",
-  tags: ["node", "required"],
+  tags: ["node", "required", "effort:low"],
   run: async (global, group) => {
-    if (!group.parsed?.name) return { name, status: "fail", message: "..." };
-    return { name, status: "pass", message: "..." };
+    if (!group.parsed?.name) return fail(name, "Missing name field");
+    return pass(name, `Name: ${group.parsed.name}`);
+  },
+  fix: {  // Optional auto-fix
+    description: "Add name field",
+    run: async (global, group) => { ... },
   },
 };
 ```
 
 ### Tags
 
-- **Scope**: `universal`, `node`, `typescript`, `framework:svelte`
+- **Scope**: `universal`, `node`, `typescript`
 - **Requirement**: `required`, `recommended`, `opinionated`
-- **Tool**: `tool:eslint`, `tool:prettier`, `tool:knip`
+- **Effort**: `effort:low`, `effort:medium`, `effort:high`
+- **Tool**: `tool:eslint`, `tool:prettier`, `tool:knip`, etc.
+
+### Fix Prioritization
+
+Fixes are sorted by importance × 3 + effort for an easier fixing curve:
+1. required + effort:low (priority 0)
+2. required + effort:medium (priority 1)
+3. required + effort:high (priority 2)
+4. recommended + effort:low (priority 3)
+5. ... and so on
+
+### Configuration (ESLint-style)
+
+Projects can create `.project-doctor/config.json5`:
+
+```json5
+{
+  // Disable specific checks
+  checks: { "changelog-exists": "off" },
+
+  // Disable checks by tag
+  tags: { "opinionated": "off" },
+
+  // Disable entire groups
+  groups: { "eslint": "off" },
+}
+```
+
+Severity values: `"off"` or `"error"` (warn may be added later)
 
 ### Adding Checks
 
 1. Find or create domain folder in `src/checks/`
-2. Add check to `checks.ts` with appropriate tags
-3. Export from the `checks` array
+2. Create `check.ts` with Check definition including effort tag
+3. Export from the group's `index.ts`
 4. Register in `src/registry.ts` if new domain
-
-### Configuration
-
-Projects can create `.project-doctorrc.json`:
-
-```json
-{
-  "checks": {
-    "exclude": ["opinionated"],
-    "disable": ["changelog-exists"]
-  },
-  "severity": {
-    "license-exists": "warn"
-  }
-}
-```
-
-Config is loaded in `GlobalContext` and applied by the runner.
 
 ## Design Documents
 
 - `context/checks-proposal.md` - Full check list by implementation cost
-- `context/design-check-organization.md` - Architecture decisions
-- `context/design-config.md` - Configuration system design
-- `context/design-cli-framework.md` - Multi-screen CLI framework design
-- `context/design-eslint-config.md` - ESLint config builder module design (POSTPONED)
-
-## Current Focus
-
-**Priority: Production-grade CLI UX**
-
-Building a multi-screen CLI framework that makes project-doctor pleasant to use:
-- Screen-based navigation with hierarchy
-- ESC to go back, Ctrl+C to exit gracefully
-- "Why?" explanations for every check
-- Back button always available
-- Progressive disclosure (summary → details on demand)
-
-**Postponed:** ESLint configuration module (complex, focus on simple checks first)
+- `context/design-check-organization.md` - Architecture and tagging system
+- `context/design-config.md` - ESLint-style configuration system
+- `context/design-cli-framework.md` - Multi-screen CLI framework
+- `context/design-eslint-config.md` - ESLint config builder module
 
 ## CLI Framework (`src/cli-framework/`)
 
 Reusable multi-screen CLI app framework:
-
-```
-src/cli-framework/
-├── types.ts          # Screen, Option, AppState types
-├── app.ts            # App class, navigation, lifecycle
-├── input.ts          # Keyboard input handling
-├── renderer.ts       # Console output helpers
-└── index.ts          # Public exports
-```
 
 Key concepts:
 - **Screen**: UI state with render() and getOptions()
 - **ActionOption**: Does something (fix, skip, disable)
 - **NavigationOption**: Opens another screen
 - **Screen Stack**: Browser-like history for back navigation
+- **ESC**: Go back to previous screen
+- **Ctrl+C**: Graceful exit with summary
 
-See `context/design-cli-framework.md` for full design.
+## Current State
+
+**Implemented:**
+- Multi-screen CLI app with 6 screens
+- 55+ checks across 13 groups
+- Effort-based fix prioritization
+- ESLint-style configuration
+- Auto-fix with dependency chains
+
+**Future:**
+- Config screen (edit checks/tags/groups in app)
+- Deps screen (outdated dependencies)
+- Make `app` the default command

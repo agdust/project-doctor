@@ -382,32 +382,35 @@ onEnter() → render() → getOptions() → [user selects] →
 
 ---
 
-## Implementation Plan
+## Implementation Status
 
-### Phase 1: Core Framework
-- [ ] Screen types and interfaces
-- [ ] Navigation stack management
-- [ ] Input handling (arrows, enter, esc, ctrl+c)
-- [ ] Option rendering with descriptions
-- [ ] Back button injection
+### Phase 1: Core Framework - DONE
+- [x] Screen types and interfaces (`src/cli-framework/types.ts`)
+- [x] Navigation stack management (`src/cli-framework/app.ts`)
+- [x] Input handling (arrows, enter, esc, ctrl+c)
+- [x] Option rendering with descriptions
+- [x] Back button injection
+- [x] Renderer utilities (`src/cli-framework/renderer.ts`)
 
-### Phase 2: Project Doctor Screens
-- [ ] Home screen
-- [ ] Issues list screen
-- [ ] Single issue detail screen
-- [ ] Fix confirmation screen
-- [ ] Config screen
+### Phase 2: Project Doctor Screens - DONE
+- [x] Home screen (`src/app/screens/home.ts`)
+- [x] Issues list screen (`src/app/screens/issues.ts`)
+- [x] Single issue detail screen (`src/app/screens/issue-detail.ts`)
+- [x] Why explanation screen (`src/app/screens/why.ts`)
+- [x] Session summary screen (`src/app/screens/summary.ts`)
+- [x] Scanning screen (`src/app/screens/scanning.ts`)
 
-### Phase 3: Polish
-- [ ] Loading states with spinners
-- [ ] Error handling and display
+### Phase 3: Polish - IN PROGRESS
+- [x] Loading states during scan
+- [x] Error handling and display
 - [ ] Keyboard shortcut hints
 - [ ] Screen transitions
 
-### Phase 4: Extract (Future)
-- [ ] Separate npm package
+### Phase 4: Future
+- [ ] Config screen (edit checks/tags/groups)
+- [ ] Deps screen (outdated dependencies)
+- [ ] Separate npm package for framework
 - [ ] Generic theming
-- [ ] Plugin system for custom components
 
 ---
 

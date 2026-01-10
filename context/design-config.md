@@ -2,66 +2,36 @@
 
 ## Goal
 
-Move configuration from CLI flags to a config file. Users set preferences once per project instead of repeating CLI flags.
+Allow users to customize check behavior per project using an ESLint-style configuration format.
 
 ---
 
 ## Config File Location
 
 **File names (in order of precedence):**
-1. `.project-doctorrc.json` - JSON config
-2. `doctor` key in `package.json`
-
-**Note:** TS/JS configs may be added later if needed.
+1. `.project-doctor/config.json5` - JSON5 config (preferred)
+2. `.project-doctor/config.json` - JSON config (legacy)
+3. `doctor` key in `package.json`
 
 ---
 
 ## Config Schema
 
 ```typescript
+type Severity = "off" | "error";
+
 type Config = {
-  // What to run
-  checks?: {
-    // Groups to include (empty = all)
-    groups?: string[];
+  // Disable specific checks by name
+  checks?: Record<string, Severity>;
 
-    // Tag filtering
-    include?: string[];   // e.g., ["required", "recommended"]
-    exclude?: string[];   // e.g., ["opinionated"]
+  // Disable checks by tag
+  tags?: Record<string, Severity>;
 
-    // Disable specific checks by name
-    disable?: string[];   // e.g., ["contributing-exists", "changelog-exists"]
-  };
+  // Disable entire groups
+  groups?: Record<string, Severity>;
 
-  // Per-group options
-  options?: {
-    "package-json"?: {
-      requiredScripts?: string[];  // default: ["build", "dev", "test", "lint", "format"]
-    };
-
-    docs?: {
-      requiredFiles?: string[];    // default: ["README.md"]
-      optionalFiles?: string[];    // default: ["LICENSE", "CHANGELOG.md", "CONTRIBUTING.md"]
-    };
-
-    testing?: {
-      frameworks?: ("jest" | "vitest" | "playwright" | "cypress")[];
-    };
-
-    env?: {
-      exampleFile?: string;        // default: ".env.example"
-    };
-
-    gitignore?: {
-      requiredPatterns?: string[]; // additional patterns to require
-    };
-  };
-
-  // Severity overrides
-  severity?: {
-    // Change check severity: "fail" | "warn" | "skip"
-    [checkName: string]: "fail" | "warn" | "skip";
-  };
+  // Internal: user confirmed ESLint config overwrite
+  eslintOverwriteConfirmed?: boolean;
 };
 ```
 
@@ -69,41 +39,39 @@ type Config = {
 
 ## Example Configs
 
-### Minimal (disable opinionated checks)
-```json
+### Disable opinionated checks
+```json5
 {
-  "checks": {
-    "exclude": ["opinionated"]
-  }
+  tags: { "opinionated": "off" },
 }
 ```
 
-### Strict (only required checks)
-```json
+### Disable specific checks
+```json5
 {
-  "checks": {
-    "include": ["required"]
-  }
+  checks: {
+    "changelog-exists": "off",
+    "contributing-exists": "off",
+  },
 }
 ```
 
-### Custom project
-```json
+### Disable entire groups
+```json5
 {
-  "checks": {
-    "disable": ["changelog-exists", "contributing-exists"]
+  groups: {
+    "testing": "off",
+    "bundle-size": "off",
   },
-  "options": {
-    "package-json": {
-      "requiredScripts": ["build", "dev", "test"]
-    },
-    "testing": {
-      "frameworks": ["vitest"]
-    }
-  },
-  "severity": {
-    "license-exists": "warn"
-  }
+}
+```
+
+### Combination
+```json5
+{
+  checks: { "changelog-exists": "off" },
+  tags: { "opinionated": "off" },
+  groups: { "eslint": "off" },
 }
 ```
 
@@ -111,11 +79,10 @@ type Config = {
 
 ## CLI + Config Merge Rules
 
-1. **Additive for groups**: `--group` adds to config groups
-2. **Additive for tags**: `--tag` adds to config includes
-3. **Additive for excludes**: `--exclude-tag` adds to config excludes
-4. **Override path**: CLI path always wins
-5. **`--no-config`**: Ignore config file entirely
+1. **CLI overrides config**: `--exclude-tag opinionated` adds to config tags
+2. **CLI group filter**: `--group package-json` filters to only that group
+3. **`--no-config`**: Ignore config file entirely
+4. **Config merging**: CLI options merge with file config (both apply)
 
 ---
 
@@ -124,16 +91,40 @@ type Config = {
 | File | Purpose |
 |------|---------|
 | `src/config/types.ts` | Config and ResolvedConfig types |
-| `src/config/loader.ts` | Find, parse, and resolve config |
+| `src/config/constants.ts` | Config file names and paths |
+| `src/config/loader.ts` | Find, parse, resolve, and update config |
 | `src/context/global.ts` | Add config to GlobalContext |
-| `src/utils/runner.ts` | Apply disable list and severity overrides |
+| `src/utils/runner.ts` | Apply config filters (isCheckOff, isTagOff, isGroupOff) |
 | `src/cli.ts` | Merge CLI flags with config |
+
+---
+
+## Helper Functions
+
+```typescript
+// Check if a check is disabled
+isCheckOff(config: ResolvedConfig, checkName: string): boolean
+
+// Check if a tag is disabled
+isTagOff(config: ResolvedConfig, tagName: string): boolean
+
+// Check if a group is disabled
+isGroupOff(config: ResolvedConfig, groupName: string): boolean
+
+// Update config file with new values
+updateConfig(projectPath: string, updates: Partial<Config>): Promise<void>
+
+// Set check severity
+setCheckSeverity(projectPath: string, checkName: string, severity: Severity): Promise<void>
+```
 
 ---
 
 ## Rationale
 
+- **ESLint-style format**: Familiar to developers, consistent pattern
+- **JSON5 support**: Allows comments, trailing commas
+- **Merged object approach**: Easier to manage than array exclusions
+- **Severity levels**: Only "off" and "error" for now (warn may be added later)
 - **Per-project config**: Each project has its own preferences
-- **JSON-only**: No compilation complexity, easy to validate
 - **CLI overrides config**: Allows one-off runs without editing config
-- **Severity overrides**: Downgrade failures to warnings for known issues

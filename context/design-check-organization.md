@@ -128,6 +128,14 @@ Each check has a `tags` array with one or more of:
 | `tool:vitest` | Only runs if Vitest is configured |
 | `tool:jest` | Only runs if Jest is configured |
 
+### Effort Tags
+
+| Tag | Meaning |
+|-----|---------|
+| `effort:low` | Has auto-fix OR trivial manual fix (add one line, create file) |
+| `effort:medium` | Requires understanding context, moderate code changes |
+| `effort:high` | Complex refactoring, external tool setup, architectural decisions |
+
 ---
 
 ## Decision 3: Updated Type Definition
@@ -146,57 +154,95 @@ export type CheckRequirement =
 
 export type CheckTool = `tool:${string}`;
 
-export type CheckTag = CheckScope | CheckRequirement | CheckTool;
+export type CheckEffort = "effort:low" | "effort:medium" | "effort:high";
 
-export type Check = {
+export type CheckTag = CheckScope | CheckRequirement | CheckTool | CheckEffort;
+
+export type Check<GroupCtx = unknown> = {
   name: string;
   description: string;
   tags: CheckTag[];
-  run: (projectPath: string) => Promise<CheckResult>;
+  run: (global: GlobalContext, group: GroupCtx) => Promise<CheckResult>;
+  fix?: {
+    description: string;
+    run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult>;
+  };
 };
 ```
 
 ---
 
-## Decision 4: Example Tagged Checks
+## Decision 4: Fix Prioritization
+
+Effort tags enable smart fix ordering. When a project has many issues, fixes are presented in priority order:
+
+| Priority | Tags | Description |
+|----------|------|-------------|
+| 0 | required + effort:low | Critical issues that are quick to fix |
+| 1 | required + effort:medium | Critical issues needing moderate effort |
+| 2 | required + effort:high | Critical issues needing significant effort |
+| 3 | recommended + effort:low | Important issues that are quick to fix |
+| 4 | recommended + effort:medium | Important issues needing moderate effort |
+| 5 | recommended + effort:high | Important issues needing significant effort |
+| 6 | opinionated + effort:low | Style issues that are quick to fix |
+| 7 | opinionated + effort:medium | Style issues needing moderate effort |
+| 8 | opinionated + effort:high | Style issues needing significant effort |
+
+Priority formula: `importance * 3 + effort` where:
+- importance: required=0, recommended=1, opinionated=2
+- effort: low=0, medium=1, high=2
+
+This gives projects with many failures an easier fixing curve - important+easy fixes come first.
+
+---
+
+## Decision 5: Example Tagged Checks
 
 ```typescript
 // src/checks/package-json/exists.ts
-const check: Check = {
+const check: Check<PackageJsonContext> = {
   name: "package-json-exists",
   description: "Check if package.json exists",
-  tags: ["node", "required"],
-  run: async (projectPath) => { ... }
+  tags: ["node", "required", "effort:medium"],
+  run: async (_global, { raw }) => {
+    if (!raw) return fail(name, "package.json not found");
+    return pass(name, "package.json exists");
+  },
 };
 
-// src/checks/eslint/flat-config.ts
-const check: Check = {
-  name: "eslint-flat-config",
-  description: "Check if using ESLint flat config format",
-  tags: ["node", "recommended", "tool:eslint"],
-  run: async (projectPath) => { ... }
+// src/checks/gitignore/exists.ts - with auto-fix
+const check: Check<GitignoreContext> = {
+  name: "gitignore-exists",
+  description: "Check if .gitignore exists",
+  tags: ["universal", "required", "effort:low"],
+  run: async (_global, { raw }) => {
+    if (!raw) return fail(name, ".gitignore not found");
+    return pass(name, ".gitignore exists");
+  },
+  fix: {
+    description: "Create .gitignore with common defaults",
+    run: async (global) => {
+      await writeFile(join(global.projectPath, ".gitignore"), DEFAULT_GITIGNORE);
+      return { success: true, message: "Created .gitignore" };
+    },
+  },
 };
 
-// src/checks/framework/svelte.ts
-const svelteRunes: Check = {
-  name: "svelte-5-runes",
-  description: "Check if using Svelte 5 runes syntax",
-  tags: ["framework:svelte", "opinionated"],
-  run: async (projectPath) => { ... }
-};
-
-// src/checks/git/commits.ts
-const conventionalCommits: Check = {
-  name: "conventional-commits",
-  description: "Check if commits follow conventional format",
-  tags: ["universal", "opinionated"],
-  run: async (projectPath) => { ... }
+// src/checks/tsconfig/strict-enabled.ts
+const check: Check<TsConfigContext> = {
+  name: "tsconfig-strict-enabled",
+  description: "Check if TypeScript strict mode is enabled",
+  tags: ["typescript", "recommended", "effort:high"],
+  run: async (_global, { parsed }) => {
+    if (!parsed?.compilerOptions?.strict) return fail(name, "strict mode not enabled");
+    return pass(name, "strict mode enabled");
+  },
 };
 ```
 
 ---
 
-## Decision 5: CLI Filtering
+## Decision 6: CLI Filtering
 
 Tags enable powerful filtering:
 
@@ -219,7 +265,7 @@ project-doctor --tag node --tag required
 
 ---
 
-## Decision 6: Auto-Detection
+## Decision 7: Auto-Detection
 
 Before running checks, detect project characteristics:
 
@@ -241,7 +287,7 @@ Checks with tool/framework tags are automatically skipped if the tool/framework 
 
 ---
 
-## Decision 7: Context System (DRY)
+## Decision 8: Context System (DRY)
 
 Avoid repeated file reads. Checks receive pre-loaded context.
 
