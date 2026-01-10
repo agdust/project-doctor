@@ -159,7 +159,9 @@ export class App<TCtx> {
       await this.navigate(screen, option.to);
     } else if (option.type === "action") {
       const nextScreen = await option.run(this.state.context);
-      if (nextScreen) {
+      if (nextScreen === "__exit__") {
+        this.state.shouldExit = true;
+      } else if (nextScreen) {
         await this.navigate(screen, nextScreen);
       }
       // If no nextScreen returned, stay on current screen (will re-render)

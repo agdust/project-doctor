@@ -16,6 +16,7 @@ import { runEslintShow } from "./eslint-config/commands/show.js";
 import { runEslintAdd } from "./eslint-config/commands/add.js";
 import { runEslintDiff } from "./eslint-config/commands/diff.js";
 import { runMainWizard } from "./eslint-config/commands/main.js";
+import { runProjectDoctorApp } from "./app/index.js";
 
 function printHelp(): void {
   console.log(`
@@ -23,6 +24,7 @@ project-doctor - Project health checks and maintenance tools
 
 Usage:
   project-doctor [path]
+  project-doctor app [path]
   project-doctor check [options] [path]
   project-doctor fix [options] [path]
   project-doctor deps [options] [path]
@@ -33,6 +35,7 @@ Usage:
 
 Commands:
   (default)    Show project health overview
+  app          Interactive multi-screen app (recommended)
   check        Run all checks and report details
   fix          Interactively fix issues that have auto-fixes
   deps         Check dependencies for newer versions
@@ -159,6 +162,7 @@ Examples:
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  const isAppCommand = args[0] === "app";
   const isCheckCommand = args[0] === "check";
   const isFixCommand = args[0] === "fix";
   const isDepsCommand = args[0] === "deps";
@@ -167,7 +171,7 @@ async function main(): Promise<void> {
   const isInitCommand = args[0] === "init";
   const isEslintCommand = args[0] === "eslint";
 
-  if (isCheckCommand || isFixCommand || isDepsCommand || isSnapshotCommand || isHistoryCommand || isInitCommand) {
+  if (isAppCommand || isCheckCommand || isFixCommand || isDepsCommand || isSnapshotCommand || isHistoryCommand || isInitCommand) {
     args.shift();
   }
 
@@ -281,6 +285,11 @@ async function main(): Promise<void> {
   }
 
   const projectPath = resolve(positionals[0] ?? process.cwd());
+
+  if (isAppCommand) {
+    await runProjectDoctorApp(projectPath);
+    return;
+  }
 
   if (isFixCommand) {
     await runFixer({
