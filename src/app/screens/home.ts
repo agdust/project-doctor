@@ -73,6 +73,11 @@ export const homeScreen: Screen<AppContext> = {
       })
     );
 
+    // About
+    opts.push(
+      nav("about", "About Project Doctor", "about")
+    );
+
     opts.push(separator());
 
     // Exit

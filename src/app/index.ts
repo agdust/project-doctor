@@ -19,6 +19,7 @@ import { scanningScreen } from "./screens/scanning.js";
 import { configScreen } from "./screens/config.js";
 import { aboutConfigScreen } from "./screens/about-config.js";
 import { categoriesScreen } from "./screens/categories.js";
+import { aboutScreen } from "./screens/about.js";
 
 export async function runProjectDoctorApp(projectPath: string): Promise<void> {
   // Show initial loading
@@ -44,6 +45,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       configScreen,
       aboutConfigScreen,
       categoriesScreen,
+      aboutScreen,
     ],
     initialScreen: "home",
 
