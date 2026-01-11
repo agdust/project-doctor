@@ -41,6 +41,7 @@ export const categoriesScreen: Screen<AppContext> = {
       const selected = await checkbox({
         message: "Toggle categories (space to toggle, enter to save)",
         choices,
+        theme: { prefix: "" },
       });
 
       // Update config based on selection

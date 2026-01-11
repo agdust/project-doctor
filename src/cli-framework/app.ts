@@ -109,6 +109,7 @@ export class App<TCtx> {
           message: "",
           choices,
           loop: false,
+          theme: { prefix: "" },
         },
         { signal: ac.signal }
       );
