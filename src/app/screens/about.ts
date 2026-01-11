@@ -29,7 +29,14 @@ export const aboutScreen: Screen<AppContext> = {
     text("  Minimal noise, actionable output");
     blank();
 
-    text("\x1b[1mUsage\x1b[0m");
+    text("\x1b[1mControls\x1b[0m");
+    text("  \x1b[90m↑/↓\x1b[0m   Navigate options");
+    text("  \x1b[90mEnter\x1b[0m Select option");
+    text("  \x1b[90mEsc\x1b[0m   Go back / Cancel");
+    text("  \x1b[90mSpace\x1b[0m Toggle checkbox");
+    blank();
+
+    text("\x1b[1mCLI Usage\x1b[0m");
     text("  project-doctor          Interactive wizard");
     text("  project-doctor run      Run checks (CI mode)");
     text("  project-doctor overview Show all check results");
