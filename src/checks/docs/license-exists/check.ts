@@ -9,6 +9,7 @@ const name = "license-exists";
 
 const year = new Date().getFullYear();
 
+// Source: https://opensource.org/licenses/MIT (SPDX: MIT)
 const MIT_LICENSE = `MIT License
 
 Copyright (c) ${year}
@@ -32,6 +33,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `;
 
+// Source: https://www.gnu.org/licenses/gpl-3.0.txt (SPDX: GPL-3.0-only)
+// Note: Preamble only - full text is ~35KB, linked below
 const GPL3_LICENSE = `GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 
@@ -56,6 +59,37 @@ your programs, too.
 For the complete license text, see <https://www.gnu.org/licenses/gpl-3.0.txt>
 `;
 
+// Source: https://creativecommons.org/publicdomain/zero/1.0/ (SPDX: CC0-1.0)
+// Note: Human-readable deed - full legal code linked below
+const CC0_LICENSE = `CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+
+The person who associated a work with this deed has dedicated the work to the
+public domain by waiving all of his or her rights to the work worldwide under
+copyright law, including all related and neighboring rights, to the extent
+allowed by law.
+
+You can copy, modify, distribute and perform the work, even for commercial
+purposes, all without asking permission.
+
+For more information, see <https://creativecommons.org/publicdomain/zero/1.0/>
+`;
+
+// Generic proprietary license template
+const PROPRIETARY_LICENSE = `PROPRIETARY LICENSE
+
+Copyright (c) ${year}
+
+All rights reserved.
+
+This software and associated documentation files (the "Software") are the
+exclusive property of the copyright holder. No part of this Software may be
+reproduced, distributed, or transmitted in any form or by any means, including
+photocopying, recording, or other electronic or mechanical methods, without
+the prior written permission of the copyright holder.
+
+For licensing inquiries, contact the copyright holder.
+`;
+
 function openBrowser(url: string): Promise<void> {
   return new Promise((resolve) => {
     const cmd = process.platform === "darwin"
@@ -74,7 +108,7 @@ function openBrowser(url: string): Promise<void> {
 export const check: Check<DocsContext> = {
   name,
   description: "Check if LICENSE file exists",
-  tags: ["universal", "recommended", "effort:low"],
+  tags: ["universal", "required", "effort:low"],
   run: async (_global, { license }) => {
     if (!license) return fail(name, "LICENSE file not found");
     return pass(name, "LICENSE file exists");
@@ -100,6 +134,26 @@ export const check: Check<DocsContext> = {
           const licensePath = join(global.projectPath, "LICENSE");
           await writeFile(licensePath, GPL3_LICENSE, "utf-8");
           return { success: true, message: "Created GPL-3.0 LICENSE" };
+        },
+      },
+      {
+        id: "cc0",
+        label: "CC0 (Public Domain)",
+        description: "Dedicate to public domain, no restrictions",
+        run: async (global) => {
+          const licensePath = join(global.projectPath, "LICENSE");
+          await writeFile(licensePath, CC0_LICENSE, "utf-8");
+          return { success: true, message: "Created CC0 LICENSE" };
+        },
+      },
+      {
+        id: "proprietary",
+        label: "Proprietary",
+        description: "All rights reserved, for internal/private projects",
+        run: async (global) => {
+          const licensePath = join(global.projectPath, "LICENSE");
+          await writeFile(licensePath, PROPRIETARY_LICENSE, "utf-8");
+          return { success: true, message: "Created PROPRIETARY LICENSE" };
         },
       },
       {
