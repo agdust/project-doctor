@@ -1,24 +1,25 @@
 import type { GlobalContext } from "../../types.js";
 
 export type TestingContext = {
-  hasJest: boolean;
-  hasVitest: boolean;
-  hasPlaywright: boolean;
-  hasCypress: boolean;
+  hasTestScript: boolean;
+  testScriptValue: string | null;
 };
 
 export async function loadContext(global: GlobalContext): Promise<TestingContext> {
-  const [hasJestConfig, hasVitestConfig, hasPlaywrightConfig, hasCypressConfig] = await Promise.all([
-    global.files.exists("jest.config.js"),
-    global.files.exists("vitest.config.ts"),
-    global.files.exists("playwright.config.ts"),
-    global.files.exists("cypress.config.ts"),
-  ]);
+  const pkgRaw = await global.files.readText("package.json");
+  if (!pkgRaw) {
+    return { hasTestScript: false, testScriptValue: null };
+  }
 
-  return {
-    hasJest: hasJestConfig,
-    hasVitest: hasVitestConfig,
-    hasPlaywright: hasPlaywrightConfig,
-    hasCypress: hasCypressConfig,
-  };
+  try {
+    const pkg = JSON.parse(pkgRaw);
+    const testScript = pkg.scripts?.test;
+    const hasTestScript = typeof testScript === "string" && testScript.length > 0;
+    return {
+      hasTestScript,
+      testScriptValue: hasTestScript ? testScript : null,
+    };
+  } catch {
+    return { hasTestScript: false, testScriptValue: null };
+  }
 }
