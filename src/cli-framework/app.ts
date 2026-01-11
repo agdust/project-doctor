@@ -5,6 +5,7 @@
  * Declarative config in, interactive app out.
  */
 
+import * as readline from "node:readline";
 import { select, Separator as InquirerSeparator } from "@inquirer/prompts";
 import { CancelPromptError } from "@inquirer/core";
 import type {
@@ -85,24 +86,47 @@ export class App<TCtx> {
     // Build choices for inquirer
     const choices = this.buildChoices(options);
 
+    // Set up ESC key handling
+    const ac = new AbortController();
+    let escPressed = false;
+
+    // Enable keypress events for ESC detection
+    readline.emitKeypressEvents(process.stdin);
+
+    const onKeypress = (_str: string, key: readline.Key) => {
+      if (key && key.name === "escape") {
+        escPressed = true;
+        ac.abort();
+      }
+    };
+
+    process.stdin.on("keypress", onKeypress);
+
     // Prompt and handle selection
     try {
-      const selected = await select({
-        message: "",
-        choices,
-        loop: false,
-      });
+      const selected = await select(
+        {
+          message: "",
+          choices,
+          loop: false,
+        },
+        { signal: ac.signal }
+      );
 
       await this.handleSelection(screen, options, selected);
     } catch (error) {
       if (
+        escPressed ||
         error instanceof CancelPromptError ||
-        (error instanceof Error && error.name === "ExitPromptError")
+        (error instanceof Error && error.name === "ExitPromptError") ||
+        (error instanceof Error && error.name === "AbortError")
       ) {
         await this.handleEscape(screen);
       } else {
         throw error;
       }
+    } finally {
+      process.stdin.removeListener("keypress", onKeypress);
     }
   }
 
@@ -209,11 +233,12 @@ export class App<TCtx> {
   }
 
   /**
-   * Go back to previous screen
+   * Go back to previous screen, or exit if at root
    */
   private async goBack(currentScreen: Screen<TCtx>): Promise<void> {
     if (this.state.stack.length === 0) {
-      // At root, ESC does nothing (or could exit based on config)
+      // At root - ESC exits the app
+      this.state.shouldExit = true;
       return;
     }
 
