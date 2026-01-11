@@ -36,31 +36,34 @@ export const issuesScreen: Screen<AppContext> = {
       !i.tags.includes("required") && !i.tags.includes("recommended")
     );
 
+    // Find max name length for alignment
+    const maxNameLen = Math.max(...ctx.issues.map((i) => i.name.length));
+
     if (required.length > 0) {
       muted("Required:");
       for (const issue of required) {
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}`);
-        muted(`    ${issue.result.message}`, 0);
+        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
+        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
+        blank();
       }
-      blank();
     }
 
     if (recommended.length > 0) {
       muted("Recommended:");
       for (const issue of recommended) {
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}`);
-        muted(`    ${issue.result.message}`, 0);
+        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
+        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
+        blank();
       }
-      blank();
     }
 
     if (opinionated.length > 0) {
       muted("Opinionated:");
       for (const issue of opinionated) {
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}`);
-        muted(`    ${issue.result.message}`, 0);
+        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
+        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
+        blank();
       }
-      blank();
     }
   },
 
