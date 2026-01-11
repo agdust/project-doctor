@@ -13,22 +13,29 @@ export const summaryScreen: Screen<AppContext> = {
   id: "summary",
 
   render: (ctx) => {
-    title("Summary");
+    title("Session Summary");
     blank();
 
-    const { fixed, disabled, skipped } = ctx.stats;
+    const { fixed, muted, disabled, skipped } = ctx.stats;
 
+    // Build summary parts
+    const parts: string[] = [];
     if (fixed > 0) {
-      text(`\x1b[32m✓\x1b[0m ${fixed} fixed`);
+      parts.push(`${fixed} issue${fixed > 1 ? "s" : ""} fixed`);
+    }
+    if (muted > 0) {
+      parts.push(`${muted} temporarily muted`);
     }
     if (disabled > 0) {
-      text(`\x1b[33m⊘\x1b[0m ${disabled} disabled`);
+      parts.push(`${disabled} disabled`);
     }
     if (skipped > 0) {
-      text(`\x1b[90m→\x1b[0m ${skipped} skipped`);
+      parts.push(`${skipped} remained`);
     }
 
-    if (fixed === 0 && disabled === 0 && skipped === 0) {
+    if (parts.length > 0) {
+      text(parts.join(", "));
+    } else {
       text("No changes made.");
     }
 

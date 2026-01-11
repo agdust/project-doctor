@@ -135,6 +135,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     stats: {
       fixed: 0,
       skipped: 0,
+      muted: 0,
       disabled: 0,
     },
     scanned: true,

@@ -1,103 +1,61 @@
 /**
  * Issues List Screen
  *
- * Shows all fixable issues grouped by importance.
+ * Shows issues summary with options to view details or fix.
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator } from "../../cli-framework/index.js";
-import { blank, title, muted, text } from "../../cli-framework/index.js";
+import { nav, action } from "../../cli-framework/index.js";
+import { blank, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
-
-function getEffortLabel(tags: string[]): string {
-  if (tags.includes("effort:low")) return "easy";
-  if (tags.includes("effort:medium")) return "medium";
-  if (tags.includes("effort:high")) return "complex";
-  return "";
-}
-
-function getImportanceLabel(tags: string[]): string {
-  if (tags.includes("required")) return "required";
-  if (tags.includes("recommended")) return "recommended";
-  return "opinionated";
-}
 
 export const issuesScreen: Screen<AppContext> = {
   id: "issues",
 
   render: (ctx) => {
-    title(`Issues (${ctx.issues.length})`);
+    // Same summary as main screen
+    const failed = ctx.allResults.filter((r) => r.status === "fail").length;
+    const total = ctx.allResults.length;
+
+    text(`\x1b[31mFailed checks ${failed}/${total}\x1b[0m`);
     blank();
 
-    // Group by importance
-    const required = ctx.issues.filter((i) => i.tags.includes("required"));
-    const recommended = ctx.issues.filter((i) => i.tags.includes("recommended"));
+    // Category breakdown
+    const required = ctx.issues.filter((i) => i.tags.includes("required")).length;
+    const recommended = ctx.issues.filter((i) => i.tags.includes("recommended")).length;
     const opinionated = ctx.issues.filter((i) =>
       !i.tags.includes("required") && !i.tags.includes("recommended")
-    );
+    ).length;
 
-    // Find max name length for alignment
-    const maxNameLen = Math.max(...ctx.issues.map((i) => i.name.length));
-
-    if (required.length > 0) {
-      muted("Required:");
-      for (const issue of required) {
-        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
-        blank();
-      }
+    if (required > 0) {
+      text(`  Required - ${required}`);
     }
-
-    if (recommended.length > 0) {
-      muted("Recommended:");
-      for (const issue of recommended) {
-        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
-        blank();
-      }
+    if (recommended > 0) {
+      text(`  Recommended - ${recommended}`);
     }
-
-    if (opinionated.length > 0) {
-      muted("Opinionated:");
-      for (const issue of opinionated) {
-        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
-        blank();
-      }
+    if (opinionated > 0) {
+      text(`  Opinionated - ${opinionated}`);
     }
+    blank();
   },
 
   options: (ctx): Option<AppContext>[] => {
     const opts: Option<AppContext>[] = [];
 
-    // Individual fix options for each issue
-    for (let i = 0; i < ctx.issues.length; i++) {
-      const issue = ctx.issues[i];
-      const effort = getEffortLabel(issue.tags);
-      const effortBadge = effort ? ` (${effort})` : "";
+    // Overview - detailed view of all issues
+    opts.push(
+      nav("overview", "Overview", "overview", {
+        description: "Detailed view of all failed checks",
+      })
+    );
 
-      opts.push(
-        action(
-          `fix-${i}`,
-          `Fix: ${issue.name}${effortBadge}`,
-          async (c) => {
-            c.currentIssueIndex = i;
-            return "issue-detail";
-          },
-          issue.fixDescription
-        )
-      );
-    }
-
-    if (ctx.issues.length > 1) {
-      opts.push(separator());
-      opts.push(
-        action("fix-all", `Fix all (${ctx.issues.length} issues)`, async (c) => {
-          c.currentIssueIndex = 0;
-          return "issue-detail";
-        })
-      );
-    }
+    // Fix issues - walk through queue
+    opts.push(
+      action("fix", "Fix issues", async (c) => {
+        c.currentIssueIndex = 0;
+        return "issue-detail";
+      }, `Walk through ${ctx.issues.length} issue${ctx.issues.length > 1 ? "s" : ""} one by one`)
+    );
 
     return opts;
   },

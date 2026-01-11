@@ -6,7 +6,7 @@
 
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { nav, action, separator } from "../../cli-framework/index.js";
-import { blank, muted, status } from "../../cli-framework/index.js";
+import { blank, muted, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const homeScreen: Screen<AppContext> = {
@@ -18,57 +18,63 @@ export const homeScreen: Screen<AppContext> = {
     muted(`Project: ${ctx.projectName}`);
     blank();
 
-    // Health status
-    const passed = ctx.allResults.filter((r) => r.status === "pass").length;
+    // Failed checks summary
     const failed = ctx.allResults.filter((r) => r.status === "fail").length;
     const total = ctx.allResults.length;
 
     if (failed > 0) {
-      status("fail", `${failed} issue${failed > 1 ? "s" : ""} found`, `${passed}/${total} checks passing`);
+      text(`\x1b[31mFailed checks ${failed}/${total}\x1b[0m`);
     } else {
-      status("pass", "All checks passing", `${total} checks`);
+      text(`\x1b[32mAll checks passing (${total})\x1b[0m`);
     }
-
-    // Fixable count
-    const fixable = ctx.issues.length;
-    if (fixable > 0) {
-      status("info", `${fixable} auto-fixable`);
-    }
-
     blank();
+
+    // Category breakdown (only show non-empty)
+    if (failed > 0) {
+      const required = ctx.issues.filter((i) => i.tags.includes("required")).length;
+      const recommended = ctx.issues.filter((i) => i.tags.includes("recommended")).length;
+      const opinionated = ctx.issues.filter((i) =>
+        !i.tags.includes("required") && !i.tags.includes("recommended")
+      ).length;
+
+      if (required > 0) {
+        text(`  Required - ${required}`);
+      }
+      if (recommended > 0) {
+        text(`  Recommended - ${recommended}`);
+      }
+      if (opinionated > 0) {
+        text(`  Opinionated - ${opinionated}`);
+      }
+      blank();
+    }
   },
 
   options: (ctx): Option<AppContext>[] => {
     const opts: Option<AppContext>[] = [];
     const issueCount = ctx.issues.length;
 
-    // View issues (if any)
+    // Current issues (if any)
     if (issueCount > 0) {
       opts.push(
-        nav("issues", "View issues", "issues", {
+        nav("issues", "Current issues", "issues", {
           badge: `${issueCount}`,
-          description: "See all failing checks with auto-fixes",
         })
       );
     }
 
-    // Fix all (if any)
-    if (issueCount > 0) {
-      opts.push(
-        action("fix-all", "Fix all issues", async (c) => {
-          // Navigate to first issue
-          c.currentIssueIndex = 0;
-          return "issue-detail";
-        }, "Walk through each issue one by one")
-      );
-    }
+    // Config
+    opts.push(
+      nav("config", "Config", "config", {
+        description: "Manage categories and checks",
+      })
+    );
 
     // Run checks again
     opts.push(
       action("rescan", "Run checks again", async () => {
-        // Will re-run on next render cycle via onEnter
         return "scanning";
-      }, "Re-scan project for issues")
+      })
     );
 
     opts.push(separator());
@@ -76,7 +82,6 @@ export const homeScreen: Screen<AppContext> = {
     // Exit
     opts.push(
       action("exit", "Exit", async () => {
-        // Return special value to trigger exit
         return "__exit__";
       })
     );

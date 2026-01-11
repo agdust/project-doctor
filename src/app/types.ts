@@ -49,6 +49,7 @@ export type AppContext = {
   stats: {
     fixed: number;
     skipped: number;
+    muted: number;
     disabled: number;
   };
 

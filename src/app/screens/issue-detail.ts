@@ -8,6 +8,7 @@ import type { Screen, Option } from "../../cli-framework/index.js";
 import { action } from "../../cli-framework/index.js";
 import { blank, title, muted, text, success, error } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
+import { createSkipUntil } from "../../config/types.js";
 import type { AppContext } from "../types.js";
 
 export const issueDetailScreen: Screen<AppContext> = {
@@ -46,9 +47,9 @@ export const issueDetailScreen: Screen<AppContext> = {
 
     const opts: Option<AppContext>[] = [];
 
-    // Apply fix
+    // Accept auto fix
     opts.push(
-      action("fix", "Apply fix", async (c) => {
+      action("fix", "Accept auto fix", async (c) => {
         try {
           const result = await issue.runFix();
           blank();
@@ -63,9 +64,8 @@ export const issueDetailScreen: Screen<AppContext> = {
         }
         blank();
 
-        // Move to next issue
         return moveToNextIssue(c);
-      }, "Create or modify the file")
+      })
     );
 
     // Why? (if available)
@@ -77,29 +77,63 @@ export const issueDetailScreen: Screen<AppContext> = {
       );
     }
 
-    // Disable check
+    // Next (skip without tracking)
     opts.push(
-      action("disable", "Disable check", async (c) => {
+      action("next", "Next", async (c) => {
+        c.stats.skipped++;
+        return moveToNextIssue(c);
+      })
+    );
+
+    // Mute for 2 weeks
+    opts.push(
+      action("mute-2w", "Mute for 2 weeks", async (c) => {
         try {
-          await setCheckSeverity(c.projectPath, issue.name, "off");
+          const muteDate = new Date();
+          muteDate.setDate(muteDate.getDate() + 14);
+          await setCheckSeverity(c.projectPath, issue.name, createSkipUntil(muteDate));
           blank();
-          muted("Disabled in config", 3);
-          c.stats.disabled++;
+          muted("Muted for 2 weeks", 3);
+          c.stats.muted++;
         } catch (err) {
           error(err instanceof Error ? err.message : "Unknown error", 3);
         }
         blank();
 
         return moveToNextIssue(c);
-      }, "Set to 'off' in config")
+      })
     );
 
-    // Skip
+    // Mute for 2 months
     opts.push(
-      action("skip", "Skip for now", async (c) => {
+      action("mute-2m", "Mute for 2 months", async (c) => {
+        try {
+          const muteDate = new Date();
+          muteDate.setMonth(muteDate.getMonth() + 2);
+          await setCheckSeverity(c.projectPath, issue.name, createSkipUntil(muteDate));
+          blank();
+          muted("Muted for 2 months", 3);
+          c.stats.muted++;
+        } catch (err) {
+          error(err instanceof Error ? err.message : "Unknown error", 3);
+        }
         blank();
-        muted("Skipped", 3);
-        c.stats.skipped++;
+
+        return moveToNextIssue(c);
+      })
+    );
+
+    // Disable check permanently
+    opts.push(
+      action("disable", "Disable", async (c) => {
+        try {
+          await setCheckSeverity(c.projectPath, issue.name, "off");
+          blank();
+          muted("Disabled permanently", 3);
+          c.stats.disabled++;
+        } catch (err) {
+          error(err instanceof Error ? err.message : "Unknown error", 3);
+        }
         blank();
 
         return moveToNextIssue(c);
