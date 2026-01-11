@@ -4,10 +4,23 @@
  * Shows detailed information about a selected failed check.
  */
 
+import { exec } from "node:child_process";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, nav, separator } from "../../cli-framework/index.js";
+import { action, separator } from "../../cli-framework/index.js";
 import { blank, text, muted, success, error } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+
+function openBrowser(url: string): Promise<void> {
+  return new Promise((resolve) => {
+    const cmd = process.platform === "darwin"
+      ? `open "${url}"`
+      : process.platform === "win32"
+        ? `start "${url}"`
+        : `xdg-open "${url}"`;
+
+    exec(cmd, () => resolve());
+  });
+}
 
 // Tool documentation links
 const TOOL_DOCS: Record<string, string> = {
@@ -121,6 +134,20 @@ export const overviewDetailScreen: Screen<AppContext> = {
           blank();
           return "overview";
         }, check.fixDescription ?? undefined)
+      );
+    }
+
+    // Tool docs link
+    const toolLink = getToolLink(check.tags);
+    if (toolLink) {
+      opts.push(
+        action("docs", "Open tool docs", async () => {
+          await openBrowser(toolLink.url);
+          blank();
+          muted(`Opened ${toolLink.url}`, 3);
+          blank();
+          return undefined;
+        }, `Open ${toolLink.tool} documentation in browser`)
       );
     }
 
