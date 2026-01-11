@@ -31,11 +31,7 @@ export const homeScreen: Screen<AppContext> = {
 
     // Category breakdown (only show non-empty)
     if (failed > 0) {
-      const required = ctx.issues.filter((i) => i.tags.includes("required")).length;
-      const recommended = ctx.issues.filter((i) => i.tags.includes("recommended")).length;
-      const opinionated = ctx.issues.filter((i) =>
-        !i.tags.includes("required") && !i.tags.includes("recommended")
-      ).length;
+      const { required, recommended, opinionated } = ctx.failedByCategory;
 
       if (required > 0) {
         text(`  Required - ${required}`);
@@ -54,11 +50,11 @@ export const homeScreen: Screen<AppContext> = {
     const opts: Option<AppContext>[] = [];
     const issueCount = ctx.issues.length;
 
-    // Current issues (if any)
+    // Current issues (if any fixable)
     if (issueCount > 0) {
       opts.push(
         nav("issues", "Current issues", "issues", {
-          badge: `${issueCount}`,
+          badge: `${issueCount} auto-fixable`,
         })
       );
     }

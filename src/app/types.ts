@@ -25,6 +25,13 @@ export type HealthStats = {
   skipped: number;
 };
 
+/** Failed checks count by category */
+export type FailedByCategory = {
+  required: number;
+  recommended: number;
+  opinionated: number;
+};
+
 /** App context - shared mutable state */
 export type AppContext = {
   /** Project path being checked */
@@ -38,6 +45,9 @@ export type AppContext = {
 
   /** All check results */
   allResults: CheckResult[];
+
+  /** Failed checks count by category (all, not just fixable) */
+  failedByCategory: FailedByCategory;
 
   /** Fixable issues (sorted by priority) */
   issues: FixableIssue[];
