@@ -25,6 +25,15 @@ export type HealthStats = {
   skipped: number;
 };
 
+/** A failed check (may or may not have auto-fix) */
+export type FailedCheck = {
+  name: string;
+  group: string;
+  tags: CheckTag[];
+  message: string;
+  fixDescription: string | null;
+};
+
 /** Failed checks count by category */
 export type FailedByCategory = {
   required: number;
@@ -46,10 +55,13 @@ export type AppContext = {
   /** All check results */
   allResults: CheckResult[];
 
-  /** Failed checks count by category (all, not just fixable) */
+  /** All failed checks (fixable and non-fixable) */
+  failedChecks: FailedCheck[];
+
+  /** Failed checks count by category */
   failedByCategory: FailedByCategory;
 
-  /** Fixable issues (sorted by priority) */
+  /** Fixable issues only (sorted by priority) */
   issues: FixableIssue[];
 
   /** Current issue index (for detail screen) */

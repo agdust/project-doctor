@@ -16,24 +16,26 @@ export const overviewScreen: Screen<AppContext> = {
     title("Failed Checks Overview");
     blank();
 
+    const checks = ctx.failedChecks;
+
     // Group by importance
-    const required = ctx.issues.filter((i) => i.tags.includes("required"));
-    const recommended = ctx.issues.filter((i) => i.tags.includes("recommended"));
-    const opinionated = ctx.issues.filter((i) =>
-      !i.tags.includes("required") && !i.tags.includes("recommended")
+    const required = checks.filter((c) => c.tags.includes("required"));
+    const recommended = checks.filter((c) => c.tags.includes("recommended"));
+    const opinionated = checks.filter((c) =>
+      !c.tags.includes("required") && !c.tags.includes("recommended")
     );
 
     // Find max name length for alignment
-    const maxNameLen = Math.max(...ctx.issues.map((i) => i.name.length));
+    const maxNameLen = checks.length > 0 ? Math.max(...checks.map((c) => c.name.length)) : 0;
 
     if (required.length > 0) {
       muted(`Required (${required.length}):`);
       blank();
-      for (const issue of required) {
-        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
-        if (issue.fixDescription) {
-          muted(`    Fix: ${issue.fixDescription}`, 0);
+      for (const check of required) {
+        const padding = " ".repeat(maxNameLen - check.name.length + 2);
+        text(`  \x1b[31m✗\x1b[0m ${check.name}${padding}\x1b[90m${check.message}\x1b[0m`);
+        if (check.fixDescription) {
+          muted(`    Fix: ${check.fixDescription}`, 0);
         }
         blank();
       }
@@ -42,11 +44,11 @@ export const overviewScreen: Screen<AppContext> = {
     if (recommended.length > 0) {
       muted(`Recommended (${recommended.length}):`);
       blank();
-      for (const issue of recommended) {
-        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
-        if (issue.fixDescription) {
-          muted(`    Fix: ${issue.fixDescription}`, 0);
+      for (const check of recommended) {
+        const padding = " ".repeat(maxNameLen - check.name.length + 2);
+        text(`  \x1b[31m✗\x1b[0m ${check.name}${padding}\x1b[90m${check.message}\x1b[0m`);
+        if (check.fixDescription) {
+          muted(`    Fix: ${check.fixDescription}`, 0);
         }
         blank();
       }
@@ -55,11 +57,11 @@ export const overviewScreen: Screen<AppContext> = {
     if (opinionated.length > 0) {
       muted(`Opinionated (${opinionated.length}):`);
       blank();
-      for (const issue of opinionated) {
-        const padding = " ".repeat(maxNameLen - issue.name.length + 2);
-        text(`  \x1b[31m✗\x1b[0m ${issue.name}${padding}\x1b[90m${issue.result.message}\x1b[0m`);
-        if (issue.fixDescription) {
-          muted(`    Fix: ${issue.fixDescription}`, 0);
+      for (const check of opinionated) {
+        const padding = " ".repeat(maxNameLen - check.name.length + 2);
+        text(`  \x1b[31m✗\x1b[0m ${check.name}${padding}\x1b[90m${check.message}\x1b[0m`);
+        if (check.fixDescription) {
+          muted(`    Fix: ${check.fixDescription}`, 0);
         }
         blank();
       }

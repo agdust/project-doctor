@@ -11,7 +11,7 @@ import type { CheckResult, CheckResultBase, GlobalContext, CheckTag } from "../t
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
-import type { AppContext, FixableIssue, FailedByCategory } from "./types.js";
+import type { AppContext, FixableIssue, FailedCheck, FailedByCategory } from "./types.js";
 
 // Package paths for loading docs
 const __filename = fileURLToPath(import.meta.url);
@@ -81,6 +81,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
   const projectName = await getProjectName(global, projectPath);
 
   const allResults: CheckResult[] = [];
+  const failedChecks: FailedCheck[] = [];
   const fixableIssues: FixableIssue[] = [];
   const failedByCategory: FailedByCategory = { required: 0, recommended: 0, opinionated: 0 };
 
@@ -97,8 +98,9 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
       const result: CheckResult = { ...baseResult, group: group.name };
       allResults.push(result);
 
-      // Track failed checks by category
+      // Track failed checks
       if (baseResult.status === "fail") {
+        // Count by category
         if (check.tags.includes("required")) {
           failedByCategory.required++;
         } else if (check.tags.includes("recommended")) {
@@ -106,6 +108,15 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         } else {
           failedByCategory.opinionated++;
         }
+
+        // Store failed check info
+        failedChecks.push({
+          name: check.name,
+          group: group.name,
+          tags: check.tags,
+          message: baseResult.message,
+          fixDescription: check.fix?.description ?? null,
+        });
 
         // Collect fixable failures
         if (check.fix) {
@@ -142,6 +153,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     projectName,
     global,
     allResults,
+    failedChecks,
     failedByCategory,
     issues: sortedIssues,
     currentIssueIndex: 0,
@@ -161,6 +173,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
 export async function rescanProject(ctx: AppContext): Promise<void> {
   const newCtx = await createAppContext(ctx.projectPath);
   ctx.allResults = newCtx.allResults;
+  ctx.failedChecks = newCtx.failedChecks;
   ctx.failedByCategory = newCtx.failedByCategory;
   ctx.issues = newCtx.issues;
   ctx.currentIssueIndex = 0;
