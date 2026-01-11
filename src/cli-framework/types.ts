@@ -80,8 +80,11 @@ export type Screen<TCtx> = {
 // ============================================================================
 
 export type AppConfig<TCtx> = {
-  /** App name (shown in header) */
+  /** App name (technical identifier) */
   name: string;
+
+  /** Display name shown in header (defaults to name) */
+  displayName?: string;
 
   /** Initial context */
   context: TCtx;

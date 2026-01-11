@@ -70,7 +70,7 @@ export class App<TCtx> {
 
     // Clear screen and show app header
     clear();
-    bigTitle(this.config.name);
+    bigTitle(this.config.displayName ?? this.config.name);
     blank();
 
     // Render screen content

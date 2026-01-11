@@ -29,6 +29,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
 
   const config: AppConfig<AppContext> = {
     name: "project-doctor",
+    displayName: "Project Doctor",
     context,
     screens: [
       homeScreen,
