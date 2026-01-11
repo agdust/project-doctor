@@ -8,11 +8,11 @@ export const check: Check<EnvContext> = {
   name,
   description: "Check if .env.example has content",
   tags: ["universal", "recommended", "effort:medium"],
-  run: async (_global, { exampleRaw, exampleVars }) => {
-    if (!exampleRaw) return skip(name, "No .env.example");
-    if (exampleVars.length === 0) {
+  run: async (_global, ctx) => {
+    if (!ctx.exampleExists) return skip(name, "No .env.example");
+    if (ctx.exampleVars.length === 0) {
       return fail(name, ".env.example is empty");
     }
-    return pass(name, `${exampleVars.length} vars documented`);
+    return pass(name, `${ctx.exampleVars.length} vars documented`);
   },
 };
