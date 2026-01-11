@@ -5,7 +5,6 @@
  * Declarative config in, interactive app out.
  */
 
-import * as readline from "node:readline";
 import { select, Separator as InquirerSeparator } from "@inquirer/prompts";
 import { CancelPromptError } from "@inquirer/core";
 import type {
@@ -85,21 +84,19 @@ export class App<TCtx> {
     // Build choices for inquirer
     const choices = this.buildChoices(options);
 
-    // Set up ESC key handling
+    // Set up ESC key handling with raw stdin for immediate response
     const ac = new AbortController();
     let escPressed = false;
 
-    // Enable keypress events for ESC detection
-    readline.emitKeypressEvents(process.stdin);
-
-    const onKeypress = (_str: string, key: readline.Key) => {
-      if (key && key.name === "escape") {
+    const onData = (data: Buffer) => {
+      // ESC key is 0x1b (27)
+      if (data[0] === 0x1b && data.length === 1) {
         escPressed = true;
         ac.abort();
       }
     };
 
-    process.stdin.on("keypress", onKeypress);
+    process.stdin.on("data", onData);
 
     // Prompt and handle selection
     try {
@@ -125,7 +122,7 @@ export class App<TCtx> {
         throw error;
       }
     } finally {
-      process.stdin.removeListener("keypress", onKeypress);
+      process.stdin.removeListener("data", onData);
     }
   }
 
