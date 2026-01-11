@@ -34,11 +34,8 @@ export const overviewScreen: Screen<AppContext> = {
       for (const check of required) {
         const padding = " ".repeat(maxNameLen - check.name.length + 2);
         text(`  \x1b[31m✗\x1b[0m ${check.name}${padding}\x1b[90m${check.message}\x1b[0m`);
-        if (check.fixDescription) {
-          muted(`    Fix: ${check.fixDescription}`, 0);
-        }
-        blank();
       }
+      blank();
     }
 
     if (recommended.length > 0) {
@@ -47,11 +44,8 @@ export const overviewScreen: Screen<AppContext> = {
       for (const check of recommended) {
         const padding = " ".repeat(maxNameLen - check.name.length + 2);
         text(`  \x1b[31m✗\x1b[0m ${check.name}${padding}\x1b[90m${check.message}\x1b[0m`);
-        if (check.fixDescription) {
-          muted(`    Fix: ${check.fixDescription}`, 0);
-        }
-        blank();
       }
+      blank();
     }
 
     if (opinionated.length > 0) {
@@ -60,11 +54,8 @@ export const overviewScreen: Screen<AppContext> = {
       for (const check of opinionated) {
         const padding = " ".repeat(maxNameLen - check.name.length + 2);
         text(`  \x1b[31m✗\x1b[0m ${check.name}${padding}\x1b[90m${check.message}\x1b[0m`);
-        if (check.fixDescription) {
-          muted(`    Fix: ${check.fixDescription}`, 0);
-        }
-        blank();
       }
+      blank();
     }
   },
 
