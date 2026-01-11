@@ -6,7 +6,7 @@
 
 import { checkbox } from "@inquirer/prompts";
 import type { Screen } from "../../cli-framework/index.js";
-import { clear, bigTitle, blank } from "../../cli-framework/index.js";
+import { clear, bigTitle, blank, muted } from "../../cli-framework/index.js";
 import { updateConfig, isTagOff } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
 
@@ -37,12 +37,28 @@ export const categoriesScreen: Screen<AppContext> = {
       checked: !isTagOff(ctx.global.config, cat.value),
     }));
 
+    // Set up ESC key handling
+    const ac = new AbortController();
+    let escPressed = false;
+
+    const onData = (data: Buffer) => {
+      if (data[0] === 0x1b && data.length === 1) {
+        escPressed = true;
+        ac.abort();
+      }
+    };
+
+    process.stdin.on("data", onData);
+
     try {
-      const selected = await checkbox({
-        message: "Toggle categories (space to toggle, enter to save)",
-        choices,
-        theme: { prefix: "" },
-      });
+      const selected = await checkbox(
+        {
+          message: "Toggle categories (space to toggle, enter to save, esc to cancel)",
+          choices,
+          theme: { prefix: "" },
+        },
+        { signal: ac.signal }
+      );
 
       // Update config based on selection
       const updates: Record<string, "off" | "error"> = {};
@@ -59,7 +75,13 @@ export const categoriesScreen: Screen<AppContext> = {
         await updateConfig(ctx.projectPath, { tags: updates });
       }
     } catch {
-      // User cancelled (Ctrl+C or ESC)
+      // User cancelled (Ctrl+C or ESC) - discard changes
+      if (escPressed) {
+        blank();
+        muted("Cancelled", 3);
+      }
+    } finally {
+      process.stdin.removeListener("data", onData);
     }
 
     // Return to config screen
