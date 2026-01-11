@@ -12,6 +12,7 @@ import { homeScreen } from "./screens/home.js";
 import { issuesScreen } from "./screens/issues.js";
 import { overviewScreen } from "./screens/overview.js";
 import { issueDetailScreen } from "./screens/issue-detail.js";
+import { fixOptionsScreen } from "./screens/fix-options.js";
 import { whyScreen } from "./screens/why.js";
 import { summaryScreen } from "./screens/summary.js";
 import { scanningScreen } from "./screens/scanning.js";
@@ -36,6 +37,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       issuesScreen,
       overviewScreen,
       issueDetailScreen,
+      fixOptionsScreen,
       whyScreen,
       summaryScreen,
       scanningScreen,

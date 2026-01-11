@@ -6,6 +6,14 @@
 
 import type { CheckResult, CheckTag, FixResult, GlobalContext } from "../types.js";
 
+/** An option for fixing an issue */
+export type FixOptionRunnable = {
+  id: string;
+  label: string;
+  description?: string;
+  runFix: () => Promise<FixResult>;
+};
+
 /** A check that has an available fix */
 export type FixableIssue = {
   name: string;
@@ -14,7 +22,10 @@ export type FixableIssue = {
   result: CheckResult;
   fixDescription: string;
   why: string | null;
-  runFix: () => Promise<FixResult>;
+  /** For simple fixes - single action */
+  runFix?: () => Promise<FixResult>;
+  /** For fixes with options - multiple choices */
+  fixOptions?: FixOptionRunnable[];
 };
 
 /** Summary stats for display */

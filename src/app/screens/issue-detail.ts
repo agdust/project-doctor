@@ -5,7 +5,7 @@
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action } from "../../cli-framework/index.js";
+import { action, nav } from "../../cli-framework/index.js";
 import { blank, title, muted, text, success, error } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
 import { createSkipUntil } from "../../config/types.js";
@@ -48,26 +48,34 @@ export const issueDetailScreen: Screen<AppContext> = {
 
     const opts: Option<AppContext>[] = [];
 
-    // Accept auto fix
-    opts.push(
-      action("fix", "Accept auto fix", async (c) => {
-        try {
-          const result = await issue.runFix();
-          blank();
-          if (result.success) {
-            success(result.message, 3);
-            c.stats.fixed++;
-          } else {
-            error(result.message, 3);
+    // Fix options (multiple choices) or simple auto fix
+    if (issue.fixOptions && issue.fixOptions.length > 0) {
+      // Navigate to fix options submenu
+      opts.push(nav("fix-options", "Fix...", "fix-options", {
+        description: "Choose from available fix options",
+      }));
+    } else if (issue.runFix) {
+      // Simple auto fix
+      opts.push(
+        action("fix", "Accept auto fix", async (c) => {
+          try {
+            const result = await issue.runFix!();
+            blank();
+            if (result.success) {
+              success(result.message, 3);
+              c.stats.fixed++;
+            } else {
+              error(result.message, 3);
+            }
+          } catch (err) {
+            error(err instanceof Error ? err.message : "Unknown error", 3);
           }
-        } catch (err) {
-          error(err instanceof Error ? err.message : "Unknown error", 3);
-        }
-        blank();
+          blank();
 
-        return moveToNextIssue(c);
-      })
-    );
+          return moveToNextIssue(c);
+        })
+      );
+    }
 
     // Why? (if available)
     if (issue.why) {

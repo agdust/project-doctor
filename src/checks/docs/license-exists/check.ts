@@ -1,14 +1,17 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { exec } from "node:child_process";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
 
 const name = "license-exists";
 
+const year = new Date().getFullYear();
+
 const MIT_LICENSE = `MIT License
 
-Copyright (c) ${new Date().getFullYear()}
+Copyright (c) ${year}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +32,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `;
 
+const GPL3_LICENSE = `GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+
+                            Preamble
+
+The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
+
+The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works.  By contrast,
+the GNU General Public License is intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.  We, the Free Software Foundation, use the
+GNU General Public License for most of our software; it applies also to
+any other work released this way by its authors.  You can apply it to
+your programs, too.
+
+For the complete license text, see <https://www.gnu.org/licenses/gpl-3.0.txt>
+`;
+
+function openBrowser(url: string): Promise<void> {
+  return new Promise((resolve) => {
+    const cmd = process.platform === "darwin"
+      ? `open "${url}"`
+      : process.platform === "win32"
+        ? `start "${url}"`
+        : `xdg-open "${url}"`;
+
+    exec(cmd, () => {
+      // Ignore errors - browser may not be available
+      resolve();
+    });
+  });
+}
+
 export const check: Check<DocsContext> = {
   name,
   description: "Check if LICENSE file exists",
@@ -38,11 +80,37 @@ export const check: Check<DocsContext> = {
     return pass(name, "LICENSE file exists");
   },
   fix: {
-    description: "Create MIT LICENSE file",
-    run: async (global) => {
-      const licensePath = join(global.projectPath, "LICENSE");
-      await writeFile(licensePath, MIT_LICENSE, "utf-8");
-      return { success: true, message: "Created MIT LICENSE" };
-    },
+    description: "Create LICENSE file",
+    options: [
+      {
+        id: "mit",
+        label: "MIT License",
+        description: "Permissive license, allows forks to be closed source",
+        run: async (global) => {
+          const licensePath = join(global.projectPath, "LICENSE");
+          await writeFile(licensePath, MIT_LICENSE, "utf-8");
+          return { success: true, message: "Created MIT LICENSE" };
+        },
+      },
+      {
+        id: "gpl3",
+        label: "GPL-3.0 License",
+        description: "Copyleft license, requires derivative works to be open source",
+        run: async (global) => {
+          const licensePath = join(global.projectPath, "LICENSE");
+          await writeFile(licensePath, GPL3_LICENSE, "utf-8");
+          return { success: true, message: "Created GPL-3.0 LICENSE" };
+        },
+      },
+      {
+        id: "browse",
+        label: "Browse licenses...",
+        description: "Open choosealicense.com to compare options",
+        run: async () => {
+          await openBrowser("https://choosealicense.com/");
+          return { success: false, message: "Opened browser - choose a license and add it manually" };
+        },
+      },
+    ],
   },
 };

@@ -7,7 +7,7 @@
 import { readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { CheckResult, CheckResultBase, GlobalContext, CheckTag } from "../types.js";
+import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult } from "../types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
@@ -121,15 +121,37 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         // Collect fixable failures
         if (check.fix) {
           const why = await loadWhyFromDocs(group.name, check.name);
-          fixableIssues.push({
-            name: check.name,
-            group: group.name,
-            tags: check.tags,
-            result,
-            fixDescription: check.fix.description,
-            why,
-            runFix: () => (check.fix as { run: (g: GlobalContext, c: unknown) => Promise<{ success: boolean; message: string }> }).run(global, groupContext),
-          });
+          const fix = check.fix;
+
+          // Check if fix has options or is a simple fix
+          if ("options" in fix) {
+            // Fix with options
+            fixableIssues.push({
+              name: check.name,
+              group: group.name,
+              tags: check.tags,
+              result,
+              fixDescription: fix.description,
+              why,
+              fixOptions: fix.options.map((opt) => ({
+                id: opt.id,
+                label: opt.label,
+                description: opt.description,
+                runFix: () => (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext),
+              })),
+            });
+          } else {
+            // Simple fix
+            fixableIssues.push({
+              name: check.name,
+              group: group.name,
+              tags: check.tags,
+              result,
+              fixDescription: fix.description,
+              why,
+              runFix: () => (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext),
+            });
+          }
         }
       }
     }

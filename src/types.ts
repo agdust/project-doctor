@@ -14,6 +14,13 @@ export type FixResult = {
   message: string;
 };
 
+export type FixOption<GroupCtx = unknown> = {
+  id: string;
+  label: string;
+  description?: string;
+  run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult>;
+};
+
 export type CheckResult = CheckResultBase & {
   group: string;
 };
@@ -55,15 +62,24 @@ export type GlobalContext = {
   config: ResolvedConfig;
 };
 
+export type SimpleFix<GroupCtx = unknown> = {
+  description: string;
+  run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult>;
+};
+
+export type FixWithOptions<GroupCtx = unknown> = {
+  description: string;
+  options: FixOption<GroupCtx>[];
+};
+
+export type Fix<GroupCtx = unknown> = SimpleFix<GroupCtx> | FixWithOptions<GroupCtx>;
+
 export type Check<GroupCtx = unknown> = {
   name: string;
   description: string;
   tags: CheckTag[];
   run: (global: GlobalContext, group: GroupCtx) => Promise<CheckResultBase>;
-  fix?: {
-    description: string;
-    run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult>;
-  };
+  fix?: Fix<GroupCtx>;
 };
 
 export type GroupContextLoader<T> = (global: GlobalContext) => Promise<T>;
