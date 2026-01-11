@@ -109,23 +109,40 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
           failedByCategory.opinionated++;
         }
 
-        // Store failed check info
-        failedChecks.push({
+        // Load why content for all failed checks
+        const why = await loadWhyFromDocs(group.name, check.name);
+
+        // Build failed check with full info
+        const failedCheck: FailedCheck = {
           name: check.name,
           group: group.name,
           tags: check.tags,
           message: baseResult.message,
+          why,
           fixDescription: check.fix?.description ?? null,
-        });
+        };
 
-        // Collect fixable failures
+        // Add fix info if available
         if (check.fix) {
-          const why = await loadWhyFromDocs(group.name, check.name);
           const fix = check.fix;
-
-          // Check if fix has options or is a simple fix
           if ("options" in fix) {
-            // Fix with options
+            failedCheck.fixOptions = fix.options.map((opt) => ({
+              id: opt.id,
+              label: opt.label,
+              description: opt.description,
+              runFix: () => (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext),
+            }));
+          } else {
+            failedCheck.runFix = () => (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext);
+          }
+        }
+
+        failedChecks.push(failedCheck);
+
+        // Collect fixable failures (for the fixing flow)
+        if (check.fix) {
+          const fix = check.fix;
+          if ("options" in fix) {
             fixableIssues.push({
               name: check.name,
               group: group.name,
@@ -133,15 +150,9 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
               result,
               fixDescription: fix.description,
               why,
-              fixOptions: fix.options.map((opt) => ({
-                id: opt.id,
-                label: opt.label,
-                description: opt.description,
-                runFix: () => (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext),
-              })),
+              fixOptions: failedCheck.fixOptions,
             });
           } else {
-            // Simple fix
             fixableIssues.push({
               name: check.name,
               group: group.name,
@@ -149,7 +160,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
               result,
               fixDescription: fix.description,
               why,
-              runFix: () => (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext),
+              runFix: failedCheck.runFix,
             });
           }
         }
@@ -179,6 +190,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     failedByCategory,
     issues: sortedIssues,
     currentIssueIndex: 0,
+    selectedOverviewIndex: 0,
     stats: {
       fixed: 0,
       skipped: 0,

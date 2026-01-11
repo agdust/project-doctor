@@ -150,7 +150,7 @@ export class App<TCtx> {
   private buildChoices(options: Option<TCtx>[]) {
     return options.map((opt) => {
       if (opt.type === "separator") {
-        return new InquirerSeparator();
+        return new InquirerSeparator(opt.label);
       }
 
       let name = opt.label;

@@ -42,7 +42,12 @@ export type FailedCheck = {
   group: string;
   tags: CheckTag[];
   message: string;
+  why: string | null;
   fixDescription: string | null;
+  /** For simple fixes - single action */
+  runFix?: () => Promise<FixResult>;
+  /** For fixes with options - multiple choices */
+  fixOptions?: FixOptionRunnable[];
 };
 
 /** Failed checks count by category */
@@ -77,6 +82,9 @@ export type AppContext = {
 
   /** Current issue index (for detail screen) */
   currentIssueIndex: number;
+
+  /** Selected check index in overview (for overview-detail screen) */
+  selectedOverviewIndex: number;
 
   /** Session stats */
   stats: {

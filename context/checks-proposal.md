@@ -26,10 +26,6 @@ These checks only verify file presence. Implementation: single `fs.stat` call.
 | `docker-exists` | Containerization available | Knows deployment approach |
 | `github-actions-exists` | CI/CD configured | Understands automation |
 | `env-example-exists` | Environment template available | Knows required env vars |
-| `jest-config-exists` | Test framework configured | Knows testing approach |
-| `vitest-config-exists` | Vitest configured | Knows testing framework |
-| `playwright-config-exists` | E2E tests configured | Knows E2E testing setup |
-| `cypress-config-exists` | Cypress configured | Knows E2E testing setup |
 
 ---
 

@@ -41,6 +41,7 @@ export type NavOption = BaseOption & {
 /** Separator line between option groups */
 export type Separator = {
   type: "separator";
+  label?: string;
 };
 
 export type Option<TCtx> = ActionOption<TCtx> | NavOption | Separator;
@@ -142,8 +143,8 @@ export function nav(
 }
 
 /** Create a separator */
-export function separator(): Separator {
-  return { type: "separator" };
+export function separator(label?: string): Separator {
+  return { type: "separator", label };
 }
 
 /** Create a back option (usually auto-added) */

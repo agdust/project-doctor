@@ -11,6 +11,7 @@ import { createAppContext } from "./loader.js";
 import { homeScreen } from "./screens/home.js";
 import { issuesScreen } from "./screens/issues.js";
 import { overviewScreen } from "./screens/overview.js";
+import { overviewDetailScreen } from "./screens/overview-detail.js";
 import { issueDetailScreen } from "./screens/issue-detail.js";
 import { fixOptionsScreen } from "./screens/fix-options.js";
 import { whyScreen } from "./screens/why.js";
@@ -37,6 +38,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       homeScreen,
       issuesScreen,
       overviewScreen,
+      overviewDetailScreen,
       issueDetailScreen,
       fixOptionsScreen,
       whyScreen,

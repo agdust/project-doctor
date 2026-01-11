@@ -59,7 +59,7 @@ src/checks/
 │   ├── example.ts
 │   └── vars.ts
 ├── testing/
-│   ├── config.ts          # jest, vitest, playwright, cypress
+│   ├── config.ts
 │   ├── pass.ts
 │   └── coverage.ts
 ├── deps/
@@ -126,7 +126,6 @@ Each check has a `tags` array with one or more of:
 | `tool:knip` | Only runs if knip is installed |
 | `tool:docker` | Only runs if Dockerfile exists |
 | `tool:vitest` | Only runs if Vitest is configured |
-| `tool:jest` | Only runs if Jest is configured |
 
 ### Effort Tags
 
