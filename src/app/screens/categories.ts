@@ -18,6 +18,7 @@ const CATEGORIES = [
 
 export const categoriesScreen: Screen<AppContext> = {
   id: "categories",
+  parent: "config",
 
   render: (ctx) => {
     title("Control Categories");

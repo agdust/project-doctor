@@ -4,13 +4,13 @@
  * Shows detailed explanation of why a check matters.
  */
 
-import type { Screen, Option } from "../../cli-framework/index.js";
-import { action } from "../../cli-framework/index.js";
+import type { Screen } from "../../cli-framework/index.js";
 import { blank, title, muted, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const whyScreen: Screen<AppContext> = {
   id: "why",
+  parent: "issue-detail",
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
@@ -36,12 +36,5 @@ export const whyScreen: Screen<AppContext> = {
     blank();
   },
 
-  options: (): Option<AppContext>[] => [
-    action("fix", "Got it, fix this issue", async () => {
-      return "issue-detail";
-    }),
-    action("back", "Back to issue", async () => {
-      return "issue-detail";
-    }),
-  ],
+  options: () => [],
 };

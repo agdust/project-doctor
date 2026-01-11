@@ -53,16 +53,19 @@ export type Screen<TCtx> = {
   /** Unique screen identifier */
   id: string;
 
+  /** Parent screen ID for back navigation (hierarchy-based, not history) */
+  parent?: string;
+
   /** Render screen content (called before showing options) */
   render: (ctx: TCtx) => void;
 
   /**
    * Screen options - static array or dynamic function
-   * Back option is added automatically unless `noBack: true`
+   * Back option is added automatically if parent is defined
    */
   options: Option<TCtx>[] | ((ctx: TCtx) => Option<TCtx>[]);
 
-  /** Don't add automatic back option (for root screen) */
+  /** Don't add automatic back option (even if parent is defined) */
   noBack?: boolean;
 
   /** Run before entering screen */
@@ -101,9 +104,6 @@ export type AppConfig<TCtx> = {
 // ============================================================================
 
 export type AppState<TCtx> = {
-  /** Navigation stack (screen IDs) */
-  stack: string[];
-
   /** Current screen ID */
   current: string;
 

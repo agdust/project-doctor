@@ -13,6 +13,7 @@ import type { AppContext } from "../types.js";
 
 export const issueDetailScreen: Screen<AppContext> = {
   id: "issue-detail",
+  parent: "issues",
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];

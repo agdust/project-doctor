@@ -11,6 +11,7 @@ import type { AppContext } from "../types.js";
 
 export const summaryScreen: Screen<AppContext> = {
   id: "summary",
+  parent: "home",
 
   render: (ctx) => {
     title("Session Summary");

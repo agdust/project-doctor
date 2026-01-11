@@ -11,6 +11,7 @@ import type { AppContext } from "../types.js";
 
 export const configScreen: Screen<AppContext> = {
   id: "config",
+  parent: "home",
 
   render: () => {
     title("Configuration");

@@ -10,6 +10,7 @@ import type { AppContext } from "../types.js";
 
 export const overviewScreen: Screen<AppContext> = {
   id: "overview",
+  parent: "issues",
 
   render: (ctx) => {
     title("Failed Checks Overview");

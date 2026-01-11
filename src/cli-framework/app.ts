@@ -35,7 +35,6 @@ export class App<TCtx> {
     }
 
     this.state = {
-      stack: [],
       current: initialScreen,
       context: config.context,
       shouldExit: false,
@@ -137,7 +136,7 @@ export class App<TCtx> {
     screen: Screen<TCtx>,
     options: Option<TCtx>[]
   ): Option<TCtx>[] {
-    if (screen.noBack || this.state.stack.length === 0) {
+    if (screen.noBack || !screen.parent) {
       return options;
     }
     return [...options, back()];
@@ -227,16 +226,14 @@ export class App<TCtx> {
     // Lifecycle: onLeave
     await fromScreen.onLeave?.(this.state.context);
 
-    // Push current to stack
-    this.state.stack.push(this.state.current);
     this.state.current = toScreenId;
   }
 
   /**
-   * Go back to previous screen, or exit if at root
+   * Go back to parent screen, or exit if at root
    */
   private async goBack(currentScreen: Screen<TCtx>): Promise<void> {
-    if (this.state.stack.length === 0) {
+    if (!currentScreen.parent) {
       // At root - ESC exits the app
       this.state.shouldExit = true;
       return;
@@ -245,11 +242,8 @@ export class App<TCtx> {
     // Lifecycle: onLeave
     await currentScreen.onLeave?.(this.state.context);
 
-    // Pop from stack
-    const previousScreen = this.state.stack.pop();
-    if (previousScreen) {
-      this.state.current = previousScreen;
-    }
+    // Go to parent
+    this.state.current = currentScreen.parent;
   }
 
   /**

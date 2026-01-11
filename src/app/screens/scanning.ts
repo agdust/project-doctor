@@ -13,6 +13,8 @@ import { rescanProject } from "../loader.js";
 
 export const scanningScreen: Screen<AppContext> = {
   id: "scanning",
+  parent: "home",
+  noBack: true, // Transient screen, no back during scan
 
   render: (ctx) => {
     if (ctx.scanned) {

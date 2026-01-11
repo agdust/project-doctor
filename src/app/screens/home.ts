@@ -11,7 +11,7 @@ import type { AppContext } from "../types.js";
 
 export const homeScreen: Screen<AppContext> = {
   id: "home",
-  noBack: true, // Root screen
+  // Root screen - no parent
 
   render: (ctx) => {
     // Project info
