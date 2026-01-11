@@ -68,8 +68,8 @@ export type Screen<TCtx> = {
   /** Don't add automatic back option (even if parent is defined) */
   noBack?: boolean;
 
-  /** Run before entering screen */
-  onEnter?: (ctx: TCtx) => Promise<void>;
+  /** Run before entering screen. Return screen ID to navigate immediately. */
+  onEnter?: (ctx: TCtx) => Promise<string | void>;
 
   /** Run when leaving screen */
   onLeave?: (ctx: TCtx) => Promise<void>;

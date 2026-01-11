@@ -61,8 +61,12 @@ export class App<TCtx> {
    * Run a single screen iteration
    */
   private async runScreen(screen: Screen<TCtx>): Promise<void> {
-    // Lifecycle: onEnter
-    await screen.onEnter?.(this.state.context);
+    // Lifecycle: onEnter - can return next screen to navigate immediately
+    const nextScreen = await screen.onEnter?.(this.state.context);
+    if (nextScreen) {
+      this.state.current = nextScreen;
+      return;
+    }
 
     // Clear screen and show app header
     clear();
