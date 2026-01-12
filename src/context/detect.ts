@@ -18,6 +18,8 @@ export async function detectTools(files: FileCache): Promise<DetectedTools> {
     hasPrettierrc,
     hasPrettierrcJson,
     hasDockerfile,
+    hasJscpdJson,
+    hasJscpdrc,
   ] = await Promise.all([
     files.readJson<PackageJson>("package.json"),
     files.exists("package-lock.json"),
@@ -29,6 +31,8 @@ export async function detectTools(files: FileCache): Promise<DetectedTools> {
     files.exists(".prettierrc"),
     files.exists(".prettierrc.json"),
     files.exists("Dockerfile"),
+    files.exists(".jscpd.json"),
+    files.exists(".jscpdrc"),
   ]);
 
   const allDeps = {
@@ -52,6 +56,7 @@ export async function detectTools(files: FileCache): Promise<DetectedTools> {
     hasDocker: hasDockerfile,
     hasKnip: "knip" in allDeps,
     hasSizeLimit: "size-limit" in allDeps,
+    hasJscpd: hasJscpdJson || hasJscpdrc || "jscpd" in allDeps,
     isMonorepo: Boolean(packageJson?.workspaces),
   };
 }

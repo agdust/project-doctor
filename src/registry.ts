@@ -6,6 +6,7 @@ import { loadContext as loadGitignoreContext, checks as gitignoreChecks } from "
 import { loadContext as loadGitContext, checks as gitChecks } from "./checks/git/index.js";
 import { loadContext as loadEslintContext, checks as eslintChecks } from "./checks/eslint/index.js";
 import { loadContext as loadPrettierContext, checks as prettierChecks } from "./checks/prettier/index.js";
+import { loadContext as loadJscpdContext, checks as jscpdChecks } from "./checks/jscpd/index.js";
 import { loadContext as loadEditorconfigContext, checks as editorconfigChecks } from "./checks/editorconfig/index.js";
 import { loadContext as loadNpmContext, checks as npmChecks } from "./checks/npm/index.js";
 import { loadContext as loadDocsContext, checks as docsChecks } from "./checks/docs/index.js";
@@ -29,6 +30,7 @@ export const checkGroups = [
   createGroup("git", loadGitContext, gitChecks),
   createGroup("eslint", loadEslintContext, eslintChecks),
   createGroup("prettier", loadPrettierContext, prettierChecks),
+  createGroup("jscpd", loadJscpdContext, jscpdChecks),
   createGroup("editorconfig", loadEditorconfigContext, editorconfigChecks),
   createGroup("npm", loadNpmContext, npmChecks),
   createGroup("docs", loadDocsContext, docsChecks),

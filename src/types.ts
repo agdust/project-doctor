@@ -52,6 +52,7 @@ export type DetectedTools = {
   hasDocker: boolean;
   hasKnip: boolean;
   hasSizeLimit: boolean;
+  hasJscpd: boolean;
   isMonorepo: boolean;
 };
 

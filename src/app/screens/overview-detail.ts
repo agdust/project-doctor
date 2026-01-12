@@ -29,6 +29,7 @@ const TOOL_DOCS: Record<string, string> = {
   typescript: "https://www.typescriptlang.org/docs/",
   vitest: "https://vitest.dev/guide/",
   knip: "https://knip.dev/",
+  jscpd: "https://github.com/kucherenko/jscpd",
 };
 
 function getToolLink(tags: string[]): { tool: string; url: string } | null {
