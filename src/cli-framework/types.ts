@@ -116,6 +116,9 @@ export type AppState<TCtx> = {
 
   /** Exit requested */
   shouldExit: boolean;
+
+  /** Last selected option value per screen (for cursor restoration) */
+  lastSelected: Map<string, string>;
 };
 
 // ============================================================================

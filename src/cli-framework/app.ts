@@ -37,6 +37,7 @@ export class App<TCtx> {
       current: initialScreen,
       context: config.context,
       shouldExit: false,
+      lastSelected: new Map(),
     };
   }
 
@@ -100,19 +101,35 @@ export class App<TCtx> {
       }
     };
 
-    process.stdin.on("data", onData);
+    // Get last selected value for cursor restoration
+    const defaultValue = this.state.lastSelected.get(screen.id);
+
+    // Start the select prompt first, THEN add our ESC listener
+    // This prevents interfering with inquirer's keyboard initialization
+    const selectPromise = select(
+      {
+        message: "",
+        choices,
+        loop: false,
+        // Disable search to prevent buffered input from resetting cursor position
+        // (search with empty string matches first item, causing cursor jump)
+        theme: { prefix: "", keybindings: ["vim"] },
+        default: defaultValue,
+      },
+      { signal: ac.signal }
+    );
+
+    // Add ESC listener after inquirer has set up its keyboard handling
+    setImmediate(() => {
+      process.stdin.on("data", onData);
+    });
 
     // Prompt and handle selection
     try {
-      const selected = await select(
-        {
-          message: "",
-          choices,
-          loop: false,
-          theme: { prefix: "" },
-        },
-        { signal: ac.signal }
-      );
+      const selected = await selectPromise;
+
+      // Save selected value for cursor restoration when returning
+      this.state.lastSelected.set(screen.id, selected);
 
       await this.handleSelection(screen, options, selected);
     } catch (error) {
