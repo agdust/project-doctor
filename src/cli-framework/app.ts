@@ -89,14 +89,20 @@ export class App<TCtx> {
     // Build choices for inquirer
     const choices = this.buildChoices(options);
 
-    // Set up ESC key handling with raw stdin for immediate response
+    // Set up ESC and Ctrl+C handling with raw stdin for immediate response
     const ac = new AbortController();
     let escPressed = false;
+    let ctrlCPressed = false;
 
     const onData = (data: Buffer) => {
       // ESC key is 0x1b (27)
       if (data[0] === 0x1b && data.length === 1) {
         escPressed = true;
+        ac.abort();
+      }
+      // Ctrl+C is 0x03
+      if (data[0] === 0x03) {
+        ctrlCPressed = true;
         ac.abort();
       }
     };
@@ -133,7 +139,10 @@ export class App<TCtx> {
 
       await this.handleSelection(screen, options, selected);
     } catch (error) {
-      if (
+      // Ctrl+C exits immediately
+      if (ctrlCPressed) {
+        this.state.shouldExit = true;
+      } else if (
         escPressed ||
         error instanceof CancelPromptError ||
         (error instanceof Error && error.name === "ExitPromptError") ||
