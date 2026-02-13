@@ -8,10 +8,30 @@ import { readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult } from "../types.js";
+import type { ProjectType } from "../config/types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import type { AppContext, FixableIssue, FailedCheck, FailedByCategory } from "./types.js";
+
+// Groups that are specific to JS/Node projects
+const JS_GROUPS = new Set([
+  "package-json",
+  "tsconfig",
+  "eslint",
+  "prettier",
+  "npm",
+  "deps",
+  "testing",
+  "bundle-size",
+  "jscpd",
+]);
+
+function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
+  if (projectType === "js") return true;
+  // For "generic" projects, skip JS-specific groups
+  return !JS_GROUPS.has(groupName);
+}
 
 // Package paths for loading docs
 const __filename = fileURLToPath(import.meta.url);
@@ -85,8 +105,13 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
   const fixableIssues: FixableIssue[] = [];
   const failedByCategory: FailedByCategory = { required: 0, recommended: 0, opinionated: 0 };
 
+  // Filter groups based on project type
+  const groupsToRun = checkGroups.filter((g) =>
+    isGroupForProjectType(g.name, global.config.projectType)
+  );
+
   // Run all checks
-  for (const group of checkGroups) {
+  for (const group of groupsToRun) {
     const groupContext = await group.loadContext(global);
 
     for (const check of group.checks) {
@@ -206,6 +231,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
  */
 export async function rescanProject(ctx: AppContext): Promise<void> {
   const newCtx = await createAppContext(ctx.projectPath);
+  ctx.global = newCtx.global;
   ctx.allResults = newCtx.allResults;
   ctx.failedChecks = newCtx.failedChecks;
   ctx.failedByCategory = newCtx.failedByCategory;

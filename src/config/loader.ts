@@ -1,7 +1,7 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, access } from "node:fs/promises";
 import { join } from "node:path";
 import JSON5 from "json5";
-import type { Config, ResolvedConfig, Severity } from "./types.js";
+import type { Config, ResolvedConfig, Severity, ProjectType, ProjectTypeSource } from "./types.js";
 import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
 import { CONFIG_DIR, CONFIG_FILE } from "./constants.js";
 
@@ -52,12 +52,27 @@ export async function loadConfig(projectPath: string): Promise<Config | null> {
   return null;
 }
 
-export function resolveConfig(config: Config | null): ResolvedConfig {
+export function resolveConfig(
+  config: Config | null,
+  detection: ProjectTypeDetection
+): ResolvedConfig {
   if (!config) {
-    return DEFAULT_CONFIG;
+    return {
+      ...DEFAULT_CONFIG,
+      projectType: detection.type,
+      projectTypeSource: detection.source,
+      projectTypeDetectedFrom: detection.detectedFrom,
+    };
   }
 
+  // If config has projectType set, use it (source = "config")
+  // Otherwise use auto-detected
+  const hasManualProjectType = config.projectType !== undefined;
+
   return {
+    projectType: config.projectType ?? detection.type,
+    projectTypeSource: hasManualProjectType ? "config" : detection.source,
+    projectTypeDetectedFrom: hasManualProjectType ? undefined : detection.detectedFrom,
     checks: config.checks ?? DEFAULT_CONFIG.checks,
     tags: config.tags ?? DEFAULT_CONFIG.tags,
     groups: config.groups ?? DEFAULT_CONFIG.groups,
@@ -65,9 +80,72 @@ export function resolveConfig(config: Config | null): ResolvedConfig {
   };
 }
 
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Result of project type detection */
+export type ProjectTypeDetection = {
+  type: ProjectType;
+  /** How the type was determined */
+  source: "config" | "detected";
+  /** If detected, which file triggered it (or "fallback" if no JS files found) */
+  detectedFrom?: string;
+};
+
+/**
+ * Auto-detect project type based on files present in the project.
+ * Returns "js" if any JS/Node ecosystem files are found, "generic" otherwise.
+ */
+export async function detectProjectType(projectPath: string): Promise<ProjectType> {
+  const result = await detectProjectTypeWithCause(projectPath);
+  return result.type;
+}
+
+/**
+ * Auto-detect project type with the cause of detection.
+ */
+export async function detectProjectTypeWithCause(projectPath: string): Promise<ProjectTypeDetection> {
+  // Check for JS ecosystem indicators (in order of priority)
+  const jsIndicators = [
+    "package.json",
+    "tsconfig.json",
+    "jsconfig.json",
+    ".nvmrc",
+    ".node-version",
+    "yarn.lock",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "bun.lockb",
+    ".npmrc",
+  ];
+
+  for (const indicator of jsIndicators) {
+    if (await fileExists(join(projectPath, indicator))) {
+      return {
+        type: "js",
+        source: "detected",
+        detectedFrom: indicator,
+      };
+    }
+  }
+
+  return {
+    type: "generic",
+    source: "detected",
+    detectedFrom: "fallback",
+  };
+}
+
 export async function loadAndResolveConfig(projectPath: string): Promise<ResolvedConfig> {
   const config = await loadConfig(projectPath);
-  return resolveConfig(config);
+  const detection = await detectProjectTypeWithCause(projectPath);
+  return resolveConfig(config, detection);
 }
 
 /**
@@ -157,5 +235,15 @@ export async function setGroupSeverity(
 ): Promise<void> {
   await updateConfig(projectPath, {
     groups: { [groupName]: severity },
+  });
+}
+
+/** Set the project type in config */
+export async function setProjectType(
+  projectPath: string,
+  projectType: ProjectType
+): Promise<void> {
+  await updateConfig(projectPath, {
+    projectType,
   });
 }

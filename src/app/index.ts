@@ -18,6 +18,7 @@ import { whyScreen } from "./screens/why.js";
 import { summaryScreen } from "./screens/summary.js";
 import { scanningScreen } from "./screens/scanning.js";
 import { configScreen } from "./screens/config.js";
+import { projectTypeScreen } from "./screens/project-type.js";
 import { aboutConfigScreen } from "./screens/about-config.js";
 import { categoriesScreen } from "./screens/categories.js";
 import { aboutScreen } from "./screens/about.js";
@@ -45,6 +46,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       summaryScreen,
       scanningScreen,
       configScreen,
+      projectTypeScreen,
       aboutConfigScreen,
       categoriesScreen,
       aboutScreen,

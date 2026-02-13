@@ -18,6 +18,23 @@ export const homeScreen: Screen<AppContext> = {
     text(`\x1b[48;5;240m\x1b[97m ${ctx.projectName} \x1b[0m`);
     blank();
 
+    // Project type info
+    const config = ctx.global.config;
+    const typeLabel = config.projectType === "js" ? "JavaScript/Node" : "Generic";
+
+    if (config.projectTypeSource === "config") {
+      text(`\x1b[90mProject type: ${typeLabel}\x1b[0m`);
+    } else {
+      const detectedFrom = config.projectTypeDetectedFrom;
+      if (detectedFrom === "fallback") {
+        text(`\x1b[90mProject type: ${typeLabel} (no JS files detected)\x1b[0m`);
+      } else {
+        text(`\x1b[90mProject type: ${typeLabel} (detected from ${detectedFrom})\x1b[0m`);
+      }
+      text(`\x1b[90mYou can set project type manually in Config → Project type\x1b[0m`);
+    }
+    blank();
+
     // Failed checks summary
     const failed = ctx.allResults.filter((r) => r.status === "fail").length;
     const total = ctx.allResults.length;

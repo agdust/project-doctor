@@ -1,5 +1,5 @@
 import type { CheckResult, CheckResultBase, CheckTag, DetectedTools } from "../types.js";
-import type { ResolvedConfig } from "../config/types.js";
+import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
@@ -10,6 +10,25 @@ const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
   prettier: "hasPrettier",
   tsconfig: "hasTypeScript",
 };
+
+// Groups that are specific to JS/Node projects
+const JS_GROUPS = new Set([
+  "package-json",
+  "tsconfig",
+  "eslint",
+  "prettier",
+  "npm",
+  "deps",
+  "testing",
+  "bundle-size",
+  "jscpd",
+]);
+
+function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
+  if (projectType === "js") return true;
+  // For "generic" projects, skip JS-specific groups
+  return !JS_GROUPS.has(groupName);
+}
 
 function isToolDetected(groupName: string, detected: DetectedTools): boolean {
   const requirement = GROUP_TOOL_REQUIREMENTS[groupName];
@@ -101,6 +120,11 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
   const allResults: CheckResult[] = [];
 
   for (const group of groupsToRun) {
+    // Skip JS groups for generic projects
+    if (!isGroupForProjectType(group.name, config.projectType)) {
+      continue;
+    }
+
     // Skip detailed checks if required tool is not detected
     if (!isToolDetected(group.name, global.detected)) {
       const toolName = getToolName(group.name);

@@ -3,66 +3,74 @@ import { fixtures } from "../test/fixtures.js";
 import { runChecks } from "./runner.js";
 
 describe("runner", () => {
-  describe("shell-only project", () => {
-    it("should skip tsconfig checks when no TypeScript is detected", async () => {
+  describe("shell-only project (generic type)", () => {
+    it("should not run any JS-specific checks for generic projects", async () => {
       const results = await runChecks({
         projectPath: fixtures.shellOnly,
         skipConfig: true,
       });
 
-      const tsconfigResults = results.filter((r) => r.group === "tsconfig");
+      // JS-specific groups should be completely skipped for generic projects
+      const jsGroups = [
+        "package-json",
+        "tsconfig",
+        "eslint",
+        "prettier",
+        "npm",
+        "deps",
+        "testing",
+        "bundle-size",
+        "jscpd",
+      ];
 
-      expect(tsconfigResults).toHaveLength(1);
-      expect(tsconfigResults[0].status).toBe("skip");
-      expect(tsconfigResults[0].name).toBe("tsconfig-not-detected");
-      expect(tsconfigResults[0].message).toBe("TypeScript not detected");
-    });
-
-    it("should skip eslint checks when no ESLint is detected", async () => {
-      const results = await runChecks({
-        projectPath: fixtures.shellOnly,
-        skipConfig: true,
-      });
-
-      const eslintResults = results.filter((r) => r.group === "eslint");
-
-      expect(eslintResults).toHaveLength(1);
-      expect(eslintResults[0].status).toBe("skip");
-      expect(eslintResults[0].name).toBe("eslint-not-detected");
-      expect(eslintResults[0].message).toBe("ESLint not detected");
-    });
-
-    it("should skip prettier checks when no Prettier is detected", async () => {
-      const results = await runChecks({
-        projectPath: fixtures.shellOnly,
-        skipConfig: true,
-      });
-
-      const prettierResults = results.filter((r) => r.group === "prettier");
-
-      expect(prettierResults).toHaveLength(1);
-      expect(prettierResults[0].status).toBe("skip");
-      expect(prettierResults[0].name).toBe("prettier-not-detected");
-      expect(prettierResults[0].message).toBe("Prettier not detected");
-    });
-
-    it("should not run any tsconfig, eslint, or prettier checks in shell-only project", async () => {
-      const results = await runChecks({
-        projectPath: fixtures.shellOnly,
-        skipConfig: true,
-      });
-
-      // Should only have skip results for these groups, no actual check runs
-      const toolGroups = ["tsconfig", "eslint", "prettier"];
-      const toolResults = results.filter((r) => toolGroups.includes(r.group));
-
-      // Each group should have exactly one "not-detected" skip result
-      for (const group of toolGroups) {
-        const groupResults = toolResults.filter((r) => r.group === group);
-        expect(groupResults).toHaveLength(1);
-        expect(groupResults[0].status).toBe("skip");
-        expect(groupResults[0].name).toBe(`${group}-not-detected`);
+      for (const group of jsGroups) {
+        const groupResults = results.filter((r) => r.group === group);
+        expect(groupResults).toHaveLength(0);
       }
+    });
+
+    it("should only run generic checks for shell-only projects", async () => {
+      const results = await runChecks({
+        projectPath: fixtures.shellOnly,
+        skipConfig: true,
+      });
+
+      // Generic groups that should run
+      const genericGroups = ["gitignore", "git", "editorconfig", "docs", "env"];
+
+      // At least some generic checks should run
+      const genericResults = results.filter((r) => genericGroups.includes(r.group));
+      expect(genericResults.length).toBeGreaterThan(0);
+
+      // All results should be from generic groups only
+      for (const result of results) {
+        expect(genericGroups).toContain(result.group);
+      }
+    });
+
+    it("should detect project type as generic when no JS files present", async () => {
+      const results = await runChecks({
+        projectPath: fixtures.shellOnly,
+        skipConfig: true,
+      });
+
+      // Verify no JS groups appear
+      const jsGroups = ["package-json", "tsconfig", "eslint", "prettier"];
+      const jsResults = results.filter((r) => jsGroups.includes(r.group));
+      expect(jsResults).toHaveLength(0);
+    });
+  });
+
+  describe("JS project", () => {
+    it("should run JS-specific checks for JS projects", async () => {
+      const results = await runChecks({
+        projectPath: fixtures.healthy,
+        skipConfig: true,
+      });
+
+      // package-json group should have results
+      const packageJsonResults = results.filter((r) => r.group === "package-json");
+      expect(packageJsonResults.length).toBeGreaterThan(0);
     });
   });
 });

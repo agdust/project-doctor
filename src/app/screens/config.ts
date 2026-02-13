@@ -20,12 +20,19 @@ export const configScreen: Screen<AppContext> = {
     blank();
   },
 
-  options: (): Option<AppContext>[] => [
-    nav("about-config", "About config", "about-config", {
-      description: "Learn about categories, tags, and checks",
-    }),
-    nav("categories", "Control categories", "categories", {
-      description: "Enable or disable check categories",
-    }),
-  ],
+  options: (ctx): Option<AppContext>[] => {
+    const typeLabel = ctx.global.config.projectType === "js" ? "JavaScript/Node" : "Generic";
+
+    return [
+      nav("project-type", "Project type", "project-type", {
+        description: `Currently: ${typeLabel}`,
+      }),
+      nav("about-config", "About config", "about-config", {
+        description: "Learn about categories, tags, and checks",
+      }),
+      nav("categories", "Control categories", "categories", {
+        description: "Enable or disable check categories",
+      }),
+    ];
+  },
 };

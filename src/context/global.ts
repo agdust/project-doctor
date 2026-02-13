@@ -2,7 +2,7 @@ import type { GlobalContext } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
 import { createFileCache } from "./file-cache.js";
 import { detectTools } from "./detect.js";
-import { loadAndResolveConfig } from "../config/loader.js";
+import { loadAndResolveConfig, detectProjectTypeWithCause } from "../config/loader.js";
 
 export type CreateContextOptions = {
   skipConfig?: boolean;
@@ -19,7 +19,14 @@ export async function createGlobalContext(
   let config: ResolvedConfig;
   if (options.skipConfig) {
     const { DEFAULT_CONFIG } = await import("../config/types.js");
-    config = DEFAULT_CONFIG;
+    // Still detect project type even when skipping config
+    const detection = await detectProjectTypeWithCause(projectPath);
+    config = {
+      ...DEFAULT_CONFIG,
+      projectType: detection.type,
+      projectTypeSource: detection.source,
+      projectTypeDetectedFrom: detection.detectedFrom,
+    };
   } else {
     config = await loadAndResolveConfig(projectPath);
   }
@@ -39,6 +46,9 @@ export async function createGlobalContext(
 
 function mergeConfigs(base: ResolvedConfig, overrides: Partial<ResolvedConfig>): ResolvedConfig {
   return {
+    projectType: overrides.projectType ?? base.projectType,
+    projectTypeSource: overrides.projectTypeSource ?? base.projectTypeSource,
+    projectTypeDetectedFrom: overrides.projectTypeDetectedFrom ?? base.projectTypeDetectedFrom,
     checks: overrides.checks
       ? { ...base.checks, ...overrides.checks }
       : base.checks,
