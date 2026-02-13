@@ -14,28 +14,35 @@ export const issuesScreen: Screen<AppContext> = {
   parent: "home",
 
   render: (ctx) => {
-    // Same summary as main screen
-    const failed = ctx.allResults.filter((r) => r.status === "fail").length;
-    const total = ctx.allResults.length;
+    // Total counts (all failed checks)
+    const totalFailed = ctx.failedChecks.length;
+    const totalFixable = ctx.issues.length;
 
-    text(`\x1b[31mFailed checks ${failed}/${total}\x1b[0m`);
+    text(`\x1b[31mIssues: ${totalFailed} (${totalFixable} auto-fixable)\x1b[0m`);
     blank();
 
-    // Category breakdown
-    const required = ctx.issues.filter((i) => i.tags.includes("required")).length;
-    const recommended = ctx.issues.filter((i) => i.tags.includes("recommended")).length;
-    const opinionated = ctx.issues.filter((i) =>
+    // Category breakdown - all failed with fixable count
+    const requiredAll = ctx.failedChecks.filter((c) => c.tags.includes("required")).length;
+    const requiredFixable = ctx.issues.filter((i) => i.tags.includes("required")).length;
+
+    const recommendedAll = ctx.failedChecks.filter((c) => c.tags.includes("recommended")).length;
+    const recommendedFixable = ctx.issues.filter((i) => i.tags.includes("recommended")).length;
+
+    const opinionatedAll = ctx.failedChecks.filter((c) =>
+      !c.tags.includes("required") && !c.tags.includes("recommended")
+    ).length;
+    const opinionatedFixable = ctx.issues.filter((i) =>
       !i.tags.includes("required") && !i.tags.includes("recommended")
     ).length;
 
-    if (required > 0) {
-      text(`  Required - ${required}`);
+    if (requiredAll > 0) {
+      text(`  Required - ${requiredAll} (${requiredFixable} auto-fixable)`);
     }
-    if (recommended > 0) {
-      text(`  Recommended - ${recommended}`);
+    if (recommendedAll > 0) {
+      text(`  Recommended - ${recommendedAll} (${recommendedFixable} auto-fixable)`);
     }
-    if (opinionated > 0) {
-      text(`  Opinionated - ${opinionated}`);
+    if (opinionatedAll > 0) {
+      text(`  Opinionated - ${opinionatedAll} (${opinionatedFixable} auto-fixable)`);
     }
     blank();
   },
@@ -43,10 +50,11 @@ export const issuesScreen: Screen<AppContext> = {
   options: (ctx): Option<AppContext>[] => {
     const opts: Option<AppContext>[] = [];
 
-    // Overview - detailed view of all issues
+    // Overview - detailed view of all failed checks (including non-fixable)
+    const failedCount = ctx.failedChecks.length;
     opts.push(
       nav("overview", "Overview", "overview", {
-        description: "Detailed view of all failed checks",
+        description: `All ${failedCount} failed check${failedCount !== 1 ? "s" : ""} (including non-fixable)`,
       })
     );
 
