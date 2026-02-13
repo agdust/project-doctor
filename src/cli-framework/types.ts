@@ -84,8 +84,8 @@ export type AppConfig<TCtx> = {
   /** App name (technical identifier) */
   name: string;
 
-  /** Display name shown in header (defaults to name) */
-  displayName?: string;
+  /** Display name shown in header (defaults to name). Can be string or function for dynamic titles. */
+  displayName?: string | ((ctx: TCtx) => string);
 
   /** Initial context */
   context: TCtx;

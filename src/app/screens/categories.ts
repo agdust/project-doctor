@@ -6,7 +6,7 @@
 
 import { checkbox } from "@inquirer/prompts";
 import type { Screen } from "../../cli-framework/index.js";
-import { clear, bigTitle, blank, muted } from "../../cli-framework/index.js";
+import { clear, bigTitle, blank, muted, colors } from "../../cli-framework/index.js";
 import { updateConfig, isTagOff } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
 
@@ -26,7 +26,7 @@ export const categoriesScreen: Screen<AppContext> = {
   onEnter: async (ctx) => {
     // Clear and show header
     clear();
-    bigTitle("Project Doctor");
+    bigTitle(`Project Doctor: ${colors.cyan}${ctx.projectName}${colors.reset}`);
     blank();
 
     // Build choices with current state

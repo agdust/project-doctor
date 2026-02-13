@@ -107,12 +107,19 @@ export function header(appName: string, subtitle?: string): void {
   blank();
 }
 
+// Strip ANSI codes for visible length calculation
+function stripAnsi(str: string): string {
+  return str.replace(/\x1b\[[0-9;]*m/g, "");
+}
+
 /**
- * Print large app name using unicode block characters
+ * Print large app name using unicode block characters.
+ * Supports ANSI codes in the string (they're stripped for width calculation).
  */
 export function bigTitle(appName: string): void {
   // Use bold + larger visual presence with box drawing
-  const line = "─".repeat(appName.length + 4);
+  const visibleLength = stripAnsi(appName).length;
+  const line = "─".repeat(visibleLength + 4);
   console.log();
   console.log(`  ${c.dim}╭${line}╮${c.reset}`);
   console.log(`  ${c.dim}│${c.reset}  ${c.bold}${appName}${c.reset}  ${c.dim}│${c.reset}`);

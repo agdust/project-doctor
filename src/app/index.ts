@@ -5,7 +5,7 @@
  */
 
 import { runApp, type AppConfig } from "../cli-framework/index.js";
-import { blank, text, muted, divider } from "../cli-framework/index.js";
+import { blank, text, muted, divider, colors } from "../cli-framework/index.js";
 import type { AppContext } from "./types.js";
 import { createAppContext } from "./loader.js";
 import { homeScreen } from "./screens/home.js";
@@ -33,7 +33,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
 
   const config: AppConfig<AppContext> = {
     name: "project-doctor",
-    displayName: "Project Doctor",
+    displayName: (ctx) => `Project Doctor: ${colors.cyan}${ctx.projectName}${colors.reset}`,
     context,
     screens: [
       homeScreen,

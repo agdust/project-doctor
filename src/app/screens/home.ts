@@ -14,10 +14,6 @@ export const homeScreen: Screen<AppContext> = {
   // Root screen - no parent
 
   render: (ctx) => {
-    // Project name with background
-    text(`\x1b[48;5;240m\x1b[97m ${ctx.projectName} \x1b[0m`);
-    blank();
-
     // Project type info
     const config = ctx.global.config;
     const typeLabel = config.projectType === "js" ? "JavaScript/Node" : "Generic";

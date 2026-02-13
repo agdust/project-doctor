@@ -71,7 +71,10 @@ export class App<TCtx> {
 
     // Clear screen and show app header
     clear();
-    bigTitle(this.config.displayName ?? this.config.name);
+    const displayName = typeof this.config.displayName === "function"
+      ? this.config.displayName(this.state.context)
+      : this.config.displayName ?? this.config.name;
+    bigTitle(displayName);
     blank();
 
     // Render screen content
