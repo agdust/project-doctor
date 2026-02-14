@@ -11,7 +11,7 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { input } from "./prompts.js";
 import { color } from "./ui.js";
 import { isBack } from "./types.js";
@@ -55,7 +55,8 @@ export function checkGitStatus(projectPath: string): SafetyStatus {
   // Check for uncommitted changes in eslint config files
   try {
     // Get both staged and unstaged changes
-    const statusOutput = execSync("git status --porcelain", {
+    // Use execFileSync to avoid shell injection
+    const statusOutput = execFileSync("git", ["status", "--porcelain"], {
       cwd: projectPath,
       encoding: "utf-8",
     });

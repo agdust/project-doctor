@@ -3,6 +3,7 @@ import type { ResolvedConfig } from "../config/types.js";
 import { createFileCache } from "./file-cache.js";
 import { detectTools } from "./detect.js";
 import { loadAndResolveConfig, detectProjectTypeWithCause } from "../config/loader.js";
+import { safeMergeRecords } from "../utils/safe-json.js";
 
 export type CreateContextOptions = {
   skipConfig?: boolean;
@@ -45,18 +46,19 @@ export async function createGlobalContext(
 }
 
 function mergeConfigs(base: ResolvedConfig, overrides: Partial<ResolvedConfig>): ResolvedConfig {
+  // Use safeMergeRecords to prevent prototype pollution
   return {
     projectType: overrides.projectType ?? base.projectType,
     projectTypeSource: overrides.projectTypeSource ?? base.projectTypeSource,
     projectTypeDetectedFrom: overrides.projectTypeDetectedFrom ?? base.projectTypeDetectedFrom,
     checks: overrides.checks
-      ? { ...base.checks, ...overrides.checks }
+      ? safeMergeRecords(base.checks, overrides.checks)
       : base.checks,
     tags: overrides.tags
-      ? { ...base.tags, ...overrides.tags }
+      ? safeMergeRecords(base.tags, overrides.tags)
       : base.tags,
     groups: overrides.groups
-      ? { ...base.groups, ...overrides.groups }
+      ? safeMergeRecords(base.groups, overrides.groups)
       : base.groups,
     eslintOverwriteConfirmed: overrides.eslintOverwriteConfirmed ?? base.eslintOverwriteConfirmed,
   };

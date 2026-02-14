@@ -4,23 +4,11 @@
  * Shows detailed information about a selected failed check.
  */
 
-import { exec } from "node:child_process";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, separator } from "../../cli-framework/index.js";
 import { blank, text, muted, success, error } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
-
-function openBrowser(url: string): Promise<void> {
-  return new Promise((resolve) => {
-    const cmd = process.platform === "darwin"
-      ? `open "${url}"`
-      : process.platform === "win32"
-        ? `start "${url}"`
-        : `xdg-open "${url}"`;
-
-    exec(cmd, () => resolve());
-  });
-}
+import { openBrowser } from "../../utils/open-browser.js";
 
 // Tool documentation links
 const TOOL_DOCS: Record<string, string> = {

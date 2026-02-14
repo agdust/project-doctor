@@ -1,9 +1,9 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { exec } from "node:child_process";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
+import { openBrowser } from "../../../utils/open-browser.js";
 
 const name = "license-exists";
 
@@ -89,21 +89,6 @@ the prior written permission of the copyright holder.
 
 For licensing inquiries, contact the copyright holder.
 `;
-
-function openBrowser(url: string): Promise<void> {
-  return new Promise((resolve) => {
-    const cmd = process.platform === "darwin"
-      ? `open "${url}"`
-      : process.platform === "win32"
-        ? `start "${url}"`
-        : `xdg-open "${url}"`;
-
-    exec(cmd, () => {
-      // Ignore errors - browser may not be available
-      resolve();
-    });
-  });
-}
 
 export const check: Check<DocsContext> = {
   name,

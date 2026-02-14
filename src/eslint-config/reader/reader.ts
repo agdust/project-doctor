@@ -37,6 +37,9 @@ export async function readExistingConfig(projectPath: string): Promise<ParsedCon
   }
 }
 
+// Maximum number of rules to parse (prevents DoS on malformed files)
+const MAX_RULES = 10000;
+
 function parseConfigContent(content: string, filePath: string): ParsedConfig {
   const rules: Record<string, RuleValue> = {};
 
@@ -45,7 +48,13 @@ function parseConfigContent(content: string, filePath: string): ParsedConfig {
   const rulePattern = /["']([^"']+)["']\s*:\s*(\[[^\]]*\]|"[^"]*"|'[^']*')/g;
 
   let match;
+  let iterations = 0;
   while ((match = rulePattern.exec(content)) !== null) {
+    // Prevent DoS from malformed files with excessive matches
+    if (++iterations > MAX_RULES) {
+      break;
+    }
+
     const [, name, valueStr] = match;
 
     // Skip if not a rule name pattern (contains / for plugin rules or is bare word)

@@ -1,10 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createNpmCache, computeLockfileHash, type NpmCache } from "./npm-cache.js";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 type PackageJson = {
   dependencies?: Record<string, string>;
@@ -203,7 +203,8 @@ async function runAudit(
   }
 
   try {
-    const { stdout } = await execAsync("npm audit --json", {
+    // Use execFile to avoid shell injection
+    const { stdout } = await execFileAsync("npm", ["audit", "--json"], {
       cwd: projectPath,
       maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large audit output
     });

@@ -4,6 +4,7 @@ import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType, ProjectTypeSource } from "./types.js";
 import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
 import { CONFIG_DIR, CONFIG_FILE } from "./constants.js";
+import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
 
 type PackageJson = {
   doctor?: Config;
@@ -12,7 +13,8 @@ type PackageJson = {
 async function readJson5File<T>(path: string): Promise<T | null> {
   try {
     const content = await readFile(path, "utf-8");
-    return JSON5.parse(content) as T;
+    // Use safe parsing to prevent prototype pollution
+    return safeJson5Parse<T>(content);
   } catch {
     return null;
   }
@@ -21,7 +23,8 @@ async function readJson5File<T>(path: string): Promise<T | null> {
 async function readJsonFile<T>(path: string): Promise<T | null> {
   try {
     const content = await readFile(path, "utf-8");
-    return JSON.parse(content) as T;
+    // Use safe parsing to prevent prototype pollution
+    return safeJsonParse<T>(content);
   } catch {
     return null;
   }
@@ -185,14 +188,14 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
   // Load existing config (if any)
   const existing = await loadConfig(projectPath);
 
-  // Deep merge objects
-  const mergedChecks = { ...existing?.checks, ...updates.checks };
-  const mergedTags = { ...existing?.tags, ...updates.tags };
-  const mergedGroups = { ...existing?.groups, ...updates.groups };
+  // Deep merge objects using safe merge to prevent prototype pollution
+  const mergedChecks = safeMergeRecords(existing?.checks, updates.checks);
+  const mergedTags = safeMergeRecords(existing?.tags, updates.tags);
+  const mergedGroups = safeMergeRecords(existing?.groups, updates.groups);
 
   const merged: Config = {
-    ...existing,
-    ...updates,
+    projectType: updates.projectType ?? existing?.projectType,
+    eslintOverwriteConfirmed: updates.eslintOverwriteConfirmed ?? existing?.eslintOverwriteConfirmed,
     checks: Object.keys(mergedChecks).length > 0 ? mergedChecks : undefined,
     tags: Object.keys(mergedTags).length > 0 ? mergedTags : undefined,
     groups: Object.keys(mergedGroups).length > 0 ? mergedGroups : undefined,
