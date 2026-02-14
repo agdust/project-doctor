@@ -82,6 +82,29 @@ export const overviewDetailScreen: Screen<AppContext> = {
 
     const opts: Option<AppContext>[] = [];
 
+    // Helper to remove fixed check from lists
+    const removeFixedCheck = (c: AppContext) => {
+      const checkToRemove = c.failedChecks[c.selectedOverviewIndex];
+      if (!checkToRemove) return;
+
+      // Update category counts
+      if (checkToRemove.tags.includes("required")) {
+        c.failedByCategory.required--;
+      } else if (checkToRemove.tags.includes("recommended")) {
+        c.failedByCategory.recommended--;
+      } else {
+        c.failedByCategory.opinionated--;
+      }
+
+      // Remove from failedChecks
+      c.failedChecks.splice(c.selectedOverviewIndex, 1);
+
+      // Adjust selected index if needed
+      if (c.selectedOverviewIndex >= c.failedChecks.length) {
+        c.selectedOverviewIndex = Math.max(0, c.failedChecks.length - 1);
+      }
+    };
+
     // Fix options if available
     if (check.fixOptions && check.fixOptions.length > 0) {
       opts.push(separator("Fix options"));
@@ -94,6 +117,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
               if (result.success) {
                 success(result.message, 3);
                 c.stats.fixed++;
+                removeFixedCheck(c);
               } else {
                 error(result.message, 3);
               }
@@ -114,6 +138,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
             if (result.success) {
               success(result.message, 3);
               c.stats.fixed++;
+              removeFixedCheck(c);
             } else {
               error(result.message, 3);
             }
