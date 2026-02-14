@@ -137,8 +137,10 @@ export class App<TCtx> {
     try {
       const selected = await selectPromise;
 
-      // Save selected value for cursor restoration when returning
-      this.state.lastSelected.set(screen.id, selected);
+      // Save selected value for cursor restoration when returning (but not "back")
+      if (selected !== BACK_VALUE) {
+        this.state.lastSelected.set(screen.id, selected);
+      }
 
       await this.handleSelection(screen, options, selected);
     } catch (error) {
