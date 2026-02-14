@@ -69,13 +69,15 @@ describe("safe-json", () => {
 
   describe("safeMerge", () => {
     it("should merge objects", () => {
-      const result = safeMerge({ a: 1 }, { b: 2 });
+      const base = { a: 1 } as Record<string, number>;
+      const result = safeMerge(base, { b: 2 });
       expect(result).toEqual({ a: 1, b: 2 });
     });
 
     it("should filter out __proto__ from overrides", () => {
+      const base = { a: 1 } as Record<string, unknown>;
       const malicious = JSON.parse('{"__proto__": {"admin": true}, "b": 2}');
-      const result = safeMerge({ a: 1 }, malicious);
+      const result = safeMerge(base, malicious);
       expect(result).toEqual({ a: 1, b: 2 });
       expect(({} as Record<string, unknown>).admin).toBeUndefined();
     });

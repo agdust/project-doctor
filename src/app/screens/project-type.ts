@@ -37,23 +37,24 @@ export const projectTypeScreen: Screen<AppContext> = {
 
   options: (ctx): Option<AppContext>[] => {
     const currentType = ctx.global.config.projectType;
+    const isFromConfig = ctx.global.config.projectTypeSource === "config";
 
     return PROJECT_TYPES.map((pt) => {
-      const isCurrent = pt.type === currentType;
-      const radio = isCurrent ? "●" : "○";
+      // Only show as selected if explicitly set in config (not detected)
+      const isSelected = isFromConfig && pt.type === currentType;
+      const radio = isSelected ? "●" : "○";
       const label = `${radio} ${pt.label}`;
 
       return action(
         pt.type,
         label,
         async (c) => {
-          if (!isCurrent) {
-            // Save to config file
+          // Save if not from config, or if selecting a different type
+          const needsSave = !isFromConfig || pt.type !== currentType;
+          if (needsSave) {
             await setProjectType(c.projectPath, pt.type);
-            // Rescan to apply new project type filters
             await rescanProject(c);
           }
-          // Go back to config screen
           return "config";
         },
         pt.description
