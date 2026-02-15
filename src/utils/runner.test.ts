@@ -36,7 +36,7 @@ describe("runner", () => {
       });
 
       // Generic groups that should run
-      const genericGroups = ["gitignore", "git", "editorconfig", "docs", "env"];
+      const genericGroups = ["gitignore", "git", "editorconfig", "docs", "env", "docker"];
 
       // At least some generic checks should run
       const genericResults = results.filter((r) => genericGroups.includes(r.group));

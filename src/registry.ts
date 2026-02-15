@@ -14,6 +14,7 @@ import { loadContext as loadDepsContext, checks as depsChecks } from "./checks/d
 import { loadContext as loadEnvContext, checks as envChecks } from "./checks/env/index.js";
 import { loadContext as loadTestingContext, checks as testingChecks } from "./checks/testing/index.js";
 import { loadContext as loadBundleSizeContext, checks as bundleSizeChecks } from "./checks/bundle-size/index.js";
+import { loadContext as loadDockerContext, checks as dockerChecks } from "./checks/docker/index.js";
 
 function createGroup<T>(
   name: string,
@@ -38,6 +39,7 @@ export const checkGroups = [
   createGroup("env", loadEnvContext, envChecks),
   createGroup("testing", loadTestingContext, testingChecks),
   createGroup("bundle-size", loadBundleSizeContext, bundleSizeChecks),
+  createGroup("docker", loadDockerContext, dockerChecks),
 ];
 
 export function getAllChecks(): Check<unknown>[] {
