@@ -1,8 +1,9 @@
 import type { CheckResult, CheckResultBase, CheckTag, DetectedTools } from "../types.js";
-import type { ProjectType, ResolvedConfig } from "../config/types.js";
+import type { ResolvedConfig } from "../config/types.js";
 import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
+import { isGroupForProjectType } from "./checks.js";
 
 // Groups that require specific tools to be detected
 const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
@@ -10,25 +11,6 @@ const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
   prettier: "hasPrettier",
   tsconfig: "hasTypeScript",
 };
-
-// Groups that are specific to JS/Node projects
-const JS_GROUPS = new Set([
-  "package-json",
-  "tsconfig",
-  "eslint",
-  "prettier",
-  "npm",
-  "deps",
-  "testing",
-  "bundle-size",
-  "jscpd",
-]);
-
-function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
-  if (projectType === "js") return true;
-  // For "generic" projects, skip JS-specific groups
-  return !JS_GROUPS.has(groupName);
-}
 
 function isToolDetected(groupName: string, detected: DetectedTools): boolean {
   const requirement = GROUP_TOOL_REQUIREMENTS[groupName];

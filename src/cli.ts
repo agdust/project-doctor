@@ -17,6 +17,14 @@ import { runEslintAdd } from "./eslint-config/commands/add.js";
 import { runEslintDiff } from "./eslint-config/commands/diff.js";
 import { runMainWizard } from "./eslint-config/commands/main.js";
 import { runProjectDoctorApp } from "./app/index.js";
+import { runConfigShow, runConfigSetProjectType, runConfigShowJson } from "./commands/config.js";
+import { runDisableCheck, runDisableTag, runDisableGroup } from "./commands/disable.js";
+import { runEnableCheck, runEnableTag, runEnableGroup } from "./commands/enable.js";
+import { runMute, runUnmute } from "./commands/mute.js";
+import { runList } from "./commands/list.js";
+import { runInfo } from "./commands/info.js";
+import { printCheckResultsAsJson } from "./commands/check.js";
+import { runFixList, runFixAll, runFixOne } from "./commands/fix.js";
 
 function printHelp(): void {
   console.log(`
@@ -25,7 +33,17 @@ project-doctor - Project health checks and maintenance tools
 Usage:
   project-doctor [path]
   project-doctor check [options] [path]
-  project-doctor fix [options] [path]
+  project-doctor fix [path]
+  project-doctor fix all [options] [path]
+  project-doctor fix <check-name> [options] [path]
+  project-doctor config [path]
+  project-doctor config set project-type <js|generic> [path]
+  project-doctor disable <check|tag|group> <name> [path]
+  project-doctor enable <check|tag|group> <name> [path]
+  project-doctor mute <check-name> [options] [path]
+  project-doctor unmute <check-name> [path]
+  project-doctor list [options] [path]
+  project-doctor info <check-name> [options] [path]
   project-doctor deps [options] [path]
   project-doctor overview [path]
   project-doctor snapshot [path]
@@ -36,53 +54,76 @@ Usage:
 Commands:
   (default)    Interactive wizard to fix issues
   check        Run all checks and report details
+  fix          List fixable issues
+  fix all      Fix all issues automatically
+  fix <name>   Fix a specific check
+  config       Show or set configuration
+  disable      Disable a check, tag, or group permanently
+  enable       Re-enable a disabled check, tag, or group
+  mute         Temporarily mute a check
+  unmute       Remove mute from a check
+  list         List all available checks
+  info         Show detailed info about a check
   overview     Show project health summary
-  fix          Fix issues (interactive, or auto with -y)
   deps         Check dependencies for newer versions
   snapshot     Save current status to history
   history      View progress over time
   init         Create .project-doctor/config.json5
   eslint       ESLint configuration builder
 
-Options:
-  -h, --help              Show this help message
-  -v, --version           Show version
-  -l, --list              List all available checks
+Check Options:
   -f, --full-report       Show all checks (default: only failures)
   -g, --group <name>      Run checks from specific group only
   -t, --tag <tag>         Only run checks with this tag (can repeat)
   -e, --exclude-tag <tag> Exclude checks with this tag (can repeat)
-  --no-config             Ignore .project-doctorrc.json config file
+  --no-config             Ignore .project-doctor/config.json5
+  --format <format>       Output format: text (default), json
 
-Fix Options:
-  -y, --yes               Auto-apply all fixes without prompting
+Fix Options (for 'fix all'):
+  --group <name>          Fix only checks in this group (repeatable)
+  --tag <tag>             Fix only checks with this tag (repeatable)
+  --pick <option-id>      Select which fix option to apply
+
+Mute Options:
+  --weeks <n>             Mute for n weeks (default: 2)
+  --months <n>            Mute for n months
+  --until <YYYY-MM-DD>    Mute until specific date
+
+List Options:
+  -g, --group <name>      Filter by group (repeatable)
+  -t, --tag <tag>         Filter by tag (repeatable)
+  --status <status>       Filter: all, enabled, disabled, muted
+  --format <format>       Output: table (default), json, names
+
+Info Options:
+  --format <format>       Output format: text (default), json
 
 Deps Options:
   --no-dev                Exclude devDependencies from check
   --no-cache              Bypass cache, always fetch fresh data
 
-Config File:
-  Create .project-doctor/config.json5:
-  {
-    checks: { "changelog-exists": "off" },
-    tags: { "opinionated": "off" },
-    groups: { "eslint": "off" },
-    // Temporarily skip until a date:
-    checks: { "some-check": "skip-until-2025-06-01" },
-  }
+General Options:
+  -h, --help              Show this help message
+  -v, --version           Show version
+  -l, --list              List all available checks (legacy, use 'list' command)
 
 Examples:
-  project-doctor                       Launch interactive wizard
-  project-doctor ./my-project          Launch wizard for specific directory
-  project-doctor overview              Show project health summary
-  project-doctor check                 Run all checks with details
-  project-doctor check -g package-json Run only package-json checks
-  project-doctor check -t required     Run only required checks
-  project-doctor fix -y                Auto-fix all issues
-  project-doctor deps                  Check for outdated dependencies
-  project-doctor snapshot              Save snapshot to .project-doctor/
-  project-doctor history               View health history
-  project-doctor --list                Show all available checks
+  project-doctor                           Launch interactive wizard
+  project-doctor check --format json       Run checks with JSON output
+  project-doctor fix                       List fixable issues
+  project-doctor fix all                   Auto-fix all issues
+  project-doctor fix <check-name>          Fix a specific check
+  project-doctor fix all --tag effort:low  Fix only low-effort issues
+  project-doctor config                    Show current configuration
+  project-doctor config set project-type js
+  project-doctor disable check changelog-exists
+  project-doctor disable tag opinionated
+  project-doctor enable check changelog-exists
+  project-doctor mute tsconfig-strict --weeks 2
+  project-doctor unmute tsconfig-strict
+  project-doctor list --format json
+  project-doctor list --status disabled
+  project-doctor info tsconfig-strict-enabled
 
 Groups:
   ${listGroups().join(", ")}
@@ -163,97 +204,429 @@ Examples:
 `);
 }
 
+/** Parse path from args, defaulting to cwd */
+function getProjectPath(args: string[]): string {
+  const pathArg = args.find((a) => !a.startsWith("-"));
+  return resolve(pathArg ?? process.cwd());
+}
+
+/** Check if first non-flag arg looks like a path */
+function isPath(arg: string | undefined): boolean {
+  return (
+    !!arg &&
+    !arg.startsWith("-") &&
+    (arg.startsWith("/") ||
+      arg.startsWith("./") ||
+      arg.startsWith("..") ||
+      arg.includes("/") ||
+      arg === ".")
+  );
+}
+
+async function handleConfigCommand(args: string[]): Promise<void> {
+  // project-doctor config [path]
+  // project-doctor config set project-type <js|generic> [path]
+
+  const firstArg = args[0];
+  if (firstArg === "set") {
+    const settingName = args[1];
+    const settingValue = args[2];
+
+    if (settingName === "project-type") {
+      if (!settingValue) {
+        console.error("\x1b[31mError: Missing project type. Use 'js' or 'generic'.\x1b[0m");
+        process.exit(2);
+      }
+      const projectPath = getProjectPath(args.slice(3));
+      await runConfigSetProjectType(projectPath, settingValue);
+      return;
+    }
+
+    console.error(`\x1b[31mError: Unknown config setting "${settingName}". Use 'project-type'.\x1b[0m`);
+    process.exit(2);
+  }
+
+  // Check for --format json
+  const formatIdx = args.indexOf("--format");
+  let format = "text";
+  if (formatIdx !== -1 && args[formatIdx + 1]) {
+    format = args[formatIdx + 1];
+    args.splice(formatIdx, 2);
+  }
+
+  const projectPath = getProjectPath(args);
+
+  if (format === "json") {
+    await runConfigShowJson(projectPath);
+  } else {
+    await runConfigShow(projectPath);
+  }
+}
+
+async function handleDisableCommand(args: string[]): Promise<void> {
+  // project-doctor disable <check|tag|group> <name> [path]
+
+  const type = args[0];
+  if (!type || !["check", "tag", "group"].includes(type)) {
+    console.error("\x1b[31mError: Missing or invalid type. Use 'check', 'tag', or 'group'.\x1b[0m");
+    process.exit(2);
+  }
+  args.shift();
+
+  const name = args[0];
+  if (!name || name.startsWith("-")) {
+    console.error(`\x1b[31mError: Missing ${type} name.\x1b[0m`);
+    process.exit(2);
+  }
+  args.shift();
+
+  const projectPath = getProjectPath(args);
+
+  switch (type) {
+    case "check":
+      await runDisableCheck(projectPath, name);
+      break;
+    case "tag":
+      await runDisableTag(projectPath, name);
+      break;
+    case "group":
+      await runDisableGroup(projectPath, name);
+      break;
+  }
+}
+
+async function handleEnableCommand(args: string[]): Promise<void> {
+  // project-doctor enable <check|tag|group> <name> [path]
+
+  const type = args[0];
+  if (!type || !["check", "tag", "group"].includes(type)) {
+    console.error("\x1b[31mError: Missing or invalid type. Use 'check', 'tag', or 'group'.\x1b[0m");
+    process.exit(2);
+  }
+  args.shift();
+
+  const name = args[0];
+  if (!name || name.startsWith("-")) {
+    console.error(`\x1b[31mError: Missing ${type} name.\x1b[0m`);
+    process.exit(2);
+  }
+  args.shift();
+
+  const projectPath = getProjectPath(args);
+
+  switch (type) {
+    case "check":
+      await runEnableCheck(projectPath, name);
+      break;
+    case "tag":
+      await runEnableTag(projectPath, name);
+      break;
+    case "group":
+      await runEnableGroup(projectPath, name);
+      break;
+  }
+}
+
+async function handleMuteCommand(args: string[]): Promise<void> {
+  // project-doctor mute <check-name> [options] [path]
+
+  const checkName = args[0];
+  if (!checkName || checkName.startsWith("-")) {
+    console.error("\x1b[31mError: Missing check name.\x1b[0m");
+    process.exit(2);
+  }
+  args.shift();
+
+  const { values, positionals } = parseArgs({
+    args,
+    options: {
+      weeks: { type: "string" },
+      months: { type: "string" },
+      until: { type: "string" },
+    },
+    allowPositionals: true,
+  });
+
+  const projectPath = getProjectPath(positionals);
+
+  await runMute(projectPath, checkName, {
+    weeks: values.weeks ? parseInt(values.weeks, 10) : undefined,
+    months: values.months ? parseInt(values.months, 10) : undefined,
+    until: values.until,
+  });
+}
+
+async function handleUnmuteCommand(args: string[]): Promise<void> {
+  // project-doctor unmute <check-name> [path]
+
+  const checkName = args[0];
+  if (!checkName || checkName.startsWith("-")) {
+    console.error("\x1b[31mError: Missing check name.\x1b[0m");
+    process.exit(2);
+  }
+  args.shift();
+
+  const projectPath = getProjectPath(args);
+  await runUnmute(projectPath, checkName);
+}
+
+async function handleListCommand(args: string[]): Promise<void> {
+  // project-doctor list [options] [path]
+
+  const { values, positionals } = parseArgs({
+    args,
+    options: {
+      group: { type: "string", short: "g", multiple: true },
+      tag: { type: "string", short: "t", multiple: true },
+      status: { type: "string" },
+      format: { type: "string" },
+    },
+    allowPositionals: true,
+  });
+
+  const projectPath = getProjectPath(positionals);
+
+  await runList(projectPath, {
+    groups: values.group,
+    tags: values.tag,
+    status: values.status as "all" | "enabled" | "disabled" | "muted" | undefined,
+    format: values.format as "table" | "json" | "names" | undefined,
+  });
+}
+
+async function handleInfoCommand(args: string[]): Promise<void> {
+  // project-doctor info <check-name> [options] [path]
+
+  const checkName = args[0];
+  if (!checkName || checkName.startsWith("-")) {
+    console.error("\x1b[31mError: Missing check name.\x1b[0m");
+    process.exit(2);
+  }
+  args.shift();
+
+  const { values, positionals } = parseArgs({
+    args,
+    options: {
+      format: { type: "string" },
+    },
+    allowPositionals: true,
+  });
+
+  const projectPath = getProjectPath(positionals);
+
+  await runInfo(projectPath, checkName, {
+    format: values.format as "text" | "json" | undefined,
+  });
+}
+
+async function handleFixCommand(args: string[]): Promise<void> {
+  // project-doctor fix [path]                    List fixable issues
+  // project-doctor fix all [options] [path]      Fix all issues
+  // project-doctor fix <check-name> [path]       Fix specific check
+
+  const firstArg = args[0];
+
+  // Handle help
+  if (firstArg === "--help" || firstArg === "-h") {
+    console.log(`
+project-doctor fix - Fix issues
+
+Usage:
+  project-doctor fix [path]                    List fixable issues
+  project-doctor fix all [options] [path]      Fix all issues
+  project-doctor fix <check-name> [path]       Fix specific check
+
+Options for 'fix all':
+  --group <name>          Fix only checks in this group (repeatable)
+  --tag <tag>             Fix only checks with this tag (repeatable)
+  --pick <option-id>      Select which fix option to apply
+
+Options for 'fix <check-name>':
+  --pick <option-id>      Select which fix option to apply
+
+Examples:
+  project-doctor fix                       List all fixable issues
+  project-doctor fix all                   Fix all issues
+  project-doctor fix all --tag effort:low  Fix only low-effort issues
+  project-doctor fix changelog-exists      Fix specific check
+`);
+    return;
+  }
+
+  // If no arg or first arg is a path, list fixable issues
+  if (!firstArg || isPath(firstArg)) {
+    const projectPath = getProjectPath(args);
+    await runFixList(projectPath, {});
+    return;
+  }
+
+  // Handle "fix all" command
+  if (firstArg === "all") {
+    args.shift(); // remove "all"
+
+    const { values, positionals } = parseArgs({
+      args,
+      options: {
+        group: { type: "string", short: "g", multiple: true },
+        tag: { type: "string", short: "t", multiple: true },
+        pick: { type: "string" },
+      },
+      allowPositionals: true,
+    });
+
+    const projectPath = getProjectPath(positionals);
+    const exitCode = await runFixAll(projectPath, {
+      groups: values.group,
+      tags: values.tag,
+      pick: values.pick,
+    });
+    process.exit(exitCode);
+  }
+
+  // Otherwise, first arg is a check name
+  const checkName = firstArg;
+  args.shift();
+
+  const { values, positionals } = parseArgs({
+    args,
+    options: {
+      pick: { type: "string" },
+    },
+    allowPositionals: true,
+  });
+
+  const projectPath = getProjectPath(positionals);
+  const exitCode = await runFixOne(projectPath, checkName, {
+    pick: values.pick,
+  });
+  process.exit(exitCode);
+}
+
+async function handleEslintCommand(args: string[]): Promise<void> {
+  const firstArg = args[0];
+
+  // Determine subcommand and project path
+  let subcommand: string | undefined;
+  let projectPath: string;
+
+  if (isPath(firstArg)) {
+    // First arg is a path, no subcommand - launch wizard
+    subcommand = undefined;
+    projectPath = resolve(firstArg);
+  } else {
+    subcommand = firstArg;
+    args.shift(); // remove subcommand
+    projectPath = resolve(args.find((a) => !a.startsWith("-")) ?? process.cwd());
+  }
+
+  const hasWizard = args.includes("--wizard") || args.includes("-w");
+  const hasDryRun = args.includes("--dry-run");
+  const hasForce = args.includes("--force");
+  const hasPresetsFlag = args.includes("--presets");
+  const hasRulesFlag = args.includes("--rules");
+
+  const presetsArg = args.find((a, i) => args[i - 1] === "--presets");
+
+  switch (subcommand) {
+    case "init":
+      await runEslintInit(projectPath, {
+        wizard: hasWizard,
+        presets: presetsArg,
+        dryRun: hasDryRun,
+        force: hasForce,
+      });
+      return;
+    case "add":
+      await runEslintAdd(projectPath, args[0] ?? "");
+      return;
+    case "show":
+      await runEslintShow(projectPath, {
+        presets: hasPresetsFlag,
+        rules: hasRulesFlag,
+      });
+      return;
+    case "diff":
+      await runEslintDiff(projectPath, { presets: presetsArg });
+      return;
+    case "help":
+    case "-h":
+    case "--help":
+      printEslintHelp();
+      return;
+    case undefined:
+    case "":
+      // No subcommand - launch interactive wizard
+      await runMainWizard(projectPath);
+      return;
+    default:
+      console.log(`\x1b[31mUnknown eslint subcommand: ${subcommand}\x1b[0m`);
+      console.log();
+      printEslintHelp();
+      return;
+  }
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const isCheckCommand = args[0] === "check";
-  const isFixCommand = args[0] === "fix";
-  const isDepsCommand = args[0] === "deps";
-  const isOverviewCommand = args[0] === "overview";
-  const isSnapshotCommand = args[0] === "snapshot";
-  const isHistoryCommand = args[0] === "history";
-  const isInitCommand = args[0] === "init";
-  const isEslintCommand = args[0] === "eslint";
+  const command = args[0];
 
-  if (isCheckCommand || isFixCommand || isDepsCommand || isOverviewCommand || isSnapshotCommand || isHistoryCommand || isInitCommand) {
-    args.shift();
+  // Commands that need special handling before parseArgs
+  const specialCommands = [
+    "check", "fix", "deps", "overview", "snapshot", "history", "init",
+    "eslint", "config", "disable", "enable", "mute", "unmute", "list", "info"
+  ];
+
+  if (command && specialCommands.includes(command)) {
+    args.shift(); // remove command
   }
 
-  // Handle eslint subcommand separately
-  if (isEslintCommand) {
-    args.shift(); // remove "eslint"
-    const firstArg = args[0];
-
-    // Check if first arg is a path (not a subcommand)
-    const isPath =
-      firstArg &&
-      !firstArg.startsWith("-") &&
-      (firstArg.startsWith("/") ||
-        firstArg.startsWith("./") ||
-        firstArg.startsWith("..") ||
-        firstArg.includes("/") ||
-        firstArg === ".");
-
-    // Determine subcommand and project path
-    let subcommand: string | undefined;
-    let projectPath: string;
-
-    if (isPath) {
-      // First arg is a path, no subcommand - launch wizard
-      subcommand = undefined;
-      projectPath = resolve(firstArg);
-    } else {
-      subcommand = firstArg;
-      args.shift(); // remove subcommand
-      projectPath = resolve(args.find((a) => !a.startsWith("-")) ?? process.cwd());
-    }
-
-    const hasWizard = args.includes("--wizard") || args.includes("-w");
-    const hasDryRun = args.includes("--dry-run");
-    const hasForce = args.includes("--force");
-    const hasPresetsFlag = args.includes("--presets");
-    const hasRulesFlag = args.includes("--rules");
-
-    const presetsArg = args.find((a, i) => args[i - 1] === "--presets");
-
-    switch (subcommand) {
-      case "init":
-        await runEslintInit(projectPath, {
-          wizard: hasWizard,
-          presets: presetsArg,
-          dryRun: hasDryRun,
-          force: hasForce,
-        });
-        return;
-      case "add":
-        await runEslintAdd(projectPath, args[0] ?? "");
-        return;
-      case "show":
-        await runEslintShow(projectPath, {
-          presets: hasPresetsFlag,
-          rules: hasRulesFlag,
-        });
-        return;
-      case "diff":
-        await runEslintDiff(projectPath, { presets: presetsArg });
-        return;
-      case "help":
-      case "-h":
-      case "--help":
-        printEslintHelp();
-        return;
-      case undefined:
-      case "":
-        // No subcommand - launch interactive wizard
-        await runMainWizard(projectPath);
-        return;
-      default:
-        console.log(`\x1b[31mUnknown eslint subcommand: ${subcommand}\x1b[0m`);
-        console.log();
-        printEslintHelp();
-        return;
-    }
+  // Handle special commands
+  if (command === "eslint") {
+    await handleEslintCommand(args);
+    return;
   }
 
+  if (command === "config") {
+    await handleConfigCommand(args);
+    return;
+  }
+
+  if (command === "disable") {
+    await handleDisableCommand(args);
+    return;
+  }
+
+  if (command === "enable") {
+    await handleEnableCommand(args);
+    return;
+  }
+
+  if (command === "mute") {
+    await handleMuteCommand(args);
+    return;
+  }
+
+  if (command === "unmute") {
+    await handleUnmuteCommand(args);
+    return;
+  }
+
+  if (command === "list") {
+    await handleListCommand(args);
+    return;
+  }
+
+  if (command === "info") {
+    await handleInfoCommand(args);
+    return;
+  }
+
+  if (command === "fix") {
+    await handleFixCommand(args);
+    return;
+  }
+
+  // Parse remaining args
   const { values, positionals } = parseArgs({
     args,
     options: {
@@ -265,9 +638,9 @@ async function main(): Promise<void> {
       tag: { type: "string", short: "t", multiple: true },
       "exclude-tag": { type: "string", short: "e", multiple: true },
       "no-config": { type: "boolean", default: false },
-      yes: { type: "boolean", short: "y", default: false },
       "no-dev": { type: "boolean", default: false },
       "no-cache": { type: "boolean", default: false },
+      format: { type: "string" },
     },
     allowPositionals: true,
   });
@@ -289,23 +662,12 @@ async function main(): Promise<void> {
 
   const projectPath = resolve(positionals[0] ?? process.cwd());
 
-  if (isOverviewCommand) {
+  if (command === "overview") {
     await runOverview(projectPath);
     return;
   }
 
-  if (isFixCommand) {
-    if (values.yes) {
-      // Auto-fix mode: run all fixes without prompts
-      await runAutoFix({ projectPath });
-    } else {
-      // Interactive mode: use the app
-      await runProjectDoctorApp(projectPath);
-    }
-    return;
-  }
-
-  if (isDepsCommand) {
+  if (command === "deps") {
     await runDepsChecker({
       projectPath,
       includeDev: !values["no-dev"],
@@ -314,24 +676,22 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (isSnapshotCommand) {
+  if (command === "snapshot") {
     await runSnapshot(projectPath);
     return;
   }
 
-  if (isHistoryCommand) {
+  if (command === "history") {
     await runHistory(projectPath);
     return;
   }
 
-  if (isInitCommand) {
+  if (command === "init") {
     await runInit(projectPath);
     return;
   }
 
-  if (isCheckCommand) {
-    console.log(`\nRunning checks on: ${projectPath}\n`);
-
+  if (command === "check") {
     const results = await runChecks({
       projectPath,
       skipConfig: values["no-config"],
@@ -340,7 +700,12 @@ async function main(): Promise<void> {
       excludeTags: values["exclude-tag"] as CheckTag[] | undefined,
     });
 
-    printResults(results, { fullReport: values["full-report"] });
+    if (values.format === "json") {
+      printCheckResultsAsJson(results);
+    } else {
+      console.log(`\nRunning checks on: ${projectPath}\n`);
+      printResults(results, { fullReport: values["full-report"] });
+    }
 
     const hasFailed = results.some((r) => r.status === "fail");
     process.exit(hasFailed ? 1 : 0);

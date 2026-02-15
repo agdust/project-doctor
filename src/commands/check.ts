@@ -1,0 +1,56 @@
+/**
+ * Check command - Run checks with JSON output support
+ *
+ * Usage:
+ *   project-doctor check [options] [path]
+ *
+ * Options:
+ *   --format <format>   Output format: text (default), json
+ */
+
+import type { CheckResult } from "../types.js";
+import { buildFixableMap, buildTagsMap } from "../utils/checks.js";
+
+export type CheckJsonOutput = {
+  summary: {
+    total: number;
+    passed: number;
+    failed: number;
+    skipped: number;
+  };
+  results: Array<{
+    name: string;
+    group: string;
+    status: "pass" | "fail" | "skip";
+    message: string;
+    tags: string[];
+    fixable: boolean;
+  }>;
+};
+
+export function formatCheckResultsAsJson(results: CheckResult[]): CheckJsonOutput {
+  const fixableMap = buildFixableMap();
+  const tagsMap = buildTagsMap();
+
+  return {
+    summary: {
+      total: results.length,
+      passed: results.filter((r) => r.status === "pass").length,
+      failed: results.filter((r) => r.status === "fail").length,
+      skipped: results.filter((r) => r.status === "skip").length,
+    },
+    results: results.map((r) => ({
+      name: r.name,
+      group: r.group,
+      status: r.status,
+      message: r.message,
+      tags: tagsMap.get(r.name) ?? [],
+      fixable: fixableMap.get(r.name) ?? false,
+    })),
+  };
+}
+
+export function printCheckResultsAsJson(results: CheckResult[]): void {
+  const output = formatCheckResultsAsJson(results);
+  console.log(JSON.stringify(output, null, 2));
+}

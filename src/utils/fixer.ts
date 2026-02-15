@@ -9,27 +9,13 @@ import type { CheckResultBase, FixResult, GlobalContext, CheckTag } from "../typ
 import { checkGroups } from "../registry.js";
 import { sortByChainAndPriority, getChainRoot } from "./fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
+import { getFixPriority, isGroupForProjectType } from "./checks.js";
 
 type FixableCheck = {
   name: string;
   tags: CheckTag[];
   runFix: () => Promise<FixResult>;
 };
-
-/**
- * Priority scoring: lower = fix first
- * importance (required=0, recommended=1, opinionated=2) * 3 + effort (low=0, med=1, high=2)
- */
-function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
-  const importance = tags.includes("required") ? 0
-    : tags.includes("recommended") ? 1 : 2;
-
-  const effortTags = rootTags ?? tags;
-  const effort = effortTags.includes("effort:low") ? 0
-    : effortTags.includes("effort:medium") ? 1 : 2;
-
-  return importance * 3 + effort;
-}
 
 export type AutoFixOptions = {
   projectPath: string;
@@ -47,8 +33,13 @@ export async function runAutoFix(options: AutoFixOptions): Promise<number> {
   console.log("\x1b[90m  Scanning for fixable issues...\x1b[0m");
   console.log();
 
+  // Filter groups based on project type
+  const groupsToRun = checkGroups.filter((g) =>
+    isGroupForProjectType(g.name, global.config.projectType)
+  );
+
   // Run all checks and collect fixable failures
-  for (const group of checkGroups) {
+  for (const group of groupsToRun) {
     const groupContext = await group.loadContext(global);
 
     for (const check of group.checks) {

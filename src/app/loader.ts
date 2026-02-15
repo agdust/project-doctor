@@ -4,78 +4,16 @@
  * Scans project, runs checks, and populates app context.
  */
 
-import { readFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult } from "../types.js";
-import type { ProjectType } from "../config/types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
+import {
+  getFixPriority,
+  isGroupForProjectType,
+  loadWhyFromDocs,
+} from "../utils/checks.js";
 import type { AppContext, FixableIssue, FailedCheck, FailedByCategory } from "./types.js";
-
-// Groups that are specific to JS/Node projects
-const JS_GROUPS = new Set([
-  "package-json",
-  "tsconfig",
-  "eslint",
-  "prettier",
-  "npm",
-  "deps",
-  "testing",
-  "bundle-size",
-  "jscpd",
-]);
-
-function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
-  if (projectType === "js") return true;
-  // For "generic" projects, skip JS-specific groups
-  return !JS_GROUPS.has(groupName);
-}
-
-// Package paths for loading docs
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PACKAGE_ROOT = join(__dirname, "..", "..");
-const CHECKS_SRC = join(PACKAGE_ROOT, "src", "checks");
-
-/**
- * Priority scoring: lower = fix first
- * importance (required=0, recommended=1, opinionated=2) * 3 + effort (low=0, med=1, high=2)
- */
-function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
-  const importance = tags.includes("required") ? 0
-    : tags.includes("recommended") ? 1 : 2;
-
-  const effortTags = rootTags ?? tags;
-  const effort = effortTags.includes("effort:low") ? 0
-    : effortTags.includes("effort:medium") ? 1 : 2;
-
-  return importance * 3 + effort;
-}
-
-/**
- * Load "Why" content from check's docs.md
- */
-async function loadWhyFromDocs(group: string, checkName: string): Promise<string | null> {
-  const checkFolder = checkName.startsWith(`${group}-`)
-    ? checkName.slice(group.length + 1)
-    : checkName;
-
-  const docsPath = join(CHECKS_SRC, group, checkFolder, "docs.md");
-
-  try {
-    const content = await readFile(docsPath, "utf-8");
-    const whyMatch = content.match(/## Why\n\n([\s\S]*?)(?=\n## |$)/);
-    if (whyMatch) {
-      return whyMatch[1].trim();
-    }
-  } catch {
-    // No docs file
-  }
-
-  return null;
-}
 
 /**
  * Get project name from package.json or folder

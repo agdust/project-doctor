@@ -1,0 +1,261 @@
+/**
+ * Shared Check Utilities
+ *
+ * Common logic used by both CLI commands and interactive wizard.
+ */
+
+import { readFile } from "node:fs/promises";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import type { CheckTag, Check, FixResult, GlobalContext } from "../types.js";
+import type { ProjectType, ResolvedConfig, Severity } from "../config/types.js";
+import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
+import { isSkipUntil, parseSkipUntil, isSkipUntilActive } from "../config/types.js";
+import { checkGroups, listChecks } from "../registry.js";
+
+// ============================================================================
+// Project Type Filtering
+// ============================================================================
+
+/** Groups that are specific to JS/Node projects */
+export const JS_GROUPS = new Set([
+  "package-json",
+  "tsconfig",
+  "eslint",
+  "prettier",
+  "npm",
+  "deps",
+  "testing",
+  "bundle-size",
+  "jscpd",
+]);
+
+/** Check if a group applies to the given project type */
+export function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
+  if (projectType === "js") return true;
+  // For "generic" projects, skip JS-specific groups
+  return !JS_GROUPS.has(groupName);
+}
+
+// ============================================================================
+// Fix Priority
+// ============================================================================
+
+/**
+ * Calculate fix priority score: lower = fix first
+ *
+ * Formula: importance * 3 + effort
+ * - importance: required=0, recommended=1, opinionated=2
+ * - effort: low=0, medium=1, high=2
+ *
+ * This creates a priority curve that fixes important+easy issues first.
+ */
+export function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
+  const importance = tags.includes("required") ? 0
+    : tags.includes("recommended") ? 1 : 2;
+
+  const effortTags = rootTags ?? tags;
+  const effort = effortTags.includes("effort:low") ? 0
+    : effortTags.includes("effort:medium") ? 1 : 2;
+
+  return importance * 3 + effort;
+}
+
+// ============================================================================
+// Check Status
+// ============================================================================
+
+export type CheckStatus = "enabled" | "disabled" | "muted";
+
+export type CheckStatusInfo = {
+  status: CheckStatus;
+  mutedUntil?: string;
+};
+
+/**
+ * Determine the effective status of a check based on config
+ */
+export function getCheckStatus(
+  checkName: string,
+  checkTags: string[],
+  groupName: string,
+  config: ResolvedConfig
+): CheckStatusInfo {
+  // Check if check is directly configured
+  const checkSeverity = config.checks[checkName];
+  if (checkSeverity) {
+    if (checkSeverity === "off") {
+      return { status: "disabled" };
+    }
+    if (isSkipUntil(checkSeverity) && isSkipUntilActive(checkSeverity)) {
+      const date = parseSkipUntil(checkSeverity);
+      return {
+        status: "muted",
+        mutedUntil: date ? date.toISOString().split("T")[0] : undefined,
+      };
+    }
+  }
+
+  // Check if any tag is disabled
+  for (const tag of checkTags) {
+    if (isTagOff(config, tag)) {
+      return { status: "disabled" };
+    }
+  }
+
+  // Check if group is disabled
+  if (isGroupOff(config, groupName)) {
+    return { status: "disabled" };
+  }
+
+  return { status: "enabled" };
+}
+
+// ============================================================================
+// Check Lookup
+// ============================================================================
+
+/** Get valid check names as a set */
+export function getValidCheckNames(): Set<string> {
+  return new Set(listChecks().map((c) => c.name));
+}
+
+/** Get valid group names as a set */
+export function getValidGroupNames(): Set<string> {
+  return new Set(checkGroups.map((g) => g.name));
+}
+
+/** Get all valid tag names from checks */
+export function getValidTagNames(): Set<string> {
+  const checks = listChecks();
+  const tags = new Set<string>();
+  for (const check of checks) {
+    for (const tag of check.tags) {
+      tags.add(tag);
+    }
+  }
+  return tags;
+}
+
+/** Find a check by name, returns the check and its group */
+export function findCheck(checkName: string): { check: Check<unknown>; group: string } | null {
+  for (const group of checkGroups) {
+    const check = group.checks.find((c) => c.name === checkName);
+    if (check) {
+      return { check: check as Check<unknown>, group: group.name };
+    }
+  }
+  return null;
+}
+
+/** Check if a fix has options (vs simple fix) */
+export function isFixWithOptions<T>(fix: unknown): fix is { description: string; options: Array<{ id: string; label: string; description?: string; run: (g: GlobalContext, c: T) => Promise<FixResult> }> } {
+  return !!fix && typeof fix === "object" && "options" in fix && Array.isArray((fix as { options: unknown[] }).options);
+}
+
+// ============================================================================
+// Check Info
+// ============================================================================
+
+export type CheckInfo = {
+  name: string;
+  group: string;
+  description: string;
+  tags: string[];
+  status: CheckStatus;
+  mutedUntil?: string;
+  fixable: boolean;
+  fixDescription?: string;
+  fixOptions?: Array<{ id: string; label: string; description?: string }>;
+};
+
+/** Get full info about a check including status and fix options */
+export function getCheckInfo(
+  checkName: string,
+  config: ResolvedConfig
+): CheckInfo | null {
+  const found = findCheck(checkName);
+  if (!found) return null;
+
+  const { check, group } = found;
+  const statusInfo = getCheckStatus(check.name, check.tags, group, config);
+
+  const info: CheckInfo = {
+    name: check.name,
+    group,
+    description: check.description,
+    tags: check.tags,
+    status: statusInfo.status,
+    mutedUntil: statusInfo.mutedUntil,
+    fixable: !!check.fix,
+  };
+
+  if (check.fix) {
+    info.fixDescription = check.fix.description;
+
+    if (isFixWithOptions(check.fix)) {
+      info.fixOptions = check.fix.options.map((opt) => ({
+        id: opt.id,
+        label: opt.label,
+        description: opt.description,
+      }));
+    }
+  }
+
+  return info;
+}
+
+/** Build a map of check names to their fixable status */
+export function buildFixableMap(): Map<string, boolean> {
+  const map = new Map<string, boolean>();
+  for (const group of checkGroups) {
+    for (const check of group.checks) {
+      map.set(check.name, !!check.fix);
+    }
+  }
+  return map;
+}
+
+/** Build a map of check names to their tags */
+export function buildTagsMap(): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const group of checkGroups) {
+    for (const check of group.checks) {
+      map.set(check.name, check.tags);
+    }
+  }
+  return map;
+}
+
+// ============================================================================
+// Why/Docs Loading
+// ============================================================================
+
+// Package paths for loading docs
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PACKAGE_ROOT = join(__dirname, "..", "..");
+const CHECKS_SRC = join(PACKAGE_ROOT, "src", "checks");
+
+/**
+ * Load "Why" content from a check's docs.md file
+ */
+export async function loadWhyFromDocs(group: string, checkName: string): Promise<string | null> {
+  const checkFolder = checkName.startsWith(`${group}-`)
+    ? checkName.slice(group.length + 1)
+    : checkName;
+
+  const docsPath = join(CHECKS_SRC, group, checkFolder, "docs.md");
+
+  try {
+    const content = await readFile(docsPath, "utf-8");
+    const whyMatch = content.match(/## Why\n\n([\s\S]*?)(?=\n## |$)/);
+    if (whyMatch) {
+      return whyMatch[1].trim();
+    }
+  } catch {
+    // No docs file
+  }
+
+  return null;
+}
