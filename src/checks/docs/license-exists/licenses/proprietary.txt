@@ -1,6 +1,6 @@
 PROPRIETARY LICENSE
 
-Copyright (c) {{YEAR}}
+Copyright (c) {{YEAR}} {{COPYRIGHT_HOLDER}}
 
 All rights reserved.
 

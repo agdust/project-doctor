@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { input } from "@inquirer/prompts";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -13,12 +14,16 @@ const __dirname = dirname(__filename);
 const LICENSES_DIR = join(__dirname, "licenses");
 
 /**
- * Load a license template and replace {{YEAR}} with current year
+ * Load a license template and replace placeholders
  */
-async function loadLicense(filename: string): Promise<string> {
+async function loadLicense(filename: string, copyrightHolder?: string): Promise<string> {
   const content = await readFile(join(LICENSES_DIR, filename), "utf-8");
   const year = new Date().getFullYear();
-  return content.replace(/\{\{YEAR\}\}/g, String(year));
+  let result = content.replace(/\{\{YEAR\}\}/g, String(year));
+  if (copyrightHolder) {
+    result = result.replace(/\{\{COPYRIGHT_HOLDER\}\}/g, copyrightHolder);
+  }
+  return result;
 }
 
 export const check: Check<DocsContext> = {
@@ -37,8 +42,11 @@ export const check: Check<DocsContext> = {
         label: "MIT License",
         description: "Permissive license, allows forks to be closed source",
         run: async (global) => {
+          const copyrightHolder = await input({
+            message: "Copyright holder (e.g., Your Name or Company):",
+          });
           const licensePath = join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("mit.txt"), "utf-8");
+          await writeFile(licensePath, await loadLicense("mit.txt", copyrightHolder), "utf-8");
           return { success: true, message: "Created MIT LICENSE" };
         },
       },
@@ -67,8 +75,11 @@ export const check: Check<DocsContext> = {
         label: "Proprietary",
         description: "All rights reserved, for internal/private projects",
         run: async (global) => {
+          const copyrightHolder = await input({
+            message: "Copyright holder (e.g., Your Name or Company):",
+          });
           const licensePath = join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("proprietary.txt"), "utf-8");
+          await writeFile(licensePath, await loadLicense("proprietary.txt", copyrightHolder), "utf-8");
           return { success: true, message: "Created PROPRIETARY LICENSE" };
         },
       },
