@@ -1,17 +1,25 @@
 # package-json-type-module
 
-TODO: Add description.
+Checks that package.json has `"type": "module"` to enable ES modules.
 
 ## Why
 
-TODO: Add motivation.
+Setting `type: "module"` enables native ES module syntax (`import`/`export`) in `.js` files. This is the modern standard for JavaScript and aligns with browser behavior. Without it, Node.js treats `.js` files as CommonJS.
 
 ## Examples
 
-**Pass**: TODO
+**Pass**: `"type": "module"`
 
-**Fail**: TODO
+**Fail**: No `type` field or `"type": "commonjs"`
 
 ## How to fix
 
-TODO: Add fix instructions.
+Add the type field to your package.json:
+
+```json
+{
+  "type": "module"
+}
+```
+
+Note: This changes how Node.js interprets `.js` files. Use `.cjs` extension for CommonJS files if needed.

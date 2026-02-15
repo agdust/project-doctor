@@ -1,17 +1,27 @@
 # package-json-scripts-test
 
-TODO: Add description.
+Checks that package.json has a `test` script defined in the scripts section.
 
 ## Why
 
-TODO: Add motivation.
+A `test` script provides a standard command for running your project's test suite. This is essential for CI/CD pipelines and ensures all contributors use the same testing workflow via `npm test`.
 
 ## Examples
 
-**Pass**: TODO
+**Pass**: `"scripts": { "test": "vitest" }`
 
-**Fail**: TODO
+**Fail**: No `test` script in package.json
 
 ## How to fix
 
-TODO: Add fix instructions.
+Add a test script to your package.json:
+
+```json
+{
+  "scripts": {
+    "test": "vitest"
+  }
+}
+```
+
+Common test commands: `vitest`, `jest`, `mocha`, `node --test`.

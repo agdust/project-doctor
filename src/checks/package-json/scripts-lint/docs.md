@@ -1,17 +1,27 @@
 # package-json-scripts-lint
 
-TODO: Add description.
+Checks that package.json has a `lint` script defined in the scripts section.
 
 ## Why
 
-TODO: Add motivation.
+A `lint` script provides a standard command for running static analysis on your code. This catches bugs, enforces coding standards, and ensures code quality. It's essential for CI/CD pipelines.
 
 ## Examples
 
-**Pass**: TODO
+**Pass**: `"scripts": { "lint": "eslint src" }`
 
-**Fail**: TODO
+**Fail**: No `lint` script in package.json
 
 ## How to fix
 
-TODO: Add fix instructions.
+Add a lint script to your package.json:
+
+```json
+{
+  "scripts": {
+    "lint": "eslint src"
+  }
+}
+```
+
+Common lint commands: `eslint src`, `biome lint .`, `oxlint`.

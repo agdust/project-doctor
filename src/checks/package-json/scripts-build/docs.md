@@ -1,17 +1,27 @@
 # package-json-scripts-build
 
-TODO: Add description.
+Checks that package.json has a `build` script defined in the scripts section.
 
 ## Why
 
-TODO: Add motivation.
+A `build` script provides a standard command for compiling, transpiling, or bundling your project. This is essential for TypeScript projects, projects using bundlers, or any project that needs a compilation step before distribution.
 
 ## Examples
 
-**Pass**: TODO
+**Pass**: `"scripts": { "build": "tsc" }`
 
-**Fail**: TODO
+**Fail**: No `build` script in package.json
 
 ## How to fix
 
-TODO: Add fix instructions.
+Add a build script to your package.json:
+
+```json
+{
+  "scripts": {
+    "build": "tsc"
+  }
+}
+```
+
+Common build commands: `tsc`, `vite build`, `esbuild src/index.ts --outdir=dist`, `rollup -c`.

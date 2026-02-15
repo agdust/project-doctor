@@ -1,17 +1,27 @@
 # package-json-scripts-format
 
-TODO: Add description.
+Checks that package.json has a `format` script defined in the scripts section.
 
 ## Why
 
-TODO: Add motivation.
+A `format` script provides a standard command for automatically formatting code. This ensures consistent code style across the project and makes it easy for contributors to format their changes before committing.
 
 ## Examples
 
-**Pass**: TODO
+**Pass**: `"scripts": { "format": "prettier --write ." }`
 
-**Fail**: TODO
+**Fail**: No `format` script in package.json
 
 ## How to fix
 
-TODO: Add fix instructions.
+Add a format script to your package.json:
+
+```json
+{
+  "scripts": {
+    "format": "prettier --write ."
+  }
+}
+```
+
+Common format commands: `prettier --write .`, `biome format --write .`.

@@ -14,19 +14,21 @@ export const aboutScreen: Screen<AppContext> = {
 
   render: () => {
     text("\x1b[1mProject Doctor\x1b[0m");
-    muted("Health checks for Node.js projects");
+    muted("Health checks for your projects");
     blank();
 
     text("\x1b[1mGoals\x1b[0m");
     text("  Detect configuration issues early");
     text("  Enforce best practices consistently");
     text("  Reduce time spent on project setup");
+    text("  Track issues over the time");
     blank();
 
     text("\x1b[1mValues\x1b[0m");
-    text("  Opinionated but configurable");
+    text("  Opinionated, no configuration required");
     text("  Fix issues, not just report them");
     text("  Minimal noise, actionable output");
+    text("  Convenient, all you info you need is inside one simple cli");
     blank();
 
     text("\x1b[1mControls\x1b[0m");
@@ -38,9 +40,6 @@ export const aboutScreen: Screen<AppContext> = {
 
     text("\x1b[1mCLI Usage\x1b[0m");
     text("  project-doctor          Interactive wizard");
-    text("  project-doctor run      Run checks (CI mode)");
-    text("  project-doctor overview Show all check results");
-    text("  project-doctor init     Create config file");
     blank();
 
     muted("https://github.com/anthropics/project-doctor");
