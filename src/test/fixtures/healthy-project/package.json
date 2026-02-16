@@ -8,13 +8,14 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest",
-    "lint": "eslint src",
+    "lint": "eslint src && lockfile-lint --path package-lock.json",
     "format": "prettier --write src"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "devDependencies": {
+    "lockfile-lint": "^4.0.0",
     "typescript": "^5.0.0"
   }
 }

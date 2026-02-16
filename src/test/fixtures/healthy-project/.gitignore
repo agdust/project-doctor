@@ -2,5 +2,6 @@ node_modules
 dist
 .env
 .env.local
+.npmrc
 *.log
 .project-doctor/
