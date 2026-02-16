@@ -1,6 +1,7 @@
 import type { Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
+import { readJson, writeJson, setNestedField } from "../../../utils/json-editor.js";
 
 const name = "package-json-has-engines";
 
@@ -12,5 +13,16 @@ export const check: Check<PackageJsonContext> = {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.engines?.node) return fail(name, "Missing engines.node");
     return pass(name, `Node: ${parsed.engines.node}`);
+  },
+  fix: {
+    description: "Add engines.node >= 20",
+    run: async (global) => {
+      const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
+      if (!pkg) return { success: false, message: "Could not read package.json" };
+
+      setNestedField(pkg, "engines.node", ">=20");
+      await writeJson(global.projectPath, "package.json", pkg);
+      return { success: true, message: "Added engines.node: >=20" };
+    },
   },
 };

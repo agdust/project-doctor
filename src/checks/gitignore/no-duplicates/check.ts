@@ -1,3 +1,5 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -22,5 +24,35 @@ export const check: Check<GitignoreContext> = {
       return fail(name, `Duplicates: ${duplicates.join(", ")}`);
     }
     return pass(name, "No duplicates");
+  },
+  fix: {
+    description: "Remove duplicate patterns",
+    run: async (global) => {
+      const gitignorePath = join(global.projectPath, ".gitignore");
+      const content = await readFile(gitignorePath, "utf-8");
+      const lines = content.split("\n");
+      const seenPatterns = new Set<string>();
+      const deduped: string[] = [];
+      let removedCount = 0;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        // Keep comments and empty lines as-is
+        if (!trimmed || trimmed.startsWith("#")) {
+          deduped.push(line);
+          continue;
+        }
+        // Only keep first occurrence of each pattern
+        if (!seenPatterns.has(trimmed)) {
+          seenPatterns.add(trimmed);
+          deduped.push(line);
+        } else {
+          removedCount++;
+        }
+      }
+
+      await writeFile(gitignorePath, deduped.join("\n"), "utf-8");
+      return { success: true, message: `Removed ${removedCount} duplicate(s)` };
+    },
   },
 };
