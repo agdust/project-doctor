@@ -1,10 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { checkDeps, type AuditResult } from "./deps-checker.js";
-import type { CheckResultBase, GlobalContext } from "../types.js";
 import { ensureConfigDir } from "../config/constants.js";
+import { runAllChecksRaw } from "./runner.js";
 
 type SnapshotEntry = {
   date: string;
@@ -49,17 +48,7 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
   const global = await createGlobalContext(projectPath);
 
   // Run all checks
-  const checkResults: CheckResultBase[] = [];
-  for (const group of checkGroups) {
-    const groupContext = await group.loadContext(global);
-    for (const check of group.checks) {
-      const result = await (check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>)(
-        global,
-        groupContext
-      );
-      checkResults.push(result);
-    }
-  }
+  const checkResults = await runAllChecksRaw(global);
 
   // Check dependencies and audit
   let depsResult: SnapshotEntry["deps"] = null;

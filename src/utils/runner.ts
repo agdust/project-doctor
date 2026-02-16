@@ -150,3 +150,22 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
 export async function runAllChecks(projectPath: string): Promise<CheckResult[]> {
   return runChecks({ projectPath });
 }
+
+/**
+ * Run all checks without any filtering, returning base results.
+ * Used internally by overview and snapshot utilities.
+ */
+export async function runAllChecksRaw(global: Parameters<typeof checkGroups[0]["loadContext"]>[0]): Promise<CheckResultBase[]> {
+  const checkResults: CheckResultBase[] = [];
+  for (const group of checkGroups) {
+    const groupContext = await group.loadContext(global);
+    for (const check of group.checks) {
+      const result = await (check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>)(
+        global,
+        groupContext
+      );
+      checkResults.push(result);
+    }
+  }
+  return checkResults;
+}

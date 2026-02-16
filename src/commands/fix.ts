@@ -14,11 +14,10 @@
 
 import type { CheckResultBase, FixResult, GlobalContext, CheckTag, Fix } from "../types.js";
 import { checkGroups } from "../registry.js";
-import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
+import { sortFixableChecks } from "../utils/fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
 import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import {
-  getFixPriority,
   isGroupForProjectType,
   isFixWithOptions,
   getValidCheckNames,
@@ -142,20 +141,7 @@ async function collectFixableChecks(
     }
   }
 
-  // Build tag map for chain root lookups
-  const tagsByName = new Map<string, CheckTag[]>();
-  for (const check of fixableChecks) {
-    tagsByName.set(check.name, check.tags);
-  }
-
-  // Sort by dependency chain and priority
-  const sortedChecks = sortByChainAndPriority(fixableChecks, (check) => {
-    const rootName = getChainRoot(check.name);
-    const rootTags = tagsByName.get(rootName) ?? check.tags;
-    return getFixPriority(check.tags, rootTags);
-  });
-
-  return { checks: sortedChecks, global };
+  return { checks: sortFixableChecks(fixableChecks), global };
 }
 
 /**

@@ -7,9 +7,9 @@
 
 import type { CheckResultBase, FixResult, GlobalContext, CheckTag } from "../types.js";
 import { checkGroups } from "../registry.js";
-import { sortByChainAndPriority, getChainRoot } from "./fix-chains.js";
+import { sortFixableChecks } from "./fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
-import { getFixPriority, isGroupForProjectType } from "./checks.js";
+import { isGroupForProjectType } from "./checks.js";
 
 type FixableCheck = {
   name: string;
@@ -60,18 +60,7 @@ export async function runAutoFix(options: AutoFixOptions): Promise<number> {
     }
   }
 
-  // Build tag map for chain root lookups
-  const tagsByName = new Map<string, CheckTag[]>();
-  for (const check of fixableChecks) {
-    tagsByName.set(check.name, check.tags);
-  }
-
-  // Sort by dependency chain and priority
-  const sortedChecks = sortByChainAndPriority(fixableChecks, (check) => {
-    const rootName = getChainRoot(check.name);
-    const rootTags = tagsByName.get(rootName) ?? check.tags;
-    return getFixPriority(check.tags, rootTags);
-  });
+  const sortedChecks = sortFixableChecks(fixableChecks);
 
   if (sortedChecks.length === 0) {
     console.log("  \x1b[32m✓ No fixable issues found\x1b[0m");

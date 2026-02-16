@@ -35,6 +35,7 @@ import { getAllPresets, getPreset } from "../presets/presets.js";
 import { getStats } from "../../eslint-db/index.js";
 import type { ParsedConfig, PresetId } from "../types.js";
 import type { RuleStrictness, RuleConcern } from "../../eslint-db/types.js";
+import { buildPresetsFromSelections } from "../wizard/wizard.js";
 
 // App context passed through screens
 type AppContext = {
@@ -237,7 +238,7 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
   printSection("Configuration Wizard");
 
   // Project type
-  const projectType = await select({
+  const projectTypeResult = await select<"ts" | "js">({
     message: "What type of project is this?",
     choices: [
       { name: "TypeScript", value: "ts" },
@@ -246,12 +247,13 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
     includeBack: true,
   });
 
-  if (isBack(projectType)) {
+  if (isBack(projectTypeResult)) {
     return BACK;
   }
+  const projectType = projectTypeResult as "ts" | "js";
 
   // Strictness level
-  const strictness = await select<RuleStrictness>({
+  const strictnessResult = await select<RuleStrictness>({
     message: "How strict should the linting be?",
     choices: [
       { name: "Essential - Only catch real bugs", value: "essential" },
@@ -262,9 +264,10 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
     includeBack: true,
   });
 
-  if (isBack(strictness)) {
+  if (isBack(strictnessResult)) {
     return BACK;
   }
+  const strictness = strictnessResult as RuleStrictness;
 
   // Concerns - using checkbox import from framework
   const { checkbox } = await import("../cli/cli.js");
@@ -285,28 +288,7 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
     return BACK;
   }
 
-  // Build preset list based on selections
-  const presets: PresetId[] = ["base"];
-
-  if (projectType === "ts") {
-    presets.push("typescript");
-  }
-
-  if (strictness === "strict" || strictness === "pedantic") {
-    presets.push("strict");
-  }
-
-  if (concerns.includes("style")) {
-    presets.push("style");
-  }
-
-  if (concerns.includes("security")) {
-    presets.push("security");
-  }
-
-  if (concerns.includes("performance")) {
-    presets.push("performance");
-  }
+  const presets = buildPresetsFromSelections(projectType, strictness, concerns);
 
   // Safety check before modifying
   const safe = await ensureSafeToModify(ctx.projectPath);

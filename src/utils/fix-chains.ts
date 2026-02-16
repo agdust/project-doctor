@@ -1,3 +1,6 @@
+import type { CheckTag } from "../types.js";
+import { getFixPriority } from "./checks.js";
+
 /**
  * Fix dependency chains - defines the order in which related checks must be fixed.
  *
@@ -167,5 +170,24 @@ export function sortByChainAndPriority<T extends { name: string }>(
     }
 
     return getPriority(a) - getPriority(b);
+  });
+}
+
+/**
+ * Sort fixable checks by chain dependencies and priority.
+ * Uses chain root tags to calculate priority (so dependent checks inherit their root's priority).
+ */
+export function sortFixableChecks<T extends { name: string; tags: CheckTag[] }>(checks: T[]): T[] {
+  // Build tag map for chain root lookups
+  const tagsByName = new Map<string, CheckTag[]>();
+  for (const check of checks) {
+    tagsByName.set(check.name, check.tags);
+  }
+
+  // Sort by dependency chain and priority
+  return sortByChainAndPriority(checks, (check) => {
+    const rootName = getChainRoot(check.name);
+    const rootTags = tagsByName.get(rootName) ?? check.tags;
+    return getFixPriority(check.tags, rootTags);
   });
 }

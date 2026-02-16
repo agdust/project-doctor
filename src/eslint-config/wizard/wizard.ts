@@ -72,6 +72,39 @@ async function confirm(message: string, defaultValue = true): Promise<boolean> {
   }
 }
 
+/**
+ * Build preset list based on wizard selections
+ */
+export function buildPresetsFromSelections(
+  projectType: "ts" | "js",
+  strictness: RuleStrictness,
+  concerns: RuleConcern[]
+): PresetId[] {
+  const presets: PresetId[] = ["base"];
+
+  if (projectType === "ts") {
+    presets.push("typescript");
+  }
+
+  if (strictness === "strict" || strictness === "pedantic") {
+    presets.push("strict");
+  }
+
+  if (concerns.includes("style")) {
+    presets.push("style");
+  }
+
+  if (concerns.includes("security")) {
+    presets.push("security");
+  }
+
+  if (concerns.includes("performance")) {
+    presets.push("performance");
+  }
+
+  return presets;
+}
+
 export async function runWizard(): Promise<WizardSelections> {
   console.log();
   console.log("\x1b[1mESLint Configuration Wizard\x1b[0m");
@@ -80,7 +113,7 @@ export async function runWizard(): Promise<WizardSelections> {
   console.log();
 
   // Project type
-  const projectType = await select("What type of project is this?", [
+  const projectType = await select<"ts" | "js">("What type of project is this?", [
     { name: "TypeScript", value: "ts" },
     { name: "JavaScript", value: "js" },
   ]);
@@ -110,28 +143,7 @@ export async function runWizard(): Promise<WizardSelections> {
     typeChecking = await confirm("Enable type-aware linting? (slower but catches more issues)", false);
   }
 
-  // Build preset list based on selections
-  const presets: PresetId[] = ["base"];
-
-  if (projectType === "ts") {
-    presets.push("typescript");
-  }
-
-  if (strictness === "strict" || strictness === "pedantic") {
-    presets.push("strict");
-  }
-
-  if (concerns.includes("style")) {
-    presets.push("style");
-  }
-
-  if (concerns.includes("security")) {
-    presets.push("security");
-  }
-
-  if (concerns.includes("performance")) {
-    presets.push("performance");
-  }
+  const presets = buildPresetsFromSelections(projectType, strictness, concerns);
 
   return {
     presets,

@@ -264,12 +264,12 @@ async function handleConfigCommand(args: string[]): Promise<void> {
   }
 }
 
-async function handleDisableCommand(args: string[]): Promise<void> {
-  // project-doctor disable <check|tag|group> <name> [path]
+type ConfigTargetType = "check" | "tag" | "group";
 
+function parseConfigTargetArgs(args: string[]): { type: ConfigTargetType; name: string; projectPath: string } {
   const type = args[0];
   if (!type || !["check", "tag", "group"].includes(type)) {
-    console.error("${RED}Error: Missing or invalid type. Use 'check', 'tag', or 'group'.${RESET}");
+    console.error(`${RED}Error: Missing or invalid type. Use 'check', 'tag', or 'group'.${RESET}`);
     process.exit(2);
   }
   args.shift();
@@ -281,7 +281,11 @@ async function handleDisableCommand(args: string[]): Promise<void> {
   }
   args.shift();
 
-  const projectPath = getProjectPath(args);
+  return { type: type as ConfigTargetType, name, projectPath: getProjectPath(args) };
+}
+
+async function handleDisableCommand(args: string[]): Promise<void> {
+  const { type, name, projectPath } = parseConfigTargetArgs(args);
 
   switch (type) {
     case "check":
@@ -297,23 +301,7 @@ async function handleDisableCommand(args: string[]): Promise<void> {
 }
 
 async function handleEnableCommand(args: string[]): Promise<void> {
-  // project-doctor enable <check|tag|group> <name> [path]
-
-  const type = args[0];
-  if (!type || !["check", "tag", "group"].includes(type)) {
-    console.error("${RED}Error: Missing or invalid type. Use 'check', 'tag', or 'group'.${RESET}");
-    process.exit(2);
-  }
-  args.shift();
-
-  const name = args[0];
-  if (!name || name.startsWith("-")) {
-    console.error(`${RED}Error: Missing ${type} name.${RESET}`);
-    process.exit(2);
-  }
-  args.shift();
-
-  const projectPath = getProjectPath(args);
+  const { type, name, projectPath } = parseConfigTargetArgs(args);
 
   switch (type) {
     case "check":
