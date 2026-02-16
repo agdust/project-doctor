@@ -135,13 +135,14 @@ export const overviewDetailScreen: Screen<AppContext> = {
         );
       }
     } else if (check.runFix) {
+      const runFix = check.runFix;
       opts.push(
         action(
           "fix",
           "Apply fix",
           async (c) => {
             try {
-              const result = await check.runFix!();
+              const result = await runFix();
               blank();
               if (result.success) {
                 success(result.message, 3);

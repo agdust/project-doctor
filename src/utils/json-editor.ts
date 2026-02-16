@@ -59,15 +59,14 @@ export async function updateJson<T extends object>(
  */
 export function setNestedField<T extends object>(obj: T, path: string, value: unknown): T {
   const parts = path.split(".");
-  // biome-ignore lint/suspicious/noExplicitAny: generic nested object manipulation
-  let current: any = obj;
+  let current: Record<string, unknown> = obj as Record<string, unknown>;
 
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
     if (!(part in current) || typeof current[part] !== "object") {
       current[part] = {};
     }
-    current = current[part];
+    current = current[part] as Record<string, unknown>;
   }
 
   current[parts[parts.length - 1]] = value;

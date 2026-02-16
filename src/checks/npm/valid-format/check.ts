@@ -22,8 +22,9 @@ export const check: Check<NpmContext> = {
       /^lts\/\w+$/, // lts/iron
     ];
 
-    const isValid = validPatterns.some((p) => p.test(nvmrc.version!));
-    if (!isValid) return fail(name, `Invalid format: ${nvmrc.version}`);
+    const version = nvmrc.version;
+    const isValid = validPatterns.some((p) => p.test(version));
+    if (!isValid) return fail(name, `Invalid format: ${version}`);
     return pass(name, `Version: ${nvmrc.version}`);
   },
 };

@@ -64,7 +64,8 @@ function shouldIncludeCheck(
   }
 
   if (options.tags && options.tags.length > 0) {
-    const hasMatchingTag = checkTags.some((t) => options.tags!.includes(t));
+    const tagsToMatch = options.tags;
+    const hasMatchingTag = checkTags.some((t) => tagsToMatch.includes(t));
     if (!hasMatchingTag) {
       return false;
     }

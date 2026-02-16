@@ -12,6 +12,7 @@ import { clearScreen, printHeader, printGoodbye } from "./ui.js";
 import { pressAnyKey } from "./prompts.js";
 
 interface StackEntry {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic screen stack requires any
   screen: Screen<any>;
   context: unknown;
 }
@@ -37,7 +38,7 @@ export async function runApp<T>(
   // Controller passed to screens
   const controller: AppController = {
     push: <C>(screen: Screen<C>, context: C) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic screen stack requires any
       pendingPush = { screen: screen as Screen<any>, context };
     },
     back: () => {

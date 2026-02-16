@@ -27,8 +27,8 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
   try {
     const pkgContent = await global.files.readText("package.json");
     if (pkgContent) {
-      const pkg = JSON.parse(pkgContent);
-      if (pkg.name) projectName = pkg.name;
+      const pkg = JSON.parse(pkgContent) as { name?: string };
+      if (typeof pkg.name === "string") projectName = pkg.name;
     }
   } catch {
     // Use folder name

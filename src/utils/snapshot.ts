@@ -31,7 +31,7 @@ async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
   const historyPath = join(projectPath, HISTORY_DIR, HISTORY_FILE);
   try {
     const content = await readFile(historyPath, "utf-8");
-    return JSON.parse(content);
+    return JSON.parse(content) as SnapshotEntry[];
   } catch {
     return [];
   }

@@ -18,8 +18,8 @@ async function getProjectName(global: GlobalContext, projectPath: string): Promi
   try {
     const pkgContent = await global.files.readText("package.json");
     if (pkgContent) {
-      const pkg = JSON.parse(pkgContent);
-      if (pkg.name) return pkg.name;
+      const pkg = JSON.parse(pkgContent) as { name?: string };
+      if (typeof pkg.name === "string") return pkg.name;
     }
   } catch {
     // Use folder name

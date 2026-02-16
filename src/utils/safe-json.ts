@@ -40,7 +40,7 @@ function sanitizeObject<T>(obj: T): T {
  */
 export function safeJsonParse<T>(content: string): T | null {
   try {
-    const parsed = JSON.parse(content);
+    const parsed: unknown = JSON.parse(content);
     return sanitizeObject(parsed) as T;
   } catch {
     return null;
@@ -53,7 +53,7 @@ export function safeJsonParse<T>(content: string): T | null {
  */
 export function safeJson5Parse<T>(content: string): T | null {
   try {
-    const parsed = JSON5.parse(content);
+    const parsed: unknown = JSON5.parse(content);
     return sanitizeObject(parsed) as T;
   } catch {
     return null;

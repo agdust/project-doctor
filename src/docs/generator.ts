@@ -25,7 +25,7 @@ function parseMarkdown(md: string): string {
   html = html.replace(/^# (.+)$/gm, "<h1>$1</h1>");
 
   // Code blocks
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
     return `<pre><code>${escapeHtml(code.trim())}</code></pre>`;
   });
 

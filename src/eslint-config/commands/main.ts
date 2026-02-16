@@ -137,10 +137,10 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
   // Navigate to appropriate screen
   switch (action) {
     case "analyze":
-      app.push(analyzeScreen, { ...ctx, existing: existing! });
+      if (existing) app.push(analyzeScreen, { ...ctx, existing });
       break;
     case "add":
-      app.push(addPresetScreen, { ...ctx, existing: existing! });
+      if (existing) app.push(addPresetScreen, { ...ctx, existing });
       break;
     case "wizard":
       app.push(wizardScreen, { ...ctx, existing });
@@ -155,7 +155,7 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
       app.push(rulesScreen, ctx);
       break;
     case "current":
-      app.push(currentConfigScreen, { ...ctx, existing: existing! });
+      if (existing) app.push(currentConfigScreen, { ...ctx, existing });
       break;
   }
 });
@@ -227,7 +227,7 @@ const addPresetScreen = createScreen<AnalyzeContext>("add-preset", "Add Preset",
       if (percentage === 100) {
         badge = ` ${color.green("✓ complete")}`;
       } else if (percentage > 0) {
-        badge = ` ${color.yellow(percentage + "%")}`;
+        badge = ` ${color.yellow(String(percentage) + "%")}`;
       }
 
       return {
@@ -397,7 +397,7 @@ const presetsScreen = createScreen<AppContext>("presets", "Available Presets", a
       console.log(`    ${color.dim("Extends: " + preset.extends.join(", "))}`);
     }
     const ruleCount = Object.keys(preset.rules).length;
-    console.log(`    ${color.dim(ruleCount + " rules")}`);
+    console.log(`    ${color.dim(String(ruleCount) + " rules")}`);
     console.log();
   }
 

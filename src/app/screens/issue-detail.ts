@@ -58,10 +58,11 @@ export const issueDetailScreen: Screen<AppContext> = {
       );
     } else if (issue.runFix) {
       // Simple auto fix
+      const runFix = issue.runFix;
       opts.push(
         action("fix", "Accept auto fix", async (c) => {
           try {
-            const result = await issue.runFix!();
+            const result = await runFix();
             blank();
             if (result.success) {
               success(result.message, 3);

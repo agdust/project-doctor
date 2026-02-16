@@ -72,8 +72,8 @@ async function fetchLatestVersion(
   try {
     const response = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
     if (!response.ok) return null;
-    const data = await response.json();
-    const version = data.version ?? null;
+    const data = (await response.json()) as { version?: string };
+    const version = typeof data.version === "string" ? data.version : null;
 
     // Cache the result
     if (version && cache) {
@@ -103,7 +103,7 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
   let pkg: PackageJson;
   try {
     const content = await readFile(packageJsonPath, "utf-8");
-    pkg = JSON.parse(content);
+    pkg = JSON.parse(content) as PackageJson;
   } catch {
     throw new Error("Could not read package.json");
   }
@@ -232,19 +232,35 @@ async function runAudit(
   }
 }
 
+interface NpmAuditData {
+  metadata?: {
+    vulnerabilities?: {
+      critical?: number;
+      high?: number;
+      moderate?: number;
+      low?: number;
+      total?: number;
+    };
+  };
+}
+
 function parseAuditOutput(output: string): AuditResult | null {
   try {
-    const data = JSON.parse(output);
+    const data = JSON.parse(output) as NpmAuditData;
 
     // npm audit format
     if (data.metadata?.vulnerabilities) {
       const v = data.metadata.vulnerabilities;
+      const critical = v.critical ?? 0;
+      const high = v.high ?? 0;
+      const moderate = v.moderate ?? 0;
+      const low = v.low ?? 0;
       return {
-        critical: v.critical ?? 0,
-        high: v.high ?? 0,
-        moderate: v.moderate ?? 0,
-        low: v.low ?? 0,
-        total: v.total ?? v.critical + v.high + v.moderate + v.low,
+        critical,
+        high,
+        moderate,
+        low,
+        total: v.total ?? critical + high + moderate + low,
       };
     }
 

@@ -93,7 +93,8 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
 
   if (options.groups?.length) {
     // CLI filter: only run specified groups
-    groupsToRun = checkGroups.filter((g) => options.groups!.includes(g.name));
+    const groupsFilter = options.groups;
+    groupsToRun = checkGroups.filter((g) => groupsFilter.includes(g.name));
   } else {
     // Config filter: skip groups turned off
     groupsToRun = checkGroups.filter((g) => !isGroupOff(config, g.name));

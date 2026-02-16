@@ -21,8 +21,8 @@ export const check: Check<DocsContext> = {
       try {
         const pkgPath = join(global.projectPath, "package.json");
         const pkgContent = await readFile(pkgPath, "utf-8");
-        const pkg = JSON.parse(pkgContent);
-        if (pkg.name) projectName = pkg.name;
+        const pkg = JSON.parse(pkgContent) as { name?: string };
+        if (typeof pkg.name === "string") projectName = pkg.name;
       } catch {
         // Use default
       }

@@ -137,8 +137,9 @@ export function sortByChainAndPriority<T extends { name: string }>(
   const depthCache = new Map<string, number>();
 
   function getDepth(checkName: string): number {
-    if (depthCache.has(checkName)) {
-      return depthCache.get(checkName)!;
+    const cached = depthCache.get(checkName);
+    if (cached !== undefined) {
+      return cached;
     }
 
     const deps = getDependencies(checkName);

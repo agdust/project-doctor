@@ -63,6 +63,7 @@ function buildRules(rawRules: RawRules, prefix: string, pluginName: string): Rul
 }
 
 // Build rules from actual plugins
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional use of internal API
 const coreRules = buildRules(builtinRules, "", "eslint");
 const tsRules = buildRules(
   (tseslintPlugin?.rules ?? {}) as Record<string, RawRuleMeta>,

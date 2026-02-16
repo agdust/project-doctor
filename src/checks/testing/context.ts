@@ -12,7 +12,7 @@ export async function loadContext(global: GlobalContext): Promise<TestingContext
   }
 
   try {
-    const pkg = JSON.parse(pkgRaw);
+    const pkg = JSON.parse(pkgRaw) as { scripts?: { test?: string } };
     const testScript = pkg.scripts?.test;
     const hasTestScript = typeof testScript === "string" && testScript.length > 0;
     return {
