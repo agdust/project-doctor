@@ -10,6 +10,7 @@ export const fixtures = {
   broken: join(fixturesDir, "broken-project"),
   empty: join(fixturesDir, "empty-project"),
   shellOnly: join(fixturesDir, "shell-only-project"),
+  fixable: join(fixturesDir, "fixable-project"),
 } as const;
 
 export type FixtureName = keyof typeof fixtures;

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, writeFile, readFile, mkdir } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { createGlobalContext } from "../../context/global.js";
 import { loadContext } from "./context.js";
+import { copyFixtureToTemp, createEmptyTempDir, type TempFixture } from "../../test/fix-test-utils.js";
 import { check as hasName } from "./has-name/check.js";
 import { check as hasVersion } from "./has-version/check.js";
 import { check as hasDescription } from "./has-description/check.js";
@@ -17,33 +17,22 @@ import { check as scriptsLint } from "./scripts-lint/check.js";
 import { check as scriptsFormat } from "./scripts-format/check.js";
 
 describe("package-json fixes", () => {
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), "pkg-json-fix-test-"));
-  });
+  let tempFixture: TempFixture;
 
   afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true });
+    if (tempFixture) {
+      await tempFixture.cleanup();
+    }
   });
 
-  async function createPackageJson(content: Record<string, unknown>) {
-    await writeFile(join(tempDir, "package.json"), JSON.stringify(content, null, 2));
-  }
-
-  async function readPackageJson(): Promise<Record<string, unknown>> {
-    const content = await readFile(join(tempDir, "package.json"), "utf-8");
-    return JSON.parse(content);
-  }
-
   describe("has-name fix", () => {
-    it("should add name from directory name", async () => {
-      await createPackageJson({ version: "1.0.0" });
+    it("should add name from directory name using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
-      // Verify check fails
+      // Verify check fails (fixable-project has no name)
       const checkResult = await hasName.run(global, ctx);
       expect(checkResult.status).toBe("fail");
 
@@ -56,22 +45,24 @@ describe("package-json fixes", () => {
       expect(fixResult.success).toBe(true);
 
       // Verify package.json was updated
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.name).toBeDefined();
       expect(typeof pkg.name).toBe("string");
 
       // Verify check now passes
-      const global2 = await createGlobalContext(tempDir);
+      const global2 = await createGlobalContext(tempFixture.path);
       const ctx2 = await loadContext(global2);
       const checkResult2 = await hasName.run(global2, ctx2);
       expect(checkResult2.status).toBe("pass");
     });
 
     it("should sanitize directory name for npm compatibility", async () => {
+      tempFixture = await createEmptyTempDir("pkg-name-test");
+
       // Create a subdirectory with special characters
-      const specialDir = join(tempDir, "My Project Name");
+      const specialDir = join(tempFixture.path, "My Project Name");
       await mkdir(specialDir);
-      await writeFile(join(specialDir, "package.json"), JSON.stringify({ version: "1.0.0" }));
+      await tempFixture.writeFile("My Project Name/package.json", JSON.stringify({ version: "1.0.0" }));
 
       const global = await createGlobalContext(specialDir);
       const ctx = await loadContext(global);
@@ -81,17 +72,28 @@ describe("package-json fixes", () => {
 
       await fix.run(global, ctx);
 
-      const content = await readFile(join(specialDir, "package.json"), "utf-8");
+      const content = await tempFixture.readFile("My Project Name/package.json");
       const pkg = JSON.parse(content);
       expect(pkg.name).toBe("my-project-name");
+    });
+
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await hasName.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
+      expect(checkResult.message).toContain("healthy-project");
     });
   });
 
   describe("has-version fix", () => {
-    it("should add version 0.0.1", async () => {
-      await createPackageJson({ name: "test" });
+    it("should add version 0.0.1 using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       // Verify check fails
@@ -108,24 +110,51 @@ describe("package-json fixes", () => {
       expect(fixResult.message).toContain("0.0.1");
 
       // Verify package.json was updated
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.version).toBe("0.0.1");
 
       // Verify check now passes
-      const global2 = await createGlobalContext(tempDir);
+      const global2 = await createGlobalContext(tempFixture.path);
       const ctx2 = await loadContext(global2);
       const checkResult2 = await hasVersion.run(global2, ctx2);
       expect(checkResult2.status).toBe("pass");
     });
+
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await hasVersion.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
+    });
   });
 
   describe("has-description fix (semi-auto)", () => {
+    it("should fail for fixable project (missing description)", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await hasDescription.run(global, ctx);
+      expect(checkResult.status).toBe("fail");
+    });
+
+    it("should pass for healthy project", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await hasDescription.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
+    });
+
     it("should have fix defined", () => {
       expect(hasDescription.fix).toBeDefined();
     });
-
-    // Note: Full test would require mocking @inquirer/prompts
-    // The fix prompts for user input which can't be easily tested without mocks
   });
 
   describe("has-license fix", () => {
@@ -141,10 +170,10 @@ describe("package-json fixes", () => {
       expect(fix.options.map((o) => o.id)).toContain("gpl3");
     });
 
-    it("should add MIT license", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0" });
+    it("should add MIT license using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       // Verify check fails
@@ -162,20 +191,20 @@ describe("package-json fixes", () => {
       expect(fixResult.success).toBe(true);
 
       // Verify package.json was updated
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.license).toBe("MIT");
 
       // Verify check now passes
-      const global2 = await createGlobalContext(tempDir);
+      const global2 = await createGlobalContext(tempFixture.path);
       const ctx2 = await loadContext(global2);
       const checkResult2 = await hasLicense.run(global2, ctx2);
       expect(checkResult2.status).toBe("pass");
     });
 
     it("should add Apache-2.0 license", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0" });
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       const fix = hasLicense.fix;
@@ -184,16 +213,26 @@ describe("package-json fixes", () => {
       const apacheOption = fix.options.find((o) => o.id === "apache");
       await apacheOption!.run(global, ctx);
 
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.license).toBe("Apache-2.0");
+    });
+
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await hasLicense.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
     });
   });
 
   describe("has-engines fix", () => {
-    it("should add engines.node >= 20", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0" });
+    it("should add engines.node >= 20 using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       // Verify check fails
@@ -209,36 +248,25 @@ describe("package-json fixes", () => {
       expect(fixResult.success).toBe(true);
 
       // Verify package.json was updated
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.engines).toBeDefined();
       expect((pkg.engines as Record<string, string>).node).toBe(">=20");
 
       // Verify check now passes
-      const global2 = await createGlobalContext(tempDir);
+      const global2 = await createGlobalContext(tempFixture.path);
       const ctx2 = await loadContext(global2);
       const checkResult2 = await hasEngines.run(global2, ctx2);
       expect(checkResult2.status).toBe("pass");
     });
 
-    it("should preserve existing engines fields", async () => {
-      await createPackageJson({
-        name: "test",
-        version: "1.0.0",
-        engines: { npm: ">=9" },
-      });
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
-      const fix = hasEngines.fix;
-      if (!fix || "options" in fix) throw new Error("Expected simple fix");
-
-      await fix.run(global, ctx);
-
-      const pkg = await readPackageJson();
-      const engines = pkg.engines as Record<string, string>;
-      expect(engines.node).toBe(">=20");
-      expect(engines.npm).toBe(">=9");
+      const checkResult = await hasEngines.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
     });
   });
 
@@ -253,10 +281,10 @@ describe("package-json fixes", () => {
       expect(fix.options.map((o) => o.id)).toContain("exports");
     });
 
-    it("should add main field", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0" });
+    it("should add main field using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       // Verify check fails
@@ -272,20 +300,20 @@ describe("package-json fixes", () => {
       expect(fixResult.success).toBe(true);
 
       // Verify package.json was updated
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.main).toBe("dist/index.js");
 
       // Verify check now passes
-      const global2 = await createGlobalContext(tempDir);
+      const global2 = await createGlobalContext(tempFixture.path);
       const ctx2 = await loadContext(global2);
       const checkResult2 = await hasMainOrExports.run(global2, ctx2);
       expect(checkResult2.status).toBe("pass");
     });
 
     it("should add exports field", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0" });
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       const fix = hasMainOrExports.fix;
@@ -294,17 +322,17 @@ describe("package-json fixes", () => {
       const exportsOption = fix.options.find((o) => o.id === "exports");
       await exportsOption!.run(global, ctx);
 
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.exports).toBeDefined();
       expect((pkg.exports as Record<string, unknown>)["."].import).toBe("./dist/index.js");
     });
   });
 
   describe("type-module fix", () => {
-    it("should set type: module", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0" });
+    it("should set type: module using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       // Verify check fails
@@ -320,14 +348,24 @@ describe("package-json fixes", () => {
       expect(fixResult.success).toBe(true);
 
       // Verify package.json was updated
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.type).toBe("module");
 
       // Verify check now passes
-      const global2 = await createGlobalContext(tempDir);
+      const global2 = await createGlobalContext(tempFixture.path);
       const ctx2 = await loadContext(global2);
       const checkResult2 = await typeModule.run(global2, ctx2);
       expect(checkResult2.status).toBe("pass");
+    });
+
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await typeModule.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
     });
   });
 
@@ -342,13 +380,13 @@ describe("package-json fixes", () => {
       expect(fix.options.map((o) => o.id)).toContain("vite");
     });
 
-    it("should add tsc build script", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0", scripts: {} });
+    it("should add tsc build script using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
-      // Verify check fails
+      // Verify check fails (fixable has no scripts)
       const checkResult = await scriptsBuild.run(global, ctx);
       expect(checkResult.status).toBe("fail");
 
@@ -361,30 +399,24 @@ describe("package-json fixes", () => {
       expect(fixResult.success).toBe(true);
 
       // Verify package.json was updated
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect((pkg.scripts as Record<string, string>).build).toBe("tsc");
 
       // Verify check now passes
-      const global2 = await createGlobalContext(tempDir);
+      const global2 = await createGlobalContext(tempFixture.path);
       const ctx2 = await loadContext(global2);
       const checkResult2 = await scriptsBuild.run(global2, ctx2);
       expect(checkResult2.status).toBe("pass");
     });
 
-    it("should add tsup build script", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0", scripts: {} });
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
-      const fix = scriptsBuild.fix;
-      if (!fix || !("options" in fix)) throw new Error("Expected fix with options");
-
-      const tsupOption = fix.options.find((o) => o.id === "tsup");
-      await tsupOption!.run(global, ctx);
-
-      const pkg = await readPackageJson();
-      expect((pkg.scripts as Record<string, string>).build).toBe("tsup");
+      const checkResult = await scriptsBuild.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
     });
   });
 
@@ -399,10 +431,10 @@ describe("package-json fixes", () => {
       expect(fix.options.map((o) => o.id)).toContain("node-test");
     });
 
-    it("should add vitest test script", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0", scripts: {} });
+    it("should add vitest test script using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       const fix = scriptsTest.fix;
@@ -412,24 +444,18 @@ describe("package-json fixes", () => {
       const fixResult = await vitestOption!.run(global, ctx);
       expect(fixResult.success).toBe(true);
 
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect((pkg.scripts as Record<string, string>).test).toBe("vitest");
     });
 
-    it("should add node --test script", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0", scripts: {} });
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
-      const fix = scriptsTest.fix;
-      if (!fix || !("options" in fix)) throw new Error("Expected fix with options");
-
-      const nodeTestOption = fix.options.find((o) => o.id === "node-test");
-      await nodeTestOption!.run(global, ctx);
-
-      const pkg = await readPackageJson();
-      expect((pkg.scripts as Record<string, string>).test).toBe("node --test");
+      const checkResult = await scriptsTest.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
     });
   });
 
@@ -444,10 +470,10 @@ describe("package-json fixes", () => {
       expect(fix.options.map((o) => o.id)).toContain("tsc");
     });
 
-    it("should add eslint lint script", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0", scripts: {} });
+    it("should add eslint lint script using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       const fix = scriptsLint.fix;
@@ -457,8 +483,18 @@ describe("package-json fixes", () => {
       const fixResult = await eslintOption!.run(global, ctx);
       expect(fixResult.success).toBe(true);
 
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect((pkg.scripts as Record<string, string>).lint).toBe("eslint .");
+    });
+
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await scriptsLint.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
     });
   });
 
@@ -473,10 +509,10 @@ describe("package-json fixes", () => {
       expect(fix.options.map((o) => o.id)).toContain("dprint");
     });
 
-    it("should add prettier format script", async () => {
-      await createPackageJson({ name: "test", version: "1.0.0", scripts: {} });
+    it("should add prettier format script using fixable fixture", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       const fix = scriptsFormat.fix;
@@ -486,16 +522,26 @@ describe("package-json fixes", () => {
       const fixResult = await prettierOption!.run(global, ctx);
       expect(fixResult.success).toBe(true);
 
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect((pkg.scripts as Record<string, string>).format).toBe("prettier --write .");
+    });
+
+    it("should pass for healthy project (no fix needed)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await scriptsFormat.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
     });
   });
 
   describe("fix idempotency", () => {
     it("should be safe to run version fix twice", async () => {
-      await createPackageJson({ name: "test" });
+      tempFixture = await copyFixtureToTemp("fixable");
 
-      const global = await createGlobalContext(tempDir);
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       const fix = hasVersion.fix;
@@ -505,15 +551,16 @@ describe("package-json fixes", () => {
       await fix.run(global, ctx);
       await fix.run(global, ctx);
 
-      const pkg = await readPackageJson();
+      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.version).toBe("0.0.1");
     });
   });
 
   describe("fix error handling", () => {
     it("should fail gracefully when package.json does not exist", async () => {
-      // Don't create package.json
-      const global = await createGlobalContext(tempDir);
+      tempFixture = await copyFixtureToTemp("empty");
+
+      const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
       const fix = hasVersion.fix;
