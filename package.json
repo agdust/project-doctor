@@ -50,7 +50,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && npm run copy-assets",
+    "build": "tsc && npm run copy-assets && chmod +x dist/cli.js",
     "copy-assets": "cp -r src/checks/docs/license-exists/licenses dist/checks/docs/license-exists/",
     "dev": "tsc --watch",
     "check": "node --import tsx ./src/cli.ts",
