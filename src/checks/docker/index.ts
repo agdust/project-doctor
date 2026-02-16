@@ -2,6 +2,4 @@ import { check as dockerfileSmallBaseImage } from "./dockerfile-small-base-image
 
 export { loadContext } from "./context.js";
 
-export const checks = [
-  dockerfileSmallBaseImage,
-];
+export const checks = [dockerfileSmallBaseImage];

@@ -1,9 +1,9 @@
 import type { GlobalContext } from "../../types.js";
 
-export type PrettierContext = {
+export interface PrettierContext {
   hasConfig: boolean;
   hasIgnore: boolean;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<PrettierContext> {
   const [hasPrettierrc, hasPrettierrcJson, hasPrettierConfig, hasIgnore] = await Promise.all([

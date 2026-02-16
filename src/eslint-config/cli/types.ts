@@ -29,14 +29,14 @@ export function isNavigation(result: unknown): result is NavigationAction {
 }
 
 // Screen definition - a unit of UI
-export type Screen<TContext = void> = {
+export interface Screen<TContext = void> {
   id: string;
   title: string;
   run: (ctx: TContext, app: AppController) => Promise<ScreenResult>;
-};
+}
 
 // App controller passed to screens
-export type AppController = {
+export interface AppController {
   // Navigate to a screen (pushes onto stack)
   push: <T>(screen: Screen<T>, context: T) => void;
   // Go back one level
@@ -47,14 +47,14 @@ export type AppController = {
   refresh: () => void;
   // Get current navigation depth
   depth: () => number;
-};
+}
 
 // Choice with optional back marker
-export type Choice<T> = {
+export interface Choice<T> {
   name: string;
   value: T;
   description?: string;
-};
+}
 
 // Standard back choice
 export function backChoice<T>(label = "← Back"): Choice<T | typeof BACK> {

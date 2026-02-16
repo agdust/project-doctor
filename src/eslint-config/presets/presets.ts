@@ -2,7 +2,10 @@ import { queryRules } from "../../eslint-db/index.js";
 import type { RuleDefinition } from "../../eslint-db/types.js";
 import type { Preset, PresetId, RuleValue } from "../types.js";
 
-function rulesToConfig(rules: RuleDefinition[], value: RuleValue = "error"): Record<string, RuleValue> {
+function rulesToConfig(
+  rules: RuleDefinition[],
+  value: RuleValue = "error",
+): Record<string, RuleValue> {
   const result: Record<string, RuleValue> = {};
   for (const rule of rules) {
     result[rule.name] = value;
@@ -43,7 +46,7 @@ const basePreset: Preset = {
       maxStrictness: "recommended",
       includeTags: ["error-prevention", "best-practice"],
       taggedOnly: true,
-    })
+    }),
   ),
 };
 
@@ -58,7 +61,7 @@ const typescriptPreset: Preset = {
       plugins: ["@typescript-eslint"],
       maxStrictness: "recommended",
       taggedOnly: true,
-    })
+    }),
   ),
   disables: CORE_RULES_DISABLED_BY_TYPESCRIPT,
   requiresTypeChecking: false,
@@ -74,7 +77,7 @@ const strictPreset: Preset = {
       maxStrictness: "strict",
       excludeTags: ["essential", "recommended", "style"],
       taggedOnly: true,
-    })
+    }),
   ),
   requiresTypeChecking: true, // Many strict rules need type info
 };
@@ -89,7 +92,7 @@ const stylePreset: Preset = {
       plugins: ["@stylistic"],
       maxStrictness: "recommended",
       taggedOnly: true,
-    })
+    }),
   ),
 };
 
@@ -102,7 +105,7 @@ const securityPreset: Preset = {
     queryRules({
       includeTags: ["security"],
       taggedOnly: true,
-    })
+    }),
   ),
 };
 
@@ -115,7 +118,7 @@ const performancePreset: Preset = {
     queryRules({
       includeTags: ["performance"],
       taggedOnly: true,
-    })
+    }),
   ),
 };
 

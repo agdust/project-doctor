@@ -82,7 +82,7 @@ export function safeMerge<T extends object>(base: T, overrides: Partial<T>): T {
  */
 export function safeMergeRecords<T>(
   base: Record<string, T> | undefined,
-  overrides: Record<string, T> | undefined
+  overrides: Record<string, T> | undefined,
 ): Record<string, T> {
   const result: Record<string, T> = {};
 

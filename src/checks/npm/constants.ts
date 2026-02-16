@@ -11,7 +11,7 @@ export const MIN_SUPPORTED_MAJOR = 18;
 
 export function parseMajorVersion(version: string): number | null {
   // Handle lts/codename format
-  const ltsMatch = version.match(/^lts\/(\w+)$/i);
+  const ltsMatch = /^lts\/(\w+)$/i.exec(version);
   if (ltsMatch) {
     const codename = ltsMatch[1].toLowerCase();
     const lts = LTS_VERSIONS.find((v) => v.codename === codename);
@@ -19,7 +19,7 @@ export function parseMajorVersion(version: string): number | null {
   }
 
   // Handle numeric versions (with or without v prefix)
-  const numMatch = version.match(/^v?(\d+)/);
+  const numMatch = /^v?(\d+)/.exec(version);
   if (numMatch) {
     return parseInt(numMatch[1], 10);
   }

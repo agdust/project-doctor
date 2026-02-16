@@ -45,7 +45,7 @@ export type RuleTagsMap = Record<string, RuleTag[]>;
 // Rule Definition (built from plugin metadata + our tags)
 // =============================================================================
 
-export type RuleDefinition = {
+export interface RuleDefinition {
   name: string; // Full rule name (e.g., "@typescript-eslint/no-explicit-any")
   description: string;
   tags: RuleTag[]; // Our custom tags
@@ -54,23 +54,23 @@ export type RuleDefinition = {
   requiresTypeChecking?: boolean;
   docs?: string; // URL to documentation
   plugin: string; // Plugin name
-};
+}
 
 // =============================================================================
 // Plugin Definition
 // =============================================================================
 
-export type PluginDefinition = {
+export interface PluginDefinition {
   name: string; // npm package name
   prefix: string; // Rule prefix (e.g., "@typescript-eslint", "" for core)
   ruleCount: number;
-};
+}
 
 // =============================================================================
 // Query Types
 // =============================================================================
 
-export type RuleQuery = {
+export interface RuleQuery {
   // Filter by plugin prefix
   plugins?: string[];
 
@@ -91,4 +91,4 @@ export type RuleQuery = {
 
   // Only include rules that have our tags
   taggedOnly?: boolean;
-};
+}

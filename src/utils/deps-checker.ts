@@ -6,38 +6,38 @@ import { createNpmCache, computeLockfileHash, type NpmCache } from "./npm-cache.
 
 const execFileAsync = promisify(execFile);
 
-type PackageJson = {
+interface PackageJson {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
-};
+}
 
-type VersionInfo = {
+interface VersionInfo {
   name: string;
   current: string;
   latest: string;
   type: "dependencies" | "devDependencies";
   updateType: "major" | "minor" | "patch" | "prerelease" | "unknown";
-};
+}
 
-export type AuditResult = {
+export interface AuditResult {
   critical: number;
   high: number;
   moderate: number;
   low: number;
   total: number;
-};
+}
 
-export type DepsCheckResult = {
+export interface DepsCheckResult {
   outdated: VersionInfo[];
   upToDate: number;
   failed: string[];
   audit: AuditResult | null;
-};
+}
 
 function parseVersion(version: string): { major: number; minor: number; patch: number } | null {
   // Remove ^ ~ >= etc
   const cleaned = version.replace(/^[\^~>=<]+/, "");
-  const match = cleaned.match(/^(\d+)\.(\d+)\.(\d+)/);
+  const match = /^(\d+)\.(\d+)\.(\d+)/.exec(cleaned);
   if (!match) return null;
   return {
     major: parseInt(match[1], 10),
@@ -59,7 +59,10 @@ function getUpdateType(current: string, latest: string): VersionInfo["updateType
   return "unknown";
 }
 
-async function fetchLatestVersion(packageName: string, cache: NpmCache | null): Promise<string | null> {
+async function fetchLatestVersion(
+  packageName: string,
+  cache: NpmCache | null,
+): Promise<string | null> {
   // Try cache first
   if (cache) {
     const cached = cache.getVersion(packageName);
@@ -83,11 +86,11 @@ async function fetchLatestVersion(packageName: string, cache: NpmCache | null): 
   }
 }
 
-export type DepsCheckerOptions = {
+export interface DepsCheckerOptions {
   projectPath: string;
   includeDev?: boolean;
   noCache?: boolean;
-};
+}
 
 export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckResult> {
   const { projectPath, includeDev = true, noCache = false } = options;
@@ -131,7 +134,7 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
       batch.map(async (dep) => {
         const latest = await fetchLatestVersion(dep.name, cache);
         return { dep, latest };
-      })
+      }),
     );
 
     for (const { dep, latest } of results) {
@@ -194,7 +197,7 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
 async function runAudit(
   projectPath: string,
   cache: NpmCache | null,
-  lockfileHash: string
+  lockfileHash: string,
 ): Promise<AuditResult | null> {
   // Try cache first
   if (cache && lockfileHash) {
@@ -241,7 +244,7 @@ function parseAuditOutput(output: string): AuditResult | null {
         high: v.high ?? 0,
         moderate: v.moderate ?? 0,
         low: v.low ?? 0,
-        total: v.total ?? (v.critical + v.high + v.moderate + v.low),
+        total: v.total ?? v.critical + v.high + v.moderate + v.low,
       };
     }
 
@@ -260,14 +263,18 @@ export function printDepsReport(result: DepsCheckResult): void {
   if (outdated.length === 0) {
     console.log("  \x1b[32m✓ All dependencies are up to date\x1b[0m");
   } else {
-    console.log(`  Found \x1b[1m${outdated.length}\x1b[0m outdated package${outdated.length > 1 ? "s" : ""}`);
+    console.log(
+      `  Found \x1b[1m${outdated.length}\x1b[0m outdated package${outdated.length > 1 ? "s" : ""}`,
+    );
     console.log();
 
     // Group by update type
     const major = outdated.filter((d) => d.updateType === "major");
     const minor = outdated.filter((d) => d.updateType === "minor");
     const patch = outdated.filter((d) => d.updateType === "patch");
-    const other = outdated.filter((d) => d.updateType === "unknown" || d.updateType === "prerelease");
+    const other = outdated.filter(
+      (d) => d.updateType === "unknown" || d.updateType === "prerelease",
+    );
 
     const printSection = (items: VersionInfo[], label: string, color: string) => {
       if (items.length === 0) return;
@@ -315,7 +322,7 @@ export function printDepsReport(result: DepsCheckResult): void {
   console.log();
   console.log("  \x1b[90m─────────────────────────────────────────\x1b[0m");
   console.log();
-  console.log(`  \x1b[1mSummary\x1b[0m`);
+  console.log("  \x1b[1mSummary\x1b[0m");
   console.log(`    ${outdated.length} outdated`);
   console.log(`    ${upToDate} up to date`);
   if (failed.length > 0) {

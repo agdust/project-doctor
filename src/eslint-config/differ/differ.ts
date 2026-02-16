@@ -2,7 +2,7 @@ import type { ConfigDiff, DiffEntry, RuleValue, ResolvedRule } from "../types.js
 
 export function computeDiff(
   current: Record<string, RuleValue>,
-  proposed: ResolvedRule[]
+  proposed: ResolvedRule[],
 ): ConfigDiff {
   const entries: DiffEntry[] = [];
   const proposedMap = new Map(proposed.map((r) => [r.name, r.value]));

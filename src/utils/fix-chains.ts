@@ -58,10 +58,7 @@ export const fixChains: string[][] = [
  * Build a map of check name → chain position for efficient lookup.
  * Returns { checkName: { chainIndex: number, position: number } }
  */
-export function buildChainIndex(): Map<
-  string,
-  { chainIndex: number; position: number }
-> {
+export function buildChainIndex(): Map<string, { chainIndex: number; position: number }> {
   const index = new Map<string, { chainIndex: number; position: number }>();
 
   fixChains.forEach((chain, chainIndex) => {
@@ -134,7 +131,7 @@ export function compareByChain(checkA: string, checkB: string): number {
  */
 export function sortByChainAndPriority<T extends { name: string }>(
   checks: T[],
-  getPriority: (check: T) => number
+  getPriority: (check: T) => number,
 ): T[] {
   // Build dependency depth for each check
   const depthCache = new Map<string, number>();

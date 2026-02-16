@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
@@ -23,7 +23,7 @@ export const check: Check<GitignoreContext> = {
     if (!raw) return skip(name, "No .gitignore");
 
     const ignoredLockfiles = patterns.filter((p) =>
-      LOCKFILE_PATTERNS.some((lock) => p === lock || p === `/${lock}`)
+      LOCKFILE_PATTERNS.some((lock) => p === lock || p === `/${lock}`),
     );
 
     if (ignoredLockfiles.length > 0) {
@@ -43,9 +43,7 @@ export const check: Check<GitignoreContext> = {
       const filteredLines = lines.filter((line) => {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith("#")) return true;
-        return !LOCKFILE_PATTERNS.some(
-          (lock) => trimmed === lock || trimmed === `/${lock}`
-        );
+        return !LOCKFILE_PATTERNS.some((lock) => trimmed === lock || trimmed === `/${lock}`);
       });
 
       await writeFile(gitignorePath, filteredLines.join("\n"), "utf-8");

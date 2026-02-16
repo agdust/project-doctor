@@ -19,9 +19,8 @@ export const check: Check<NpmSecurityContext> = {
   tags: ["node", "recommended", "effort:low", "security", "source:lirantal-npm-security"],
   run: async (_global, { scripts, ciWorkflows }) => {
     // Check if this is a publishable package
-    const hasPublishScript = "publish" in scripts ||
-      "prepublishOnly" in scripts ||
-      "release" in scripts;
+    const hasPublishScript =
+      "publish" in scripts || "prepublishOnly" in scripts || "release" in scripts;
 
     const hasNpmPublishInCI = ciWorkflows.some((wf) => wf.includes("npm publish"));
 
@@ -31,17 +30,17 @@ export const check: Check<NpmSecurityContext> = {
 
     // Check for --provenance in scripts
     const hasProvenanceInScripts = Object.values(scripts).some(
-      (script) => script.includes("npm publish") && script.includes("--provenance")
+      (script) => script.includes("npm publish") && script.includes("--provenance"),
     );
 
     // Check for --provenance in CI workflows
     const hasProvenanceInCI = ciWorkflows.some(
-      (wf) => wf.includes("npm publish") && wf.includes("--provenance")
+      (wf) => wf.includes("npm publish") && wf.includes("--provenance"),
     );
 
     // Check for id-token: write permission in CI (required for provenance)
     const hasIdTokenPermission = ciWorkflows.some(
-      (wf) => wf.includes("id-token") && wf.includes("write")
+      (wf) => wf.includes("id-token") && wf.includes("write"),
     );
 
     if (hasProvenanceInScripts || (hasProvenanceInCI && hasIdTokenPermission)) {
@@ -49,7 +48,10 @@ export const check: Check<NpmSecurityContext> = {
     }
 
     if (hasNpmPublishInCI && !hasIdTokenPermission) {
-      return fail(name, "CI workflow publishes to npm but lacks id-token: write permission for provenance");
+      return fail(
+        name,
+        "CI workflow publishes to npm but lacks id-token: write permission for provenance",
+      );
     }
 
     return fail(name, "npm publish does not use --provenance flag");

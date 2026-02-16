@@ -7,11 +7,4 @@ import { check as pathsValid } from "./paths-valid/check.js";
 
 export { loadContext } from "./context.js";
 
-export const checks = [
-  exists,
-  validJson,
-  strictEnabled,
-  hasOutdir,
-  noAnyEnabled,
-  pathsValid,
-];
+export const checks = [exists, validJson, strictEnabled, hasOutdir, noAnyEnabled, pathsValid];

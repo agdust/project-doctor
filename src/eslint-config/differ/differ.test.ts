@@ -18,7 +18,10 @@ describe("computeDiff", () => {
         "no-console": "error",
         eqeqeq: "error",
       };
-      const proposed: ResolvedRule[] = [makeRule("no-console", "error"), makeRule("eqeqeq", "error")];
+      const proposed: ResolvedRule[] = [
+        makeRule("no-console", "error"),
+        makeRule("eqeqeq", "error"),
+      ];
 
       const diff = computeDiff(current, proposed);
 

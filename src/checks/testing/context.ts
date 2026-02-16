@@ -1,9 +1,9 @@
 import type { GlobalContext } from "../../types.js";
 
-export type TestingContext = {
+export interface TestingContext {
   hasTestScript: boolean;
   testScriptValue: string | null;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<TestingContext> {
   const pkgRaw = await global.files.readText("package.json");

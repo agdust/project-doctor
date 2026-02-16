@@ -17,8 +17,6 @@ import {
   BACK,
   EXIT,
   isBack,
-  type Screen,
-  type AppController,
   printSection,
   printSuccess,
   printCancelled,
@@ -38,9 +36,9 @@ import type { RuleStrictness, RuleConcern } from "../../eslint-db/types.js";
 import { buildPresetsFromSelections } from "../wizard/wizard.js";
 
 // App context passed through screens
-type AppContext = {
+interface AppContext {
   projectPath: string;
-};
+}
 
 // ============================================================================
 // Main Entry Point
@@ -72,18 +70,58 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
 
   const choices = existing
     ? [
-        { name: "📊 Analyze config", value: "analyze" as Action, description: "Compare against recommended" },
-        { name: "➕ Add a preset", value: "add" as Action, description: "Add security, performance, strict" },
-        { name: "🔄 Regenerate config", value: "wizard" as Action, description: "Start fresh with wizard" },
-        { name: "📦 View presets", value: "presets" as Action, description: "List available presets" },
-        { name: "📚 View rule stats", value: "rules" as Action, description: "Database statistics" },
-        { name: "📄 Show current config", value: "current" as Action, description: "Display parsed rules" },
+        {
+          name: "📊 Analyze config",
+          value: "analyze" as Action,
+          description: "Compare against recommended",
+        },
+        {
+          name: "➕ Add a preset",
+          value: "add" as Action,
+          description: "Add security, performance, strict",
+        },
+        {
+          name: "🔄 Regenerate config",
+          value: "wizard" as Action,
+          description: "Start fresh with wizard",
+        },
+        {
+          name: "📦 View presets",
+          value: "presets" as Action,
+          description: "List available presets",
+        },
+        {
+          name: "📚 View rule stats",
+          value: "rules" as Action,
+          description: "Database statistics",
+        },
+        {
+          name: "📄 Show current config",
+          value: "current" as Action,
+          description: "Display parsed rules",
+        },
       ]
     : [
-        { name: "🧙 Create config (wizard)", value: "wizard" as Action, description: "Interactive guided setup" },
-        { name: "⚡ Create config (quick)", value: "quick" as Action, description: "Use recommended defaults" },
-        { name: "📦 View presets", value: "presets" as Action, description: "See what's available" },
-        { name: "📚 View rule stats", value: "rules" as Action, description: "Database statistics" },
+        {
+          name: "🧙 Create config (wizard)",
+          value: "wizard" as Action,
+          description: "Interactive guided setup",
+        },
+        {
+          name: "⚡ Create config (quick)",
+          value: "quick" as Action,
+          description: "Use recommended defaults",
+        },
+        {
+          name: "📦 View presets",
+          value: "presets" as Action,
+          description: "See what's available",
+        },
+        {
+          name: "📚 View rule stats",
+          value: "rules" as Action,
+          description: "Database statistics",
+        },
       ];
 
   const action = await select({
@@ -149,7 +187,7 @@ const analyzeScreen = createScreen<AnalyzeContext>("analyze", "Analyze Config", 
     const pctColor = percentage >= 80 ? color.green : percentage >= 50 ? color.yellow : color.red;
 
     console.log(
-      `  ${preset.id.padEnd(12)} ${bar} ${pctColor(String(percentage).padStart(3) + "%")}  (${covered.length}/${presetRuleNames.length} rules)`
+      `  ${preset.id.padEnd(12)} ${bar} ${pctColor(String(percentage).padStart(3) + "%")}  (${covered.length}/${presetRuleNames.length} rules)`,
     );
   }
   console.log();
@@ -181,7 +219,9 @@ const addPresetScreen = createScreen<AnalyzeContext>("add-preset", "Add Preset",
       const presetRuleNames = Object.keys(preset.rules);
       const covered = presetRuleNames.filter((name) => currentRules.includes(name));
       const percentage =
-        presetRuleNames.length > 0 ? Math.round((covered.length / presetRuleNames.length) * 100) : 0;
+        presetRuleNames.length > 0
+          ? Math.round((covered.length / presetRuleNames.length) * 100)
+          : 0;
 
       let badge = "";
       if (percentage === 100) {
@@ -417,64 +457,70 @@ const rulesScreen = createScreen<AppContext>("rules", "Rule Database", async () 
 // Current Config Screen
 // ============================================================================
 
-const currentConfigScreen = createScreen<AnalyzeContext>("current", "Current Config", async (ctx) => {
-  printSection("Current Configuration");
+const currentConfigScreen = createScreen<AnalyzeContext>(
+  "current",
+  "Current Config",
+  async (ctx) => {
+    printSection("Current Configuration");
 
-  console.log(`  File: ${color.cyan(ctx.existing.filePath)}`);
-  console.log(`  Type-checking: ${ctx.existing.hasTypeChecking ? color.green("yes") : color.dim("no")}`);
-  console.log();
-
-  const rules = Object.entries(ctx.existing.rules);
-  console.log(`  ${color.bold(`Rules (${rules.length}):`)} `);
-  console.log();
-
-  // Group by prefix
-  const coreRules = rules.filter(([name]) => !name.includes("/"));
-  const tsRules = rules.filter(([name]) => name.startsWith("@typescript-eslint/"));
-  const styleRules = rules.filter(([name]) => name.startsWith("@stylistic/"));
-
-  if (coreRules.length > 0) {
-    console.log(`  ${color.dim("[core]")}`);
-    for (const [name, value] of coreRules.slice(0, 10)) {
-      console.log(`    ${name}: ${formatRuleValue(value)}`);
-    }
-    if (coreRules.length > 10) {
-      console.log(`    ${color.dim(`... and ${coreRules.length - 10} more`)}`);
-    }
+    console.log(`  File: ${color.cyan(ctx.existing.filePath)}`);
+    console.log(
+      `  Type-checking: ${ctx.existing.hasTypeChecking ? color.green("yes") : color.dim("no")}`,
+    );
     console.log();
-  }
 
-  if (tsRules.length > 0) {
-    console.log(`  ${color.dim("[@typescript-eslint]")}`);
-    for (const [name, value] of tsRules.slice(0, 10)) {
-      const shortName = name.replace("@typescript-eslint/", "");
-      console.log(`    ${shortName}: ${formatRuleValue(value)}`);
-    }
-    if (tsRules.length > 10) {
-      console.log(`    ${color.dim(`... and ${tsRules.length - 10} more`)}`);
-    }
+    const rules = Object.entries(ctx.existing.rules);
+    console.log(`  ${color.bold(`Rules (${rules.length}):`)} `);
     console.log();
-  }
 
-  if (styleRules.length > 0) {
-    console.log(`  ${color.dim("[@stylistic]")}`);
-    for (const [name, value] of styleRules.slice(0, 10)) {
-      const shortName = name.replace("@stylistic/", "");
-      console.log(`    ${shortName}: ${formatRuleValue(value)}`);
+    // Group by prefix
+    const coreRules = rules.filter(([name]) => !name.includes("/"));
+    const tsRules = rules.filter(([name]) => name.startsWith("@typescript-eslint/"));
+    const styleRules = rules.filter(([name]) => name.startsWith("@stylistic/"));
+
+    if (coreRules.length > 0) {
+      console.log(`  ${color.dim("[core]")}`);
+      for (const [name, value] of coreRules.slice(0, 10)) {
+        console.log(`    ${name}: ${formatRuleValue(value)}`);
+      }
+      if (coreRules.length > 10) {
+        console.log(`    ${color.dim(`... and ${coreRules.length - 10} more`)}`);
+      }
+      console.log();
     }
-    if (styleRules.length > 10) {
-      console.log(`    ${color.dim(`... and ${styleRules.length - 10} more`)}`);
+
+    if (tsRules.length > 0) {
+      console.log(`  ${color.dim("[@typescript-eslint]")}`);
+      for (const [name, value] of tsRules.slice(0, 10)) {
+        const shortName = name.replace("@typescript-eslint/", "");
+        console.log(`    ${shortName}: ${formatRuleValue(value)}`);
+      }
+      if (tsRules.length > 10) {
+        console.log(`    ${color.dim(`... and ${tsRules.length - 10} more`)}`);
+      }
+      console.log();
     }
-    console.log();
-  }
 
-  // Wait for user to acknowledge
-  await select({
-    message: "",
-    choices: [],
-    includeBack: true,
-    backLabel: "Back to main menu",
-  });
+    if (styleRules.length > 0) {
+      console.log(`  ${color.dim("[@stylistic]")}`);
+      for (const [name, value] of styleRules.slice(0, 10)) {
+        const shortName = name.replace("@stylistic/", "");
+        console.log(`    ${shortName}: ${formatRuleValue(value)}`);
+      }
+      if (styleRules.length > 10) {
+        console.log(`    ${color.dim(`... and ${styleRules.length - 10} more`)}`);
+      }
+      console.log();
+    }
 
-  return BACK;
-});
+    // Wait for user to acknowledge
+    await select({
+      message: "",
+      choices: [],
+      includeBack: true,
+      backLabel: "Back to main menu",
+    });
+
+    return BACK;
+  },
+);

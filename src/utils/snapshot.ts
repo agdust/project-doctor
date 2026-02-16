@@ -5,7 +5,7 @@ import { checkDeps, type AuditResult } from "./deps-checker.js";
 import { ensureConfigDir } from "../config/constants.js";
 import { runAllChecksRaw } from "./runner.js";
 
-type SnapshotEntry = {
+interface SnapshotEntry {
   date: string;
   checks: {
     total: number;
@@ -18,7 +18,7 @@ type SnapshotEntry = {
   } | null;
   audit: AuditResult | null;
   failingChecks: string[];
-};
+}
 
 const HISTORY_DIR = ".project-doctor";
 const HISTORY_FILE = "history.json";
@@ -64,9 +64,7 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
     // No package.json or other error
   }
 
-  const failingChecks = checkResults
-    .filter((r) => r.status === "fail")
-    .map((r) => r.name);
+  const failingChecks = checkResults.filter((r) => r.status === "fail").map((r) => r.name);
 
   return {
     date: getToday(),
@@ -132,16 +130,13 @@ export async function runHistory(projectPath: string): Promise<void> {
   console.log("  \x1b[90m───────────────────────────────────────────\x1b[0m");
 
   for (const entry of history) {
-    const checkStatus = entry.checks.failed === 0
-      ? "\x1b[32m✓\x1b[0m"
-      : "\x1b[31m✗\x1b[0m";
+    const checkStatus = entry.checks.failed === 0 ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m";
     const checkText = `${entry.checks.passed}/${entry.checks.total}`;
 
     let depsText = "\x1b[90m-\x1b[0m";
     if (entry.deps) {
-      depsText = entry.deps.outdated === 0
-        ? "\x1b[32m✓\x1b[0m"
-        : `\x1b[33m${entry.deps.outdated}\x1b[0m`;
+      depsText =
+        entry.deps.outdated === 0 ? "\x1b[32m✓\x1b[0m" : `\x1b[33m${entry.deps.outdated}\x1b[0m`;
     }
 
     let auditText = "\x1b[90m-\x1b[0m";
@@ -155,7 +150,9 @@ export async function runHistory(projectPath: string): Promise<void> {
       }
     }
 
-    console.log(`  ${entry.date}    ${checkStatus} ${checkText.padEnd(8)} ${depsText.padEnd(6)} ${auditText}`);
+    console.log(
+      `  ${entry.date}    ${checkStatus} ${checkText.padEnd(8)} ${depsText.padEnd(6)} ${auditText}`,
+    );
   }
 
   // Show progress if multiple entries
@@ -166,9 +163,13 @@ export async function runHistory(projectPath: string): Promise<void> {
 
     console.log();
     if (checkDiff < 0) {
-      console.log(`  \x1b[32m↑ Fixed ${Math.abs(checkDiff)} issue${Math.abs(checkDiff) > 1 ? "s" : ""} since ${first.date}\x1b[0m`);
+      console.log(
+        `  \x1b[32m↑ Fixed ${Math.abs(checkDiff)} issue${Math.abs(checkDiff) > 1 ? "s" : ""} since ${first.date}\x1b[0m`,
+      );
     } else if (checkDiff > 0) {
-      console.log(`  \x1b[31m↓ ${checkDiff} new issue${checkDiff > 1 ? "s" : ""} since ${first.date}\x1b[0m`);
+      console.log(
+        `  \x1b[31m↓ ${checkDiff} new issue${checkDiff > 1 ? "s" : ""} since ${first.date}\x1b[0m`,
+      );
     } else {
       console.log(`  \x1b[90m→ No change since ${first.date}\x1b[0m`);
     }

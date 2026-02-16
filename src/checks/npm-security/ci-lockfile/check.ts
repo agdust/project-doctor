@@ -26,8 +26,8 @@ const GOOD_PATTERNS = [
 
 // Patterns for non-deterministic installation (bad in CI)
 const BAD_PATTERNS = [
-  /npm\s+install\b(?!\s+--)/,  // npm install without flags
-  /npm\s+i\b(?!\s+--)/,        // npm i without flags
+  /npm\s+install\b(?!\s+--)/, // npm install without flags
+  /npm\s+i\b(?!\s+--)/, // npm i without flags
 ];
 
 export const check: Check<NpmSecurityContext> = {
@@ -46,7 +46,7 @@ export const check: Check<NpmSecurityContext> = {
 
     // Check if any workflow has deterministic install (good)
     const hasDeterministicInstall = GOOD_PATTERNS.some((pattern) =>
-      pattern.test(allWorkflowContent)
+      pattern.test(allWorkflowContent),
     );
 
     if (hasDeterministicInstall && !hasNpmInstall) {
@@ -56,7 +56,7 @@ export const check: Check<NpmSecurityContext> = {
     if (hasNpmInstall) {
       return fail(
         name,
-        "CI uses 'npm install' instead of 'npm ci' - this can lead to inconsistent installations"
+        "CI uses 'npm install' instead of 'npm ci' - this can lead to inconsistent installations",
       );
     }
 

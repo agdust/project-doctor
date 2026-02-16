@@ -28,11 +28,11 @@ export const issuesScreen: Screen<AppContext> = {
     const recommendedAll = ctx.failedChecks.filter((c) => c.tags.includes("recommended")).length;
     const recommendedFixable = ctx.issues.filter((i) => i.tags.includes("recommended")).length;
 
-    const opinionatedAll = ctx.failedChecks.filter((c) =>
-      !c.tags.includes("required") && !c.tags.includes("recommended")
+    const opinionatedAll = ctx.failedChecks.filter(
+      (c) => !c.tags.includes("required") && !c.tags.includes("recommended"),
     ).length;
-    const opinionatedFixable = ctx.issues.filter((i) =>
-      !i.tags.includes("required") && !i.tags.includes("recommended")
+    const opinionatedFixable = ctx.issues.filter(
+      (i) => !i.tags.includes("required") && !i.tags.includes("recommended"),
     ).length;
 
     if (requiredAll > 0) {
@@ -55,15 +55,20 @@ export const issuesScreen: Screen<AppContext> = {
     opts.push(
       nav("overview", "Overview", "overview", {
         description: `All ${failedCount} failed check${failedCount !== 1 ? "s" : ""} (including non-fixable)`,
-      })
+      }),
     );
 
     // Fix issues - walk through queue
     opts.push(
-      action("fix", "Fix issues", async (c) => {
-        c.currentIssueIndex = 0;
-        return "issue-detail";
-      }, `Walk through ${ctx.issues.length} issue${ctx.issues.length > 1 ? "s" : ""} one by one`)
+      action(
+        "fix",
+        "Fix issues",
+        async (c) => {
+          c.currentIssueIndex = 0;
+          return "issue-detail";
+        },
+        `Walk through ${ctx.issues.length} issue${ctx.issues.length > 1 ? "s" : ""} one by one`,
+      ),
     );
 
     return opts;

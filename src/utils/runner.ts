@@ -27,7 +27,7 @@ function getToolName(groupName: string): string {
   return names[groupName] ?? groupName;
 }
 
-export type RunnerOptions = {
+export interface RunnerOptions {
   projectPath: string;
   skipConfig?: boolean;
   // CLI overrides
@@ -37,13 +37,13 @@ export type RunnerOptions = {
   includeTags?: CheckTag[];
   /** Skip checks with these tags (CLI filter) */
   excludeTags?: CheckTag[];
-};
+}
 
 function shouldRunCheck(
   checkName: string,
   checkTags: CheckTag[],
   config: ResolvedConfig,
-  cliIncludeTags?: CheckTag[]
+  cliIncludeTags?: CheckTag[],
 ): boolean {
   // Check if this check is turned off in config
   if (isCheckOff(config, checkName)) {
@@ -129,7 +129,9 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
       try {
         // Type assertion needed because checkGroups contains mixed context types
         // but each group's checks are correctly typed for their own context
-        const baseResult = await (check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>)(global, groupContext);
+        const baseResult = await (
+          check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>
+        )(global, groupContext);
         const result: CheckResult = { ...baseResult, group: group.name };
         allResults.push(result);
       } catch (error) {
@@ -155,15 +157,16 @@ export async function runAllChecks(projectPath: string): Promise<CheckResult[]> 
  * Run all checks without any filtering, returning base results.
  * Used internally by overview and snapshot utilities.
  */
-export async function runAllChecksRaw(global: Parameters<typeof checkGroups[0]["loadContext"]>[0]): Promise<CheckResultBase[]> {
+export async function runAllChecksRaw(
+  global: Parameters<(typeof checkGroups)[0]["loadContext"]>[0],
+): Promise<CheckResultBase[]> {
   const checkResults: CheckResultBase[] = [];
   for (const group of checkGroups) {
     const groupContext = await group.loadContext(global);
     for (const check of group.checks) {
-      const result = await (check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>)(
-        global,
-        groupContext
-      );
+      const result = await (
+        check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>
+      )(global, groupContext);
       checkResults.push(result);
     }
   }

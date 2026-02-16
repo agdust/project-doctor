@@ -1,10 +1,10 @@
 import type { GlobalContext } from "../../types.js";
 
-export type EditorconfigContext = {
+export interface EditorconfigContext {
   raw: string | null;
   hasRoot: boolean;
   hasIndent: boolean;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<EditorconfigContext> {
   const raw = await global.files.readText(".editorconfig");

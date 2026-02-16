@@ -13,7 +13,7 @@ export const check: Check<GitignoreContext> = {
   run: async (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
     const hasIt = patterns.some((p) =>
-      ["dist", "dist/", "build", "build/", "out", "out/"].includes(p)
+      ["dist", "dist/", "build", "build/", "out", "out/"].includes(p),
     );
     if (!hasIt) return fail(name, "No dist/build ignored");
     return pass(name, "Build output ignored");

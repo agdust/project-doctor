@@ -27,7 +27,7 @@ export async function ensureConfigDir(projectPath: string): Promise<void> {
     const content = await readFile(gitignorePath, "utf-8");
     const lines = content.split("\n").map((l) => l.trim());
     const hasPattern = lines.some((l) =>
-      [".project-doctor/cache", ".project-doctor/cache/"].includes(l)
+      [".project-doctor/cache", ".project-doctor/cache/"].includes(l),
     );
     if (!hasPattern) {
       const newContent = content.endsWith("\n")

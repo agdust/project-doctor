@@ -13,15 +13,15 @@ export type PresetId =
 export type RuleValue = "off" | "warn" | "error" | ["error" | "warn", ...unknown[]];
 
 // A resolved rule with value and metadata
-export type ResolvedRule = {
+export interface ResolvedRule {
   name: string;
   value: RuleValue;
   comment: string;
   source: PresetId;
-};
+}
 
 // Preset definition
-export type Preset = {
+export interface Preset {
   id: PresetId;
   name: string;
   description: string;
@@ -29,52 +29,52 @@ export type Preset = {
   rules: Record<string, RuleValue>;
   disables?: string[];
   requiresTypeChecking?: boolean;
-};
+}
 
 // User selections from wizard
-export type WizardSelections = {
+export interface WizardSelections {
   presets: PresetId[];
   strictness: RuleStrictness;
   concerns: RuleConcern[];
   typeChecking: boolean;
-};
+}
 
 // Build configuration
-export type BuildConfig = {
+export interface BuildConfig {
   presets: PresetId[];
   overrides?: Record<string, RuleValue>;
   disabled?: string[];
-};
+}
 
 // Generated config output
-export type GeneratedConfig = {
+export interface GeneratedConfig {
   rules: ResolvedRule[];
   plugins: string[];
   requiresTypeChecking: boolean;
   presets: PresetId[];
-};
+}
 
 // Diff entry
-export type DiffEntry = {
+export interface DiffEntry {
   rule: string;
   current: RuleValue | undefined;
   proposed: RuleValue;
   action: "add" | "remove" | "change";
-};
+}
 
 // Config diff result
-export type ConfigDiff = {
+export interface ConfigDiff {
   entries: DiffEntry[];
   summary: {
     added: number;
     removed: number;
     changed: number;
   };
-};
+}
 
 // Parsed existing config
-export type ParsedConfig = {
+export interface ParsedConfig {
   rules: Record<string, RuleValue>;
   hasTypeChecking: boolean;
   filePath: string;
-};
+}

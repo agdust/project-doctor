@@ -1,8 +1,8 @@
 import type { GlobalContext } from "../../types.js";
 
-export type JscpdContext = {
+export interface JscpdContext {
   hasConfig: boolean;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<JscpdContext> {
   const [hasJscpdJson, hasJscpdrc] = await Promise.all([

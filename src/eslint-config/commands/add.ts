@@ -42,7 +42,7 @@ async function runEslintAddInner(projectPath: string, presetArg: string): Promis
     return;
   }
 
-  const presetId = presetArg as PresetId;
+  const presetId = presetArg;
   const preset = getPreset(presetId);
 
   const existing = await readExistingConfig(projectPath);

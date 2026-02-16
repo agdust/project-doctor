@@ -1,9 +1,9 @@
 import type { GlobalContext } from "../../types.js";
 
-export type GitignoreContext = {
+export interface GitignoreContext {
   raw: string | null;
   patterns: string[];
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<GitignoreContext> {
   const raw = await global.files.readText(".gitignore");

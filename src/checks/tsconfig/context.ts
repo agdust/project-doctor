@@ -1,6 +1,6 @@
 import type { GlobalContext } from "../../types.js";
 
-export type TsConfig = {
+export interface TsConfig {
   compilerOptions?: {
     strict?: boolean;
     noImplicitAny?: boolean;
@@ -11,13 +11,13 @@ export type TsConfig = {
   };
   include?: string[];
   exclude?: string[];
-};
+}
 
-export type TsConfigContext = {
+export interface TsConfigContext {
   raw: string | null;
   parsed: TsConfig | null;
   parseError: string | null;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<TsConfigContext> {
   const raw = await global.files.readText("tsconfig.json");

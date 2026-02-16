@@ -79,7 +79,11 @@ export const check: Check<DocsContext> = {
             message: "Copyright holder (e.g., Your Name or Company):",
           });
           const licensePath = join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("proprietary.txt", copyrightHolder), "utf-8");
+          await writeFile(
+            licensePath,
+            await loadLicense("proprietary.txt", copyrightHolder),
+            "utf-8",
+          );
           return { success: true, message: "Created PROPRIETARY LICENSE" };
         },
       },
@@ -89,7 +93,10 @@ export const check: Check<DocsContext> = {
         description: "Open choosealicense.com to compare options",
         run: async () => {
           await openBrowser("https://choosealicense.com/");
-          return { success: false, message: "Opened browser - choose a license and add it manually" };
+          return {
+            success: false,
+            message: "Opened browser - choose a license and add it manually",
+          };
         },
       },
     ],

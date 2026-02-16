@@ -33,7 +33,7 @@ import { DEFAULT_MATCH_OPTIONS, type MatchOptions, type MatchResult } from "./ty
 export function matchChallenge(
   input: string,
   expected: string,
-  options: MatchOptions = DEFAULT_MATCH_OPTIONS
+  options: MatchOptions = DEFAULT_MATCH_OPTIONS,
 ): MatchResult {
   const normalizeOptions = options.normalize ?? DEFAULT_MATCH_OPTIONS.normalize;
   const maxTypos = options.maxTypos ?? DEFAULT_MATCH_OPTIONS.maxTypos ?? 0;
@@ -63,7 +63,7 @@ export function matchChallenge(
 export function matches(
   input: string,
   expected: string,
-  options: MatchOptions = DEFAULT_MATCH_OPTIONS
+  options: MatchOptions = DEFAULT_MATCH_OPTIONS,
 ): boolean {
   return matchChallenge(input, expected, options).matches;
 }
@@ -81,7 +81,7 @@ export function matches(
  */
 export function createMatcher(
   expected: string,
-  options: MatchOptions = DEFAULT_MATCH_OPTIONS
+  options: MatchOptions = DEFAULT_MATCH_OPTIONS,
 ): (input: string) => boolean {
   return (input: string) => matches(input, expected, options);
 }

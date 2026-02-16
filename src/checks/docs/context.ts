@@ -1,10 +1,10 @@
 import type { GlobalContext } from "../../types.js";
 
-export type DocsContext = {
+export interface DocsContext {
   readme: string | null;
   license: string | null;
   changelog: string | null;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<DocsContext> {
   const [readme, license, changelog] = await Promise.all([

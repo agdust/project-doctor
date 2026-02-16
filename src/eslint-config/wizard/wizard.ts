@@ -36,7 +36,7 @@ function isCancellation(error: unknown): boolean {
   return false;
 }
 
-async function select<T>(message: string, choices: Array<{ name: string; value: T }>): Promise<T> {
+async function select<T>(message: string, choices: { name: string; value: T }[]): Promise<T> {
   try {
     return await inquirerSelect({ message, choices });
   } catch (error) {
@@ -49,7 +49,7 @@ async function select<T>(message: string, choices: Array<{ name: string; value: 
 
 async function checkbox<T>(
   message: string,
-  choices: Array<{ name: string; value: T; checked?: boolean }>
+  choices: { name: string; value: T; checked?: boolean }[],
 ): Promise<T[]> {
   try {
     return await inquirerCheckbox({ message, choices });
@@ -78,7 +78,7 @@ async function confirm(message: string, defaultValue = true): Promise<boolean> {
 export function buildPresetsFromSelections(
   projectType: "ts" | "js",
   strictness: RuleStrictness,
-  concerns: RuleConcern[]
+  concerns: RuleConcern[],
 ): PresetId[] {
   const presets: PresetId[] = ["base"];
 
@@ -140,7 +140,10 @@ export async function runWizard(): Promise<WizardSelections> {
   // Type checking
   let typeChecking = false;
   if (projectType === "ts") {
-    typeChecking = await confirm("Enable type-aware linting? (slower but catches more issues)", false);
+    typeChecking = await confirm(
+      "Enable type-aware linting? (slower but catches more issues)",
+      false,
+    );
   }
 
   const presets = buildPresetsFromSelections(projectType, strictness, concerns);

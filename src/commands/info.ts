@@ -9,20 +9,16 @@
  */
 
 import { loadAndResolveConfig } from "../config/loader.js";
-import {
-  getCheckInfo,
-  loadWhyFromDocs,
-  type CheckInfo,
-} from "../utils/checks.js";
+import { getCheckInfo, loadWhyFromDocs, type CheckInfo } from "../utils/checks.js";
 import { RESET, BOLD, DIM, GREEN, YELLOW, RED } from "../utils/colors.js";
 
 type CheckInfoOutput = CheckInfo & {
   why?: string;
 };
 
-export type InfoOptions = {
+export interface InfoOptions {
   format?: "text" | "json";
-};
+}
 
 /**
  * Display detailed information about a specific check.
@@ -37,14 +33,14 @@ export type InfoOptions = {
 export async function runInfo(
   projectPath: string,
   checkName: string,
-  options: InfoOptions
+  options: InfoOptions,
 ): Promise<void> {
   const config = await loadAndResolveConfig(projectPath);
   const info = getCheckInfo(checkName, config);
 
   if (!info) {
     console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
-    console.error(`Run "project-doctor list" to see available checks.`);
+    console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }
 
@@ -70,7 +66,8 @@ export async function runInfo(
   console.log(`${BOLD}Tags:${RESET} ${output.tags.join(", ")}`);
   console.log();
 
-  const statusColor = output.status === "enabled" ? GREEN : output.status === "muted" ? YELLOW : DIM;
+  const statusColor =
+    output.status === "enabled" ? GREEN : output.status === "muted" ? YELLOW : DIM;
   let statusStr = `${statusColor}${output.status}${RESET}`;
   if (output.mutedUntil) {
     statusStr += ` (until ${output.mutedUntil})`;

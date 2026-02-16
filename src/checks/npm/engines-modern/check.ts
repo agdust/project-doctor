@@ -43,10 +43,7 @@ export const check: Check<NpmContext> = {
       // Check if it's an EOL version
       const isEol = !LTS_VERSIONS.some((v) => v.major === minMajor);
       if (isEol || minMajor < 18) {
-        return fail(
-          name,
-          `Node ${minMajor} is EOL. Minimum supported: ${MIN_SUPPORTED_MAJOR}`
-        );
+        return fail(name, `Node ${minMajor} is EOL. Minimum supported: ${MIN_SUPPORTED_MAJOR}`);
       }
     }
 

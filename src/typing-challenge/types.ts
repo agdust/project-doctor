@@ -2,7 +2,7 @@
  * Typing Challenge - Types
  */
 
-export type NormalizeOptions = {
+export interface NormalizeOptions {
   // Convert to lowercase
   lowercase?: boolean;
   // Remove punctuation and special characters
@@ -11,16 +11,16 @@ export type NormalizeOptions = {
   collapseSpaces?: boolean;
   // Trim leading/trailing whitespace
   trim?: boolean;
-};
+}
 
-export type MatchOptions = {
+export interface MatchOptions {
   // Maximum allowed typos (Levenshtein distance)
   maxTypos?: number;
   // Normalization options applied before matching
   normalize?: NormalizeOptions;
-};
+}
 
-export type MatchResult = {
+export interface MatchResult {
   // Whether the input matches the expected phrase
   matches: boolean;
   // Number of typos detected (0 if exact match)
@@ -29,7 +29,7 @@ export type MatchResult = {
   normalizedInput: string;
   // Normalized expected phrase
   normalizedExpected: string;
-};
+}
 
 export const DEFAULT_NORMALIZE_OPTIONS: NormalizeOptions = {
   lowercase: true,

@@ -57,7 +57,7 @@ export const categoriesScreen: Screen<AppContext> = {
           choices,
           theme: { prefix: "" },
         },
-        { signal: ac.signal }
+        { signal: ac.signal },
       );
 
       // Update config based on selection

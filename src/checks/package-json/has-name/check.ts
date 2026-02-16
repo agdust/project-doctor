@@ -23,7 +23,10 @@ export const check: Check<PackageJsonContext> = {
 
       const dirName = basename(global.projectPath);
       // Sanitize: lowercase, replace spaces with hyphens, remove invalid chars
-      const safeName = dirName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-_.]/g, "");
+      const safeName = dirName
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-_.]/g, "");
       pkg.name = safeName;
 
       await writeJson(global.projectPath, "package.json", pkg);

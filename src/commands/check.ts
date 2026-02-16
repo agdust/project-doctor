@@ -11,22 +11,22 @@
 import type { CheckResult } from "../types.js";
 import { buildFixableMap, buildTagsMap } from "../utils/checks.js";
 
-export type CheckJsonOutput = {
+export interface CheckJsonOutput {
   summary: {
     total: number;
     passed: number;
     failed: number;
     skipped: number;
   };
-  results: Array<{
+  results: {
     name: string;
     group: string;
     status: "pass" | "fail" | "skip";
     message: string;
     tags: string[];
     fixable: boolean;
-  }>;
-};
+  }[];
+}
 
 export function formatCheckResultsAsJson(results: CheckResult[]): CheckJsonOutput {
   const fixableMap = buildFixableMap();

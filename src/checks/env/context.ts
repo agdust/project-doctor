@@ -1,11 +1,11 @@
 import type { GlobalContext } from "../../types.js";
 
-export type EnvContext = {
+export interface EnvContext {
   envExists: boolean;
   envVars: string[];
   exampleExists: boolean;
   exampleVars: string[];
-};
+}
 
 function parseEnvVars(content: string): string[] {
   return content

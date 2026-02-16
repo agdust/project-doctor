@@ -35,9 +35,9 @@ function groupResults(results: CheckResult[]): Map<string, CheckResult[]> {
   return grouped;
 }
 
-export type PrintOptions = {
+export interface PrintOptions {
   fullReport?: boolean;
-};
+}
 
 export function printResults(results: CheckResult[], options: PrintOptions = {}): void {
   const useColor = process.stdout.isTTY ?? false;

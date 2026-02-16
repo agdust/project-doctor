@@ -9,12 +9,12 @@ import { formatDiff } from "../differ/formatter.js";
 import type { PresetId } from "../types.js";
 import { isValidPresetId } from "../presets/presets.js";
 
-export type InitOptions = {
+export interface InitOptions {
   wizard?: boolean;
   presets?: string;
   dryRun?: boolean;
   force?: boolean;
-};
+}
 
 export async function runEslintInit(projectPath: string, options: InitOptions): Promise<void> {
   try {
@@ -103,7 +103,7 @@ async function runEslintInitInner(projectPath: string, options: InitOptions): Pr
   const configPath = join(projectPath, "eslint.config.js");
   await writeFile(configPath, fileContent, "utf-8");
 
-  console.log(`  \x1b[32m✓\x1b[0m Generated eslint.config.js`);
+  console.log("  \x1b[32m✓\x1b[0m Generated eslint.config.js");
   console.log(`    ${generatedConfig.rules.length} rules configured`);
   console.log();
 }

@@ -133,7 +133,7 @@ export function status(
   icon: "pass" | "fail" | "warn" | "info" | "skip",
   label: string,
   message?: string,
-  indent = 2
+  indent = 2,
 ): void {
   const prefix = " ".repeat(indent);
   const icons = {

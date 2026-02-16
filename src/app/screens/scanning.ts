@@ -25,9 +25,7 @@ export const scanningScreen: Screen<AppContext> = {
     blank();
   },
 
-  options: (ctx) => [
-    action("continue", ctx.scanned ? "Continue" : "...", async () => "home"),
-  ],
+  options: (ctx) => [action("continue", ctx.scanned ? "Continue" : "...", async () => "home")],
 
   onEnter: async (ctx) => {
     ctx.scanned = false;

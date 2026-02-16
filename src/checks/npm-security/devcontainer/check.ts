@@ -24,7 +24,7 @@ export const check: Check<NpmSecurityContext> = {
 
     return fail(
       name,
-      "No dev container configuration found. See: https://github.com/lirantal/npm-security-best-practices?tab=readme-ov-file#8-work-in-dev-containers"
+      "No dev container configuration found. See: https://github.com/lirantal/npm-security-best-practices?tab=readme-ov-file#8-work-in-dev-containers",
     );
   },
 };

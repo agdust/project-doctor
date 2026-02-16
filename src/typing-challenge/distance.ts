@@ -52,7 +52,7 @@ export function levenshteinDistance(a: string, b: string): number {
       currentRow[i] = Math.min(
         previousRow[i] + 1, // deletion
         currentRow[i - 1] + 1, // insertion
-        previousRow[i - 1] + cost // substitution
+        previousRow[i - 1] + cost, // substitution
       );
     }
 

@@ -25,9 +25,7 @@ export const check: Check<NpmSecurityContext> = {
     }
 
     // Check if there's a script that runs lockfile-lint
-    const hasLintScript = Object.values(scripts).some(
-      (script) => script.includes("lockfile-lint")
-    );
+    const hasLintScript = Object.values(scripts).some((script) => script.includes("lockfile-lint"));
 
     if (!hasLintScript) {
       return fail(name, "lockfile-lint installed but no script configured to run it");

@@ -6,10 +6,9 @@
  *   project-doctor config set project-type <js|generic> [path]   Set project type
  */
 
-import { loadConfig, loadAndResolveConfig, setProjectType } from "../config/loader.js";
+import { loadAndResolveConfig, setProjectType } from "../config/loader.js";
 import type { ProjectType, Severity } from "../config/types.js";
 import { isSkipUntil, parseSkipUntil } from "../config/types.js";
-import { listGroups } from "../registry.js";
 import { RESET, BOLD, DIM, GREEN, YELLOW, RED } from "../utils/colors.js";
 
 function formatSeverity(severity: Severity): string {
@@ -48,7 +47,9 @@ export async function runConfigShow(projectPath: string): Promise<void> {
   const resolved = await loadAndResolveConfig(projectPath);
 
   console.log();
-  console.log(`${BOLD}Project Type:${RESET} ${resolved.projectType} ${formatProjectTypeSource(resolved.projectTypeSource, resolved.projectTypeDetectedFrom)}`);
+  console.log(
+    `${BOLD}Project Type:${RESET} ${resolved.projectType} ${formatProjectTypeSource(resolved.projectTypeSource, resolved.projectTypeDetectedFrom)}`,
+  );
   console.log();
 
   // Show checks configuration
@@ -99,11 +100,13 @@ export async function runConfigShow(projectPath: string): Promise<void> {
  */
 export async function runConfigSetProjectType(
   projectPath: string,
-  projectType: string
+  projectType: string,
 ): Promise<void> {
   // Validate project type
   if (projectType !== "js" && projectType !== "generic") {
-    console.error(`${RED}Error: Invalid project type "${projectType}". Must be "js" or "generic".${RESET}`);
+    console.error(
+      `${RED}Error: Invalid project type "${projectType}". Must be "js" or "generic".${RESET}`,
+    );
     process.exit(2);
   }
 

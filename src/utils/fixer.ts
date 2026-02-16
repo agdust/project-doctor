@@ -11,15 +11,15 @@ import { sortFixableChecks } from "./fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
 import { isGroupForProjectType } from "./checks.js";
 
-type FixableCheck = {
+interface FixableCheck {
   name: string;
   tags: CheckTag[];
   runFix: () => Promise<FixResult>;
-};
+}
 
-export type AutoFixOptions = {
+export interface AutoFixOptions {
   projectPath: string;
-};
+}
 
 /**
  * Run all available fixes without prompts.
@@ -35,7 +35,7 @@ export async function runAutoFix(options: AutoFixOptions): Promise<number> {
 
   // Filter groups based on project type
   const groupsToRun = checkGroups.filter((g) =>
-    isGroupForProjectType(g.name, global.config.projectType)
+    isGroupForProjectType(g.name, global.config.projectType),
   );
 
   // Run all checks and collect fixable failures
@@ -45,16 +45,19 @@ export async function runAutoFix(options: AutoFixOptions): Promise<number> {
     for (const check of group.checks) {
       if (!check.fix) continue;
 
-      const baseResult = await (check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>)(
-        global,
-        groupContext
-      );
+      const baseResult = await (
+        check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>
+      )(global, groupContext);
 
       if (baseResult.status === "fail") {
         fixableChecks.push({
           name: check.name,
           tags: check.tags,
-          runFix: () => (check.fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> }).run(global, groupContext),
+          runFix: () =>
+            (check.fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> }).run(
+              global,
+              groupContext,
+            ),
         });
       }
     }
@@ -68,7 +71,9 @@ export async function runAutoFix(options: AutoFixOptions): Promise<number> {
     return 0;
   }
 
-  console.log(`  Found \x1b[1m${sortedChecks.length}\x1b[0m fixable issue${sortedChecks.length > 1 ? "s" : ""}`);
+  console.log(
+    `  Found \x1b[1m${sortedChecks.length}\x1b[0m fixable issue${sortedChecks.length > 1 ? "s" : ""}`,
+  );
   console.log();
 
   // Run all fixes
@@ -84,7 +89,9 @@ export async function runAutoFix(options: AutoFixOptions): Promise<number> {
         console.log(`     \x1b[31m✗ ${fixResult.message}\x1b[0m`);
       }
     } catch (error) {
-      console.log(`     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`);
+      console.log(
+        `     \x1b[31m✗ Error: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m`,
+      );
     }
   }
 

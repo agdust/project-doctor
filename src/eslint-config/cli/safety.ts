@@ -35,11 +35,11 @@ const ESLINT_CONFIG_PATTERNS = [
   ".eslintrc.yml",
 ];
 
-export type SafetyStatus = {
+export interface SafetyStatus {
   hasGitRepo: boolean;
   hasPendingChanges: boolean;
   pendingFiles: string[];
-};
+}
 
 /**
  * Check git status for the project
@@ -152,7 +152,9 @@ export async function ensureSafeToModify(projectPath: string): Promise<boolean> 
   // Case 2: Git repo with pending eslint config changes
   if (status.hasPendingChanges) {
     console.log();
-    console.log(`  ${color.yellow("⚠")} ${color.bold("Warning: Uncommitted ESLint config changes")}`);
+    console.log(
+      `  ${color.yellow("⚠")} ${color.bold("Warning: Uncommitted ESLint config changes")}`,
+    );
     console.log();
     console.log(`  ${color.dim("The following files have uncommitted changes:")}`);
     for (const file of status.pendingFiles) {

@@ -3,11 +3,7 @@
  */
 
 import { setCheckSeverity, setTagSeverity, setGroupSeverity } from "../config/loader.js";
-import {
-  getValidCheckNames,
-  getValidGroupNames,
-  getValidTagNames,
-} from "../utils/checks.js";
+import { getValidCheckNames, getValidGroupNames, getValidTagNames } from "../utils/checks.js";
 import { RED, RESET } from "../utils/colors.js";
 import type { Severity } from "../config/types.js";
 
@@ -24,13 +20,13 @@ function getActionPastTense(action: ToggleAction): string {
 export async function toggleCheck(
   projectPath: string,
   checkName: string,
-  action: ToggleAction
+  action: ToggleAction,
 ): Promise<void> {
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
     console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
-    console.error(`Run "project-doctor list" to see available checks.`);
+    console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }
 
@@ -41,7 +37,7 @@ export async function toggleCheck(
 export async function toggleTag(
   projectPath: string,
   tagName: string,
-  action: ToggleAction
+  action: ToggleAction,
 ): Promise<void> {
   const validTags = getValidTagNames();
 
@@ -58,7 +54,7 @@ export async function toggleTag(
 export async function toggleGroup(
   projectPath: string,
   groupName: string,
-  action: ToggleAction
+  action: ToggleAction,
 ): Promise<void> {
   const validGroups = getValidGroupNames();
 

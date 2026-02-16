@@ -58,13 +58,13 @@ const coreRules: RuleTagsMap = {
   "no-implied-eval": ["security", "essential"],
 
   // Best Practice - Essential
-  "eqeqeq": ["best-practice", "essential"],
+  eqeqeq: ["best-practice", "essential"],
   "no-var": ["best-practice", "essential"],
   "prefer-const": ["best-practice", "essential"],
   "no-with": ["best-practice", "essential"],
 
   // Best Practice - Recommended
-  "curly": ["best-practice", "recommended"],
+  curly: ["best-practice", "recommended"],
   "default-case-last": ["best-practice", "recommended"],
   "dot-notation": ["best-practice", "recommended"],
   "no-caller": ["best-practice", "recommended"],
@@ -82,7 +82,7 @@ const coreRules: RuleTagsMap = {
   "no-useless-escape": ["best-practice", "recommended"],
   "no-useless-return": ["best-practice", "recommended"],
   "prefer-promise-reject-errors": ["best-practice", "recommended"],
-  "radix": ["best-practice", "recommended"],
+  radix: ["best-practice", "recommended"],
   "no-useless-computed-key": ["best-practice", "recommended"],
   "no-useless-constructor": ["best-practice", "recommended"],
   "no-useless-rename": ["best-practice", "recommended"],

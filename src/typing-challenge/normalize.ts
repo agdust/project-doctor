@@ -12,7 +12,10 @@ import { DEFAULT_NORMALIZE_OPTIONS, type NormalizeOptions } from "./types.js";
 /**
  * Normalize a string according to the given options
  */
-export function normalize(input: string, options: NormalizeOptions = DEFAULT_NORMALIZE_OPTIONS): string {
+export function normalize(
+  input: string,
+  options: NormalizeOptions = DEFAULT_NORMALIZE_OPTIONS,
+): string {
   let result = input;
 
   if (options.lowercase) {

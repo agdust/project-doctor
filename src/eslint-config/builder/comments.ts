@@ -4,7 +4,7 @@ const MAX_COMMENT_LENGTH = 70;
 
 export function generateComment(ruleName: string): string {
   const rule = getRuleByName(ruleName);
-  if (!rule || !rule.description) {
+  if (!rule?.description) {
     return "";
   }
 

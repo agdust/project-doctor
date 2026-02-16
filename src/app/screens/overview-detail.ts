@@ -110,9 +110,38 @@ export const overviewDetailScreen: Screen<AppContext> = {
       opts.push(separator("Fix options"));
       for (const opt of check.fixOptions) {
         opts.push(
-          action(opt.id, opt.label, async (c) => {
+          action(
+            opt.id,
+            opt.label,
+            async (c) => {
+              try {
+                const result = await opt.runFix();
+                blank();
+                if (result.success) {
+                  success(result.message, 3);
+                  c.stats.fixed++;
+                  removeFixedCheck(c);
+                } else {
+                  error(result.message, 3);
+                }
+              } catch (err) {
+                error(err instanceof Error ? err.message : "Unknown error", 3);
+              }
+              blank();
+              return "overview";
+            },
+            opt.description,
+          ),
+        );
+      }
+    } else if (check.runFix) {
+      opts.push(
+        action(
+          "fix",
+          "Apply fix",
+          async (c) => {
             try {
-              const result = await opt.runFix();
+              const result = await check.runFix!();
               blank();
               if (result.success) {
                 success(result.message, 3);
@@ -126,28 +155,9 @@ export const overviewDetailScreen: Screen<AppContext> = {
             }
             blank();
             return "overview";
-          }, opt.description)
-        );
-      }
-    } else if (check.runFix) {
-      opts.push(
-        action("fix", "Apply fix", async (c) => {
-          try {
-            const result = await check.runFix!();
-            blank();
-            if (result.success) {
-              success(result.message, 3);
-              c.stats.fixed++;
-              removeFixedCheck(c);
-            } else {
-              error(result.message, 3);
-            }
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
-          }
-          blank();
-          return "overview";
-        }, check.fixDescription ?? undefined)
+          },
+          check.fixDescription ?? undefined,
+        ),
       );
     }
 
@@ -155,13 +165,18 @@ export const overviewDetailScreen: Screen<AppContext> = {
     const toolLink = getToolLink(check.tags);
     if (toolLink) {
       opts.push(
-        action("docs", "Open tool docs", async () => {
-          await openBrowser(toolLink.url);
-          blank();
-          muted(`Opened ${toolLink.url}`, 3);
-          blank();
-          return undefined;
-        }, `Open ${toolLink.tool} documentation in browser`)
+        action(
+          "docs",
+          "Open tool docs",
+          async () => {
+            await openBrowser(toolLink.url);
+            blank();
+            muted(`Opened ${toolLink.url}`, 3);
+            blank();
+            return undefined;
+          },
+          `Open ${toolLink.tool} documentation in browser`,
+        ),
       );
     }
 

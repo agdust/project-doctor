@@ -27,7 +27,7 @@ export const homeScreen: Screen<AppContext> = {
       } else {
         text(`\x1b[90mProject type: ${typeLabel} (detected from ${detectedFrom})\x1b[0m`);
       }
-      text(`\x1b[90mYou can set project type manually in Config → Project type\x1b[0m`);
+      text("\x1b[90mYou can set project type manually in Config → Project type\x1b[0m");
     }
     blank();
 
@@ -68,7 +68,7 @@ export const homeScreen: Screen<AppContext> = {
       opts.push(
         nav("issues", "Current issues", "issues", {
           badge: `${issueCount} auto-fixable`,
-        })
+        }),
       );
     }
 
@@ -76,20 +76,18 @@ export const homeScreen: Screen<AppContext> = {
     opts.push(
       nav("config", "Config", "config", {
         description: "Manage categories and checks",
-      })
+      }),
     );
 
     // Run checks again
     opts.push(
       action("rescan", "Run checks again", async () => {
         return "scanning";
-      })
+      }),
     );
 
     // About
-    opts.push(
-      nav("about", "About Project Doctor", "about")
-    );
+    opts.push(nav("about", "About Project Doctor", "about"));
 
     opts.push(separator());
 
@@ -97,7 +95,7 @@ export const homeScreen: Screen<AppContext> = {
     opts.push(
       action("exit", "Exit", async () => {
         return "__exit__";
-      })
+      }),
     );
 
     return opts;

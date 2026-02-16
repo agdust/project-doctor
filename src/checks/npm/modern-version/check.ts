@@ -26,10 +26,7 @@ export const check: Check<NpmContext> = {
     }
 
     if (major < MIN_SUPPORTED_MAJOR) {
-      return fail(
-        name,
-        `Node ${major} is EOL. Minimum supported: ${MIN_SUPPORTED_MAJOR}`
-      );
+      return fail(name, `Node ${major} is EOL. Minimum supported: ${MIN_SUPPORTED_MAJOR}`);
     }
 
     const ltsInfo = LTS_VERSIONS.find((v) => v.major === major);

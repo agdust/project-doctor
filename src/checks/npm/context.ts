@@ -1,13 +1,13 @@
 import type { GlobalContext } from "../../types.js";
 
-type PackageJson = {
+interface PackageJson {
   engines?: {
     node?: string;
     npm?: string;
   };
-};
+}
 
-export type NpmContext = {
+export interface NpmContext {
   nvmrc: {
     raw: string | null;
     version: string | null;
@@ -16,7 +16,7 @@ export type NpmContext = {
     node: string | null;
     npm: string | null;
   };
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<NpmContext> {
   // Load .nvmrc

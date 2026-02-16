@@ -1,10 +1,10 @@
 import type { DetectedTools, FileCache } from "../types.js";
 
-type PackageJson = {
+interface PackageJson {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   workspaces?: string[] | { packages: string[] };
-};
+}
 
 export async function detectTools(files: FileCache): Promise<DetectedTools> {
   const [

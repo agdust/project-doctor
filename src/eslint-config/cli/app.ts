@@ -11,16 +11,15 @@ import { BACK, EXIT, isBack, isExit, type Screen, type AppController } from "./t
 import { clearScreen, printHeader, printGoodbye } from "./ui.js";
 import { pressAnyKey } from "./prompts.js";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type StackEntry = {
+interface StackEntry {
   screen: Screen<any>;
   context: unknown;
-};
+}
 
-export type AppConfig = {
+export interface AppConfig {
   // Called on exit
   onExit?: () => void;
-};
+}
 
 /**
  * Run the CLI app starting with the given screen
@@ -28,7 +27,7 @@ export type AppConfig = {
 export async function runApp<T>(
   initialScreen: Screen<T>,
   initialContext: T,
-  config: AppConfig = {}
+  config: AppConfig = {},
 ): Promise<void> {
   const stack: StackEntry[] = [{ screen: initialScreen, context: initialContext }];
   let pendingPush: StackEntry | null = null;
@@ -133,7 +132,7 @@ function isForceExitError(error: unknown): boolean {
 export function createScreen<T>(
   id: string,
   title: string,
-  run: (ctx: T, app: AppController) => Promise<typeof BACK | typeof EXIT | void>
+  run: (ctx: T, app: AppController) => Promise<typeof BACK | typeof EXIT | void>,
 ): Screen<T> {
   return { id, title, run };
 }

@@ -69,7 +69,7 @@ describe("eslint-db", () => {
       const rules = getRulesByTags(["security", "type-safety"]);
       expect(rules.length).toBeGreaterThan(0);
       expect(
-        rules.every((r) => r.tags.includes("security") || r.tags.includes("type-safety"))
+        rules.every((r) => r.tags.includes("security") || r.tags.includes("type-safety")),
       ).toBe(true);
     });
 
@@ -77,7 +77,7 @@ describe("eslint-db", () => {
       const rules = getRulesByTags(["type-safety", "essential"], true);
       expect(rules.length).toBeGreaterThan(0);
       expect(
-        rules.every((r) => r.tags.includes("type-safety") && r.tags.includes("essential"))
+        rules.every((r) => r.tags.includes("type-safety") && r.tags.includes("essential")),
       ).toBe(true);
     });
   });
@@ -127,8 +127,8 @@ describe("eslint-db", () => {
           (r) =>
             r.name.startsWith("@typescript-eslint/") &&
             r.tags.includes("essential") &&
-            !r.tags.includes("style")
-        )
+            !r.tags.includes("style"),
+        ),
       ).toBe(true);
     });
 

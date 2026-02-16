@@ -6,7 +6,7 @@ import type { CheckTag } from "./types.js";
 import { listChecks, listGroups } from "./registry.js";
 import { runChecks } from "./utils/runner.js";
 import { printResults } from "./utils/reporter.js";
-import { runAutoFix } from "./utils/fixer.js";
+// import { runAutoFix } from "./utils/fixer.js";
 import { runDepsChecker } from "./utils/deps-checker.js";
 import { runOverview } from "./utils/overview.js";
 import { runSnapshot, runHistory } from "./utils/snapshot.js";
@@ -243,7 +243,9 @@ async function handleConfigCommand(args: string[]): Promise<void> {
       return;
     }
 
-    console.error(`${RED}Error: Unknown config setting "${settingName}". Use 'project-type'.${RESET}`);
+    console.error(
+      `${RED}Error: Unknown config setting "${settingName}". Use 'project-type'.${RESET}`,
+    );
     process.exit(2);
   }
 
@@ -266,7 +268,11 @@ async function handleConfigCommand(args: string[]): Promise<void> {
 
 type ConfigTargetType = "check" | "tag" | "group";
 
-function parseConfigTargetArgs(args: string[]): { type: ConfigTargetType; name: string; projectPath: string } {
+function parseConfigTargetArgs(args: string[]): {
+  type: ConfigTargetType;
+  name: string;
+  projectPath: string;
+} {
   const type = args[0];
   if (!type || !["check", "tag", "group"].includes(type)) {
     console.error(`${RED}Error: Missing or invalid type. Use 'check', 'tag', or 'group'.${RESET}`);
@@ -561,8 +567,21 @@ async function main(): Promise<void> {
 
   // Commands that need special handling before parseArgs
   const specialCommands = [
-    "check", "fix", "deps", "overview", "snapshot", "history", "init",
-    "eslint", "config", "disable", "enable", "mute", "unmute", "list", "info"
+    "check",
+    "fix",
+    "deps",
+    "overview",
+    "snapshot",
+    "history",
+    "init",
+    "eslint",
+    "config",
+    "disable",
+    "enable",
+    "mute",
+    "unmute",
+    "list",
+    "info",
   ];
 
   if (command && specialCommands.includes(command)) {

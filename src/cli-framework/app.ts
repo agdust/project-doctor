@@ -7,13 +7,7 @@
 
 import { select, Separator as InquirerSeparator } from "@inquirer/prompts";
 import { CancelPromptError } from "@inquirer/core";
-import type {
-  AppConfig,
-  AppState,
-  Screen,
-  Option,
-  NavOption,
-} from "./types.js";
+import type { AppConfig, AppState, Screen, Option } from "./types.js";
 import { back } from "./types.js";
 import { clear, bigTitle, blank } from "./renderer.js";
 
@@ -71,9 +65,10 @@ export class App<TCtx> {
 
     // Clear screen and show app header
     clear();
-    const displayName = typeof this.config.displayName === "function"
-      ? this.config.displayName(this.state.context)
-      : this.config.displayName ?? this.config.name;
+    const displayName =
+      typeof this.config.displayName === "function"
+        ? this.config.displayName(this.state.context)
+        : (this.config.displayName ?? this.config.name);
     bigTitle(displayName);
     blank();
 
@@ -82,9 +77,7 @@ export class App<TCtx> {
 
     // Get options (static or dynamic)
     const baseOptions =
-      typeof screen.options === "function"
-        ? screen.options(this.state.context)
-        : screen.options;
+      typeof screen.options === "function" ? screen.options(this.state.context) : screen.options;
 
     // Auto-add back option unless noBack or at root
     const options = this.addBackOption(screen, baseOptions);
@@ -125,7 +118,7 @@ export class App<TCtx> {
         theme: { prefix: "", keybindings: ["vim"] },
         default: defaultValue,
       },
-      { signal: ac.signal }
+      { signal: ac.signal },
     );
 
     // Add ESC listener after inquirer has set up its keyboard handling
@@ -165,10 +158,7 @@ export class App<TCtx> {
   /**
    * Add back option if appropriate
    */
-  private addBackOption(
-    screen: Screen<TCtx>,
-    options: Option<TCtx>[]
-  ): Option<TCtx>[] {
+  private addBackOption(screen: Screen<TCtx>, options: Option<TCtx>[]): Option<TCtx>[] {
     if (screen.noBack || !screen.parent) {
       return options;
     }
@@ -203,7 +193,7 @@ export class App<TCtx> {
   private async handleSelection(
     screen: Screen<TCtx>,
     options: Option<TCtx>[],
-    selected: string
+    selected: string,
   ): Promise<void> {
     // Handle back navigation
     if (selected === BACK_VALUE) {
@@ -212,9 +202,7 @@ export class App<TCtx> {
     }
 
     // Find the selected option
-    const option = options.find(
-      (o) => o.type !== "separator" && o.value === selected
-    );
+    const option = options.find((o) => o.type !== "separator" && o.value === selected);
     if (!option || option.type === "separator") return;
 
     if (option.type === "nav") {
@@ -252,10 +240,7 @@ export class App<TCtx> {
   /**
    * Navigate to a screen
    */
-  private async navigate(
-    fromScreen: Screen<TCtx>,
-    toScreenId: string
-  ): Promise<void> {
+  private async navigate(fromScreen: Screen<TCtx>, toScreenId: string): Promise<void> {
     // Lifecycle: onLeave
     await fromScreen.onLeave?.(this.state.context);
 

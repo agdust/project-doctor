@@ -3,7 +3,11 @@ import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { createGlobalContext } from "../../context/global.js";
 import { loadContext } from "./context.js";
-import { copyFixtureToTemp, createEmptyTempDir, type TempFixture } from "../../test/fix-test-utils.js";
+import {
+  copyFixtureToTemp,
+  createEmptyTempDir,
+  type TempFixture,
+} from "../../test/fix-test-utils.js";
 import { check as hasName } from "./has-name/check.js";
 import { check as hasVersion } from "./has-version/check.js";
 import { check as hasDescription } from "./has-description/check.js";
@@ -62,7 +66,10 @@ describe("package-json fixes", () => {
       // Create a subdirectory with special characters
       const specialDir = join(tempFixture.path, "My Project Name");
       await mkdir(specialDir);
-      await tempFixture.writeFile("My Project Name/package.json", JSON.stringify({ version: "1.0.0" }));
+      await tempFixture.writeFile(
+        "My Project Name/package.json",
+        JSON.stringify({ version: "1.0.0" }),
+      );
 
       const global = await createGlobalContext(specialDir);
       const ctx = await loadContext(global);
@@ -324,7 +331,9 @@ describe("package-json fixes", () => {
 
       const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.exports).toBeDefined();
-      expect(((pkg.exports as Record<string, unknown>)["."] as Record<string, unknown>).import).toBe("./dist/index.js");
+      expect(
+        ((pkg.exports as Record<string, unknown>)["."] as Record<string, unknown>).import,
+      ).toBe("./dist/index.js");
     });
   });
 

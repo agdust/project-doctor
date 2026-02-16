@@ -12,7 +12,7 @@ import {
   checkbox as inquirerCheckbox,
   input as inquirerInput,
 } from "@inquirer/prompts";
-import { BACK, EXIT, type NavigationAction, type Choice, backChoice, exitChoice } from "./types.js";
+import { BACK, EXIT, type NavigationAction, type Choice } from "./types.js";
 
 // Check if error is a user cancellation (ESC or Ctrl+C)
 function isCancellation(error: unknown): boolean {
@@ -41,7 +41,7 @@ function isForceExit(error: unknown): boolean {
   return false;
 }
 
-export type SelectConfig<T> = {
+export interface SelectConfig<T> {
   message: string;
   choices: Choice<T>[];
   // If true, adds a back option at the end
@@ -50,7 +50,7 @@ export type SelectConfig<T> = {
   includeExit?: boolean;
   // Custom back label
   backLabel?: string;
-};
+}
 
 /**
  * Select prompt with automatic ESC handling
@@ -58,7 +58,7 @@ export type SelectConfig<T> = {
  * - Ctrl+C throws to trigger app exit
  */
 export async function select<T>(config: SelectConfig<T>): Promise<T | NavigationAction> {
-  const choices: Array<{ name: string; value: T | NavigationAction; description?: string }> = [
+  const choices: { name: string; value: T | NavigationAction; description?: string }[] = [
     ...config.choices,
   ];
 
@@ -97,10 +97,10 @@ export async function select<T>(config: SelectConfig<T>): Promise<T | Navigation
   }
 }
 
-export type ConfirmConfig = {
+export interface ConfirmConfig {
   message: string;
   default?: boolean;
-};
+}
 
 /**
  * Confirm prompt with automatic ESC handling
@@ -124,11 +124,11 @@ export async function confirm(config: ConfirmConfig): Promise<boolean | typeof B
   }
 }
 
-export type CheckboxConfig<T> = {
+export interface CheckboxConfig<T> {
   message: string;
-  choices: Array<{ name: string; value: T; checked?: boolean }>;
+  choices: { name: string; value: T; checked?: boolean }[];
   includeBack?: boolean;
-};
+}
 
 /**
  * Checkbox prompt with automatic ESC handling
@@ -150,10 +150,10 @@ export async function checkbox<T>(config: CheckboxConfig<T>): Promise<T[] | type
   }
 }
 
-export type InputConfig = {
+export interface InputConfig {
   message: string;
   default?: string;
-};
+}
 
 /**
  * Input prompt with automatic ESC handling

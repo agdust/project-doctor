@@ -1,15 +1,15 @@
 import type { GlobalContext } from "../../types.js";
 
-type PackageJson = {
+interface PackageJson {
   "size-limit"?: unknown[];
   scripts?: Record<string, string>;
-};
+}
 
-export type BundleSizeContext = {
+export interface BundleSizeContext {
   hasSizeLimitConfig: boolean;
   hasSizeLimitScript: boolean;
   configLocation: "file" | "package" | null;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<BundleSizeContext> {
   const [packageJson, hasSizeLimitFile] = await Promise.all([
@@ -28,9 +28,7 @@ export async function loadContext(global: GlobalContext): Promise<BundleSizeCont
   }
 
   const scripts = packageJson?.scripts ?? {};
-  const hasSizeLimitScript = Object.values(scripts).some(
-    (script) => script.includes("size-limit")
-  );
+  const hasSizeLimitScript = Object.values(scripts).some((script) => script.includes("size-limit"));
 
   return {
     hasSizeLimitConfig,

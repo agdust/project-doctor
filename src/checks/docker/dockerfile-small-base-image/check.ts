@@ -62,7 +62,7 @@ export const check: Check<DockerContext> = {
     if (LARGE_BASE_IMAGES.has(imageName)) {
       return fail(
         name,
-        `Using large base image '${baseImage}' (~100MB+). Consider alpine (~5MB) or a language-specific slim image`
+        `Using large base image '${baseImage}' (~100MB+). Consider alpine (~5MB) or a language-specific slim image`,
       );
     }
 
@@ -70,7 +70,7 @@ export const check: Check<DockerContext> = {
     if (imageName in HAS_SMALLER_VARIANT && !isSmallVariant(tag)) {
       return fail(
         name,
-        `Using full '${baseImage}:${baseImageTag}' image. Consider ${HAS_SMALLER_VARIANT[imageName]}`
+        `Using full '${baseImage}:${baseImageTag}' image. Consider ${HAS_SMALLER_VARIANT[imageName]}`,
       );
     }
 

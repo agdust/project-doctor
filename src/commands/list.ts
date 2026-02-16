@@ -12,22 +12,18 @@
  */
 
 import { loadAndResolveConfig } from "../config/loader.js";
-import { listChecks, checkGroups } from "../registry.js";
-import {
-  getCheckStatus,
-  buildFixableMap,
-  type CheckStatus,
-} from "../utils/checks.js";
+import { listChecks } from "../registry.js";
+import { getCheckStatus, buildFixableMap, type CheckStatus } from "../utils/checks.js";
 import { RESET, BOLD, DIM, GREEN, YELLOW } from "../utils/colors.js";
 
-export type ListOptions = {
+export interface ListOptions {
   groups?: string[];
   tags?: string[];
   status?: "all" | "enabled" | "disabled" | "muted";
   format?: "table" | "json" | "names";
-};
+}
 
-type CheckListInfo = {
+interface CheckListInfo {
   name: string;
   group: string;
   description: string;
@@ -35,7 +31,7 @@ type CheckListInfo = {
   status: CheckStatus;
   mutedUntil?: string;
   fixable: boolean;
-};
+}
 
 function formatStatus(status: CheckStatus, mutedUntil?: string): string {
   switch (status) {
@@ -61,10 +57,7 @@ function formatTags(tags: string[]): string {
  * @param projectPath - Absolute path to the project directory
  * @param options - Filter and format options
  */
-export async function runList(
-  projectPath: string,
-  options: ListOptions
-): Promise<void> {
+export async function runList(projectPath: string, options: ListOptions): Promise<void> {
   const config = await loadAndResolveConfig(projectPath);
   const allChecks = listChecks();
   const fixableMap = buildFixableMap();
@@ -127,8 +120,8 @@ export async function runList(
   console.log();
   console.log(
     `${BOLD}${"Check Name".padEnd(nameWidth)}${RESET}  ` +
-    `${BOLD}${"Group".padEnd(groupWidth)}${RESET}  ` +
-    `${BOLD}Tags${RESET}`
+      `${BOLD}${"Group".padEnd(groupWidth)}${RESET}  ` +
+      `${BOLD}Tags${RESET}`,
   );
   console.log("─".repeat(nameWidth + groupWidth + 60));
 
@@ -139,14 +132,12 @@ export async function runList(
     const fixableStr = check.fixable ? `${GREEN}[fixable]${RESET}` : "";
 
     console.log(
-      `${check.name.padEnd(nameWidth)}  ` +
-      `${check.group.padEnd(groupWidth)}  ` +
-      `${tagsStr}`
+      `${check.name.padEnd(nameWidth)}  ` + `${check.group.padEnd(groupWidth)}  ` + tagsStr,
     );
     console.log(
       `${"".padEnd(nameWidth)}  ` +
-      `${"".padEnd(groupWidth)}  ` +
-      `Status: ${statusStr} ${fixableStr}`
+        `${"".padEnd(groupWidth)}  ` +
+        `Status: ${statusStr} ${fixableStr}`,
     );
   }
 

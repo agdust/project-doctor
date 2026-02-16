@@ -57,7 +57,7 @@ export const projectTypeScreen: Screen<AppContext> = {
           }
           return "config";
         },
-        pt.description
+        pt.description,
       );
     });
   },

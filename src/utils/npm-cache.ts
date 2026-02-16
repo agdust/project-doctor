@@ -8,29 +8,29 @@ const CACHE_DIR = ".project-doctor/cache";
 const CACHE_FILE = "npm-cache.json";
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 
-type VersionCacheEntry = {
+interface VersionCacheEntry {
   version: string;
   cachedAt: number;
-};
+}
 
-type AuditCacheEntry = {
+interface AuditCacheEntry {
   result: AuditResult;
   lockfileHash: string;
   cachedAt: number;
-};
+}
 
-type NpmCacheData = {
+interface NpmCacheData {
   versions: Record<string, VersionCacheEntry>;
   audit: AuditCacheEntry | null;
-};
+}
 
-export type NpmCache = {
+export interface NpmCache {
   getVersion(packageName: string): string | null;
   setVersion(packageName: string, version: string): void;
   getAudit(lockfileHash: string): AuditResult | null;
   setAudit(result: AuditResult, lockfileHash: string): void;
   flush(): Promise<void>;
-};
+}
 
 function isExpired(cachedAt: number): boolean {
   return Date.now() - cachedAt > TTL_MS;
@@ -50,7 +50,12 @@ async function loadCacheData(cachePath: string): Promise<NpmCacheData> {
   }
 }
 
-async function saveCacheData(projectPath: string, cacheDir: string, cachePath: string, data: NpmCacheData): Promise<void> {
+async function saveCacheData(
+  projectPath: string,
+  cacheDir: string,
+  cachePath: string,
+  data: NpmCacheData,
+): Promise<void> {
   try {
     // Ensure .project-doctor exists with .gitignore
     await ensureConfigDir(projectPath);

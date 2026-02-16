@@ -2,7 +2,7 @@ import { createGlobalContext } from "../context/global.js";
 import { checkDeps, type AuditResult } from "./deps-checker.js";
 import { runAllChecksRaw } from "./runner.js";
 
-type OverviewResult = {
+interface OverviewResult {
   projectName: string;
   checks: {
     total: number;
@@ -17,7 +17,7 @@ type OverviewResult = {
     patch: number;
   } | null;
   audit: AuditResult | null;
-};
+}
 
 export async function getOverview(projectPath: string): Promise<OverviewResult> {
   const global = await createGlobalContext(projectPath);
@@ -76,7 +76,7 @@ export function printOverview(result: OverviewResult): void {
   if (checks.failed > 0) {
     console.log(`  \x1b[31m✗\x1b[0m ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`);
   } else {
-    console.log(`  \x1b[32m✓\x1b[0m All checks passing`);
+    console.log("  \x1b[32m✓\x1b[0m All checks passing");
   }
 
   // Dependencies line
@@ -87,9 +87,11 @@ export function printOverview(result: OverviewResult): void {
       if (deps.major > 0) parts.push(`${deps.major} major`);
       if (deps.minor > 0) parts.push(`${deps.minor} minor`);
       if (deps.patch > 0) parts.push(`${deps.patch} patch`);
-      console.log(`  \x1b[33m↑\x1b[0m ${deps.outdated} outdated dependenc${deps.outdated > 1 ? "ies" : "y"} (${parts.join(", ")})`);
+      console.log(
+        `  \x1b[33m↑\x1b[0m ${deps.outdated} outdated dependenc${deps.outdated > 1 ? "ies" : "y"} (${parts.join(", ")})`,
+      );
     } else {
-      console.log(`  \x1b[32m✓\x1b[0m Dependencies up to date`);
+      console.log("  \x1b[32m✓\x1b[0m Dependencies up to date");
     }
   }
 
@@ -97,7 +99,7 @@ export function printOverview(result: OverviewResult): void {
   if (result.audit) {
     const { audit } = result;
     if (audit.total === 0) {
-      console.log(`  \x1b[32m✓\x1b[0m No vulnerabilities`);
+      console.log("  \x1b[32m✓\x1b[0m No vulnerabilities");
     } else {
       const parts: string[] = [];
       if (audit.critical > 0) parts.push(`${audit.critical} critical`);
@@ -105,13 +107,15 @@ export function printOverview(result: OverviewResult): void {
       if (audit.moderate > 0) parts.push(`${audit.moderate} moderate`);
       if (audit.low > 0) parts.push(`${audit.low} low`);
       const color = audit.critical > 0 || audit.high > 0 ? "\x1b[31m" : "\x1b[33m";
-      console.log(`  ${color}⚠\x1b[0m ${audit.total} vulnerabilit${audit.total > 1 ? "ies" : "y"} (${parts.join(", ")})`);
+      console.log(
+        `  ${color}⚠\x1b[0m ${audit.total} vulnerabilit${audit.total > 1 ? "ies" : "y"} (${parts.join(", ")})`,
+      );
     }
   }
 
   console.log();
-  console.log(`  \x1b[90mRun 'project-doctor check' for details\x1b[0m`);
-  console.log(`  \x1b[90mRun 'project-doctor fix' to fix issues\x1b[0m`);
+  console.log("  \x1b[90mRun 'project-doctor check' for details\x1b[0m");
+  console.log("  \x1b[90mRun 'project-doctor fix' to fix issues\x1b[0m");
   console.log();
 }
 

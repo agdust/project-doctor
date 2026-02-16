@@ -32,23 +32,28 @@ export const fixOptionsScreen: Screen<AppContext> = {
 
     for (const opt of issue.fixOptions) {
       opts.push(
-        action(opt.id, opt.label, async (c) => {
-          try {
-            const result = await opt.runFix();
-            blank();
-            if (result.success) {
-              success(result.message, 3);
-              c.stats.fixed++;
-            } else {
-              error(result.message, 3);
+        action(
+          opt.id,
+          opt.label,
+          async (c) => {
+            try {
+              const result = await opt.runFix();
+              blank();
+              if (result.success) {
+                success(result.message, 3);
+                c.stats.fixed++;
+              } else {
+                error(result.message, 3);
+              }
+            } catch (err) {
+              error(err instanceof Error ? err.message : "Unknown error", 3);
             }
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
-          }
-          blank();
+            blank();
 
-          return moveToNextIssue(c);
-        }, opt.description)
+            return moveToNextIssue(c);
+          },
+          opt.description,
+        ),
       );
     }
 

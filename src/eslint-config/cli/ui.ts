@@ -10,10 +10,18 @@ export function clearScreen(): void {
 // App header
 export function printHeader(): void {
   console.log();
-  console.log("\x1b[1m\x1b[36m╔═══════════════════════════════════════════════════════════╗\x1b[0m");
-  console.log("\x1b[1m\x1b[36m║\x1b[0m  \x1b[1mESLint Configuration Builder\x1b[0m                              \x1b[1m\x1b[36m║\x1b[0m");
-  console.log("\x1b[1m\x1b[36m║\x1b[0m  \x1b[90mBuild and manage your ESLint config interactively\x1b[0m         \x1b[1m\x1b[36m║\x1b[0m");
-  console.log("\x1b[1m\x1b[36m╚═══════════════════════════════════════════════════════════╝\x1b[0m");
+  console.log(
+    "\x1b[1m\x1b[36m╔═══════════════════════════════════════════════════════════╗\x1b[0m",
+  );
+  console.log(
+    "\x1b[1m\x1b[36m║\x1b[0m  \x1b[1mESLint Configuration Builder\x1b[0m                              \x1b[1m\x1b[36m║\x1b[0m",
+  );
+  console.log(
+    "\x1b[1m\x1b[36m║\x1b[0m  \x1b[90mBuild and manage your ESLint config interactively\x1b[0m         \x1b[1m\x1b[36m║\x1b[0m",
+  );
+  console.log(
+    "\x1b[1m\x1b[36m╚═══════════════════════════════════════════════════════════╝\x1b[0m",
+  );
   console.log();
 }
 
@@ -51,7 +59,7 @@ export function printInfo(text: string): void {
 
 // Cancelled message
 export function printCancelled(): void {
-  console.log(`  \x1b[90mCancelled\x1b[0m`);
+  console.log("  \x1b[90mCancelled\x1b[0m");
 }
 
 // Goodbye message

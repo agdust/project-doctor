@@ -1,11 +1,11 @@
 import type { GlobalContext } from "../../types.js";
 
-export type DepsContext = {
+export interface DepsContext {
   hasPackageLock: boolean;
   hasYarnLock: boolean;
   hasPnpmLock: boolean;
   lockfileType: "npm" | "yarn" | "pnpm" | null;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<DepsContext> {
   const [hasPackageLock, hasYarnLock, hasPnpmLock] = await Promise.all([

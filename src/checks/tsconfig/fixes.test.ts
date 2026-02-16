@@ -1,7 +1,11 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { createGlobalContext } from "../../context/global.js";
 import { loadContext } from "./context.js";
-import { copyFixtureToTemp, createEmptyTempDir, type TempFixture } from "../../test/fix-test-utils.js";
+import {
+  copyFixtureToTemp,
+  createEmptyTempDir,
+  type TempFixture,
+} from "../../test/fix-test-utils.js";
 import { check as exists } from "./exists/check.js";
 import { check as strictEnabled } from "./strict-enabled/check.js";
 import { check as noAnyEnabled } from "./no-any-enabled/check.js";
@@ -44,7 +48,9 @@ describe("tsconfig fixes", () => {
       expect((tsconfig.compilerOptions as Record<string, unknown>).strict).toBe(true);
       expect((tsconfig.compilerOptions as Record<string, unknown>).outDir).toBe("dist");
       expect((tsconfig.compilerOptions as Record<string, unknown>).module).toBe("NodeNext");
-      expect((tsconfig.compilerOptions as Record<string, unknown>).moduleResolution).toBe("NodeNext");
+      expect((tsconfig.compilerOptions as Record<string, unknown>).moduleResolution).toBe(
+        "NodeNext",
+      );
 
       // Verify check now passes
       const global2 = await createGlobalContext(tempFixture.path);

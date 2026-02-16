@@ -4,9 +4,9 @@ import { computeDiff } from "../differ/differ.js";
 import { formatDiff } from "../differ/formatter.js";
 import type { PresetId } from "../types.js";
 
-export type DiffOptions = {
+export interface DiffOptions {
   presets?: string;
-};
+}
 
 export async function runEslintDiff(projectPath: string, options: DiffOptions = {}): Promise<void> {
   console.log();

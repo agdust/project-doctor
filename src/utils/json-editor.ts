@@ -25,7 +25,11 @@ export async function readJson<T>(projectPath: string, filename: string): Promis
  * Write a JSON file with consistent formatting.
  * Uses 2-space indentation and a trailing newline.
  */
-export async function writeJson(projectPath: string, filename: string, data: unknown): Promise<void> {
+export async function writeJson(
+  projectPath: string,
+  filename: string,
+  data: unknown,
+): Promise<void> {
   const content = JSON.stringify(data, null, 2) + "\n";
   await writeFile(join(projectPath, filename), content, "utf-8");
 }
@@ -37,7 +41,7 @@ export async function writeJson(projectPath: string, filename: string, data: unk
 export async function updateJson<T extends object>(
   projectPath: string,
   filename: string,
-  transform: (data: T) => T
+  transform: (data: T) => T,
 ): Promise<{ success: boolean; message: string }> {
   const data = await readJson<T>(projectPath, filename);
   if (!data) {

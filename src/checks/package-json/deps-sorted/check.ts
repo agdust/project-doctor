@@ -11,7 +11,10 @@ export const check: Check<PackageJsonContext> = {
   run: async (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
 
-    const checkSorted = (deps: Record<string, string> | undefined, depsName: string): string | null => {
+    const checkSorted = (
+      deps: Record<string, string> | undefined,
+      depsName: string,
+    ): string | null => {
       if (!deps) return null;
       const keys = Object.keys(deps);
       const sorted = [...keys].sort((a, b) => a.localeCompare(b));

@@ -9,12 +9,12 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { GlobalContext } from "../../types.js";
 
-type PackageJson = {
+interface PackageJson {
   devDependencies?: Record<string, string>;
   scripts?: Record<string, string>;
-};
+}
 
-export type NpmSecurityContext = {
+export interface NpmSecurityContext {
   /** Content of .npmrc file */
   npmrc: string | null;
   /** Content of .gitignore file */
@@ -29,7 +29,7 @@ export type NpmSecurityContext = {
   ciWorkflows: string[];
   /** Content of pnpm-workspace.yaml or package.json for pnpm config */
   pnpmConfig: string | null;
-};
+}
 
 async function loadCIWorkflows(projectPath: string): Promise<string[]> {
   const workflowDir = join(projectPath, ".github", "workflows");

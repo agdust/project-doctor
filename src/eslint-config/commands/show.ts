@@ -2,10 +2,10 @@ import { getAllPresets } from "../presets/presets.js";
 import { getStats } from "../../eslint-db/index.js";
 import { readExistingConfig } from "../reader/reader.js";
 
-export type ShowOptions = {
+export interface ShowOptions {
   presets?: boolean;
   rules?: boolean;
-};
+}
 
 export async function runEslintShow(projectPath: string, options: ShowOptions): Promise<void> {
   if (options.presets) {
@@ -82,6 +82,8 @@ async function showCurrentConfig(projectPath: string): Promise<void> {
   console.log();
   console.log(`  File: \x1b[90m${existing.filePath}\x1b[0m`);
   console.log(`  Rules: \x1b[1m${Object.keys(existing.rules).length}\x1b[0m`);
-  console.log(`  Type-checking: ${existing.hasTypeChecking ? "\x1b[32myes\x1b[0m" : "\x1b[90mno\x1b[0m"}`);
+  console.log(
+    `  Type-checking: ${existing.hasTypeChecking ? "\x1b[32myes\x1b[0m" : "\x1b[90mno\x1b[0m"}`,
+  );
   console.log();
 }

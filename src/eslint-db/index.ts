@@ -23,7 +23,7 @@ import { ruleTags } from "./tags.js";
 // Plugin Definitions
 // =============================================================================
 
-type RawRuleMeta = {
+interface RawRuleMeta {
   meta?: {
     docs?: {
       description?: string;
@@ -33,17 +33,12 @@ type RawRuleMeta = {
     fixable?: string;
     deprecated?: boolean | object;
   };
-};
+}
 
 type RawRules = Map<string, RawRuleMeta> | Record<string, RawRuleMeta>;
 
-function buildRules(
-  rawRules: RawRules,
-  prefix: string,
-  pluginName: string
-): RuleDefinition[] {
-  const entries =
-    rawRules instanceof Map ? rawRules.entries() : Object.entries(rawRules);
+function buildRules(rawRules: RawRules, prefix: string, pluginName: string): RuleDefinition[] {
+  const entries = rawRules instanceof Map ? rawRules.entries() : Object.entries(rawRules);
 
   const rules: RuleDefinition[] = [];
 
@@ -72,12 +67,12 @@ const coreRules = buildRules(builtinRules, "", "eslint");
 const tsRules = buildRules(
   (tseslintPlugin?.rules ?? {}) as Record<string, RawRuleMeta>,
   "@typescript-eslint",
-  "@typescript-eslint/eslint-plugin"
+  "@typescript-eslint/eslint-plugin",
 );
 const stylisticRules = buildRules(
   (stylisticPlugin.rules ?? {}) as Record<string, RawRuleMeta>,
   "@stylistic",
-  "@stylistic/eslint-plugin"
+  "@stylistic/eslint-plugin",
 );
 
 const allRules: RuleDefinition[] = [...coreRules, ...tsRules, ...stylisticRules];
@@ -130,10 +125,7 @@ export function getRuleByName(name: string): RuleDefinition | undefined {
   return allRules.find((r) => r.name === name);
 }
 
-export function getRulesByTags(
-  includeTags: RuleTag[],
-  matchAll = false
-): RuleDefinition[] {
+export function getRulesByTags(includeTags: RuleTag[], matchAll = false): RuleDefinition[] {
   return allRules.filter((rule) => {
     if (matchAll) {
       return includeTags.every((tag) => rule.tags.includes(tag));
@@ -148,14 +140,10 @@ export function getRulesExcludingTags(excludeTags: RuleTag[]): RuleDefinition[] 
   });
 }
 
-export function getRulesByStrictness(
-  maxStrictness: RuleStrictness
-): RuleDefinition[] {
+export function getRulesByStrictness(maxStrictness: RuleStrictness): RuleDefinition[] {
   const maxOrder = STRICTNESS_ORDER[maxStrictness];
   return allRules.filter((rule) => {
-    const ruleStrictness = rule.tags.find(
-      (t): t is RuleStrictness => t in STRICTNESS_ORDER
-    );
+    const ruleStrictness = rule.tags.find((t): t is RuleStrictness => t in STRICTNESS_ORDER);
     if (!ruleStrictness) return false; // Exclude rules without strictness tag
     return STRICTNESS_ORDER[ruleStrictness] <= maxOrder;
   });
@@ -202,25 +190,19 @@ export function queryRules(query: RuleQuery): RuleDefinition[] {
 
   // Filter by include tags
   if (query.includeTags?.length) {
-    rules = rules.filter((rule) =>
-      query.includeTags?.some((tag) => rule.tags.includes(tag))
-    );
+    rules = rules.filter((rule) => query.includeTags?.some((tag) => rule.tags.includes(tag)));
   }
 
   // Filter by exclude tags
   if (query.excludeTags?.length) {
-    rules = rules.filter(
-      (rule) => !query.excludeTags?.some((tag) => rule.tags.includes(tag))
-    );
+    rules = rules.filter((rule) => !query.excludeTags?.some((tag) => rule.tags.includes(tag)));
   }
 
   // Filter by max strictness
   if (query.maxStrictness) {
     const maxOrder = STRICTNESS_ORDER[query.maxStrictness];
     rules = rules.filter((rule) => {
-      const ruleStrictness = rule.tags.find(
-        (t): t is RuleStrictness => t in STRICTNESS_ORDER
-      );
+      const ruleStrictness = rule.tags.find((t): t is RuleStrictness => t in STRICTNESS_ORDER);
       if (!ruleStrictness) return false;
       return STRICTNESS_ORDER[ruleStrictness] <= maxOrder;
     });
@@ -248,9 +230,7 @@ export function queryRules(query: RuleQuery): RuleDefinition[] {
 // Utilities
 // =============================================================================
 
-export function groupRulesByPlugin(
-  rules: RuleDefinition[]
-): Map<string, RuleDefinition[]> {
+export function groupRulesByPlugin(rules: RuleDefinition[]): Map<string, RuleDefinition[]> {
   const grouped = new Map<string, RuleDefinition[]>();
 
   for (const rule of rules) {
@@ -263,9 +243,7 @@ export function groupRulesByPlugin(
 }
 
 export function getRuleStrictness(rule: RuleDefinition): RuleStrictness | null {
-  return (
-    rule.tags.find((t): t is RuleStrictness => t in STRICTNESS_ORDER) ?? null
-  );
+  return rule.tags.find((t): t is RuleStrictness => t in STRICTNESS_ORDER) ?? null;
 }
 
 // =============================================================================

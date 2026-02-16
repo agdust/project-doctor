@@ -78,7 +78,7 @@ export function createSkipUntil(date: Date): Severity {
 export type ProjectType = "js" | "generic";
 
 /** User config (partial, from file) */
-export type Config = {
+export interface Config {
   /** Project type - "js" for JavaScript/Node projects, "generic" for non-JS projects */
   projectType?: ProjectType;
   /** Per-check configuration */
@@ -89,13 +89,13 @@ export type Config = {
   groups?: Record<string, Severity>;
   /** User confirmed ESLint config overwriting */
   eslintOverwriteConfirmed?: boolean;
-};
+}
 
 /** How project type was determined */
 export type ProjectTypeSource = "config" | "detected";
 
 /** Resolved config (complete, with defaults) */
-export type ResolvedConfig = {
+export interface ResolvedConfig {
   /** Project type - determines which check groups are enabled */
   projectType: ProjectType;
   /** How the project type was determined */
@@ -106,7 +106,7 @@ export type ResolvedConfig = {
   tags: Record<string, Severity>;
   groups: Record<string, Severity>;
   eslintOverwriteConfirmed: boolean;
-};
+}
 
 export const DEFAULT_CONFIG: ResolvedConfig = {
   projectType: "js", // Default to js, will be auto-detected if not set

@@ -1,10 +1,10 @@
 import type { GlobalContext } from "../../types.js";
 
-export type DockerContext = {
+export interface DockerContext {
   dockerfile: string | null;
   baseImage: string | null;
   baseImageTag: string | null;
-};
+}
 
 /**
  * Parse the FROM instruction from a Dockerfile
@@ -17,7 +17,7 @@ function parseFromInstruction(dockerfile: string): { image: string; tag: string 
       const fromPart = trimmed.slice(5).trim();
       // Handle "FROM image:tag AS stage" or "FROM image:tag"
       const imageWithTag = fromPart.split(/\s+/)[0];
-      const [image, tag = "latest"] = imageWithTag.split(":");
+      const [image, tag] = imageWithTag.split(":");
       return { image, tag };
     }
   }

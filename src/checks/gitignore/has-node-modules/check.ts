@@ -21,7 +21,9 @@ export const check: Check<GitignoreContext> = {
     run: async (global) => {
       const gitignorePath = join(global.projectPath, ".gitignore");
       const content = await readFile(gitignorePath, "utf-8");
-      const newContent = content.endsWith("\n") ? content + "node_modules/\n" : content + "\nnode_modules/\n";
+      const newContent = content.endsWith("\n")
+        ? content + "node_modules/\n"
+        : content + "\nnode_modules/\n";
       await writeFile(gitignorePath, newContent, "utf-8");
       return { success: true, message: "Added node_modules/ to .gitignore" };
     },

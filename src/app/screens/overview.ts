@@ -9,7 +9,10 @@ import { action, separator } from "../../cli-framework/index.js";
 import { blank, title, muted } from "../../cli-framework/index.js";
 import type { AppContext, FailedCheck } from "../types.js";
 
-function formatCheckOption(check: FailedCheck, maxNameLen: number): { name: string; description: string } {
+function formatCheckOption(
+  check: FailedCheck,
+  maxNameLen: number,
+): { name: string; description: string } {
   const padding = " ".repeat(maxNameLen - check.name.length);
   return {
     name: `\x1b[31m✗\x1b[0m ${check.name}${padding}`,
@@ -40,8 +43,8 @@ export const overviewScreen: Screen<AppContext> = {
     // Group by importance
     const required = checks.filter((c) => c.tags.includes("required"));
     const recommended = checks.filter((c) => c.tags.includes("recommended"));
-    const opinionated = checks.filter((c) =>
-      !c.tags.includes("required") && !c.tags.includes("recommended")
+    const opinionated = checks.filter(
+      (c) => !c.tags.includes("required") && !c.tags.includes("recommended"),
     );
 
     // Find max name length for alignment
@@ -54,10 +57,15 @@ export const overviewScreen: Screen<AppContext> = {
         const { name, description } = formatCheckOption(check, maxNameLen);
         const index = checks.indexOf(check);
         opts.push(
-          action(`check-${index}`, name, async (c) => {
-            c.selectedOverviewIndex = index;
-            return "overview-detail";
-          }, description)
+          action(
+            `check-${index}`,
+            name,
+            async (c) => {
+              c.selectedOverviewIndex = index;
+              return "overview-detail";
+            },
+            description,
+          ),
         );
       }
     }
@@ -69,10 +77,15 @@ export const overviewScreen: Screen<AppContext> = {
         const { name, description } = formatCheckOption(check, maxNameLen);
         const index = checks.indexOf(check);
         opts.push(
-          action(`check-${index}`, name, async (c) => {
-            c.selectedOverviewIndex = index;
-            return "overview-detail";
-          }, description)
+          action(
+            `check-${index}`,
+            name,
+            async (c) => {
+              c.selectedOverviewIndex = index;
+              return "overview-detail";
+            },
+            description,
+          ),
         );
       }
     }
@@ -84,10 +97,15 @@ export const overviewScreen: Screen<AppContext> = {
         const { name, description } = formatCheckOption(check, maxNameLen);
         const index = checks.indexOf(check);
         opts.push(
-          action(`check-${index}`, name, async (c) => {
-            c.selectedOverviewIndex = index;
-            return "overview-detail";
-          }, description)
+          action(
+            `check-${index}`,
+            name,
+            async (c) => {
+              c.selectedOverviewIndex = index;
+              return "overview-detail";
+            },
+            description,
+          ),
         );
       }
     }

@@ -5,14 +5,14 @@ import { detectTools } from "./detect.js";
 import { loadAndResolveConfig, detectProjectTypeWithCause } from "../config/loader.js";
 import { safeMergeRecords } from "../utils/safe-json.js";
 
-export type CreateContextOptions = {
+export interface CreateContextOptions {
   skipConfig?: boolean;
   configOverrides?: Partial<ResolvedConfig>;
-};
+}
 
 export async function createGlobalContext(
   projectPath: string,
-  options: CreateContextOptions = {}
+  options: CreateContextOptions = {},
 ): Promise<GlobalContext> {
   const files = createFileCache(projectPath);
   const detected = await detectTools(files);
@@ -51,15 +51,9 @@ function mergeConfigs(base: ResolvedConfig, overrides: Partial<ResolvedConfig>):
     projectType: overrides.projectType ?? base.projectType,
     projectTypeSource: overrides.projectTypeSource ?? base.projectTypeSource,
     projectTypeDetectedFrom: overrides.projectTypeDetectedFrom ?? base.projectTypeDetectedFrom,
-    checks: overrides.checks
-      ? safeMergeRecords(base.checks, overrides.checks)
-      : base.checks,
-    tags: overrides.tags
-      ? safeMergeRecords(base.tags, overrides.tags)
-      : base.tags,
-    groups: overrides.groups
-      ? safeMergeRecords(base.groups, overrides.groups)
-      : base.groups,
+    checks: overrides.checks ? safeMergeRecords(base.checks, overrides.checks) : base.checks,
+    tags: overrides.tags ? safeMergeRecords(base.tags, overrides.tags) : base.tags,
+    groups: overrides.groups ? safeMergeRecords(base.groups, overrides.groups) : base.groups,
     eslintOverwriteConfirmed: overrides.eslintOverwriteConfirmed ?? base.eslintOverwriteConfirmed,
   };
 }

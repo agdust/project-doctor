@@ -42,11 +42,11 @@ function parseDate(dateStr: string): Date | null {
   return date;
 }
 
-export type MuteOptions = {
+export interface MuteOptions {
   weeks?: number;
   months?: number;
   until?: string;
-};
+}
 
 /**
  * Temporarily mute a check until a specified date.
@@ -61,13 +61,13 @@ export type MuteOptions = {
 export async function runMute(
   projectPath: string,
   checkName: string,
-  options: MuteOptions
+  options: MuteOptions,
 ): Promise<void> {
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
     console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
-    console.error(`Run "project-doctor list" to see available checks.`);
+    console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }
 
@@ -116,15 +116,12 @@ export async function runMute(
  * @param projectPath - Absolute path to the project directory
  * @param checkName - Name of the check to unmute
  */
-export async function runUnmute(
-  projectPath: string,
-  checkName: string
-): Promise<void> {
+export async function runUnmute(projectPath: string, checkName: string): Promise<void> {
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
     console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
-    console.error(`Run "project-doctor list" to see available checks.`);
+    console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }
 

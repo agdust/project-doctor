@@ -13,14 +13,14 @@
 // ============================================================================
 
 /** Base option properties */
-type BaseOption = {
+interface BaseOption {
   /** Unique identifier */
   value: string;
   /** Display text */
   label: string;
   /** Optional description shown below label */
   description?: string;
-};
+}
 
 /** Action that does something and optionally navigates */
 export type ActionOption<TCtx> = BaseOption & {
@@ -39,10 +39,10 @@ export type NavOption = BaseOption & {
 };
 
 /** Separator line between option groups */
-export type Separator = {
+export interface Separator {
   type: "separator";
   label?: string;
-};
+}
 
 export type Option<TCtx> = ActionOption<TCtx> | NavOption | Separator;
 
@@ -50,7 +50,7 @@ export type Option<TCtx> = ActionOption<TCtx> | NavOption | Separator;
 // Screens - UI states
 // ============================================================================
 
-export type Screen<TCtx> = {
+export interface Screen<TCtx> {
   /** Unique screen identifier */
   id: string;
 
@@ -74,13 +74,13 @@ export type Screen<TCtx> = {
 
   /** Run when leaving screen */
   onLeave?: (ctx: TCtx) => Promise<void>;
-};
+}
 
 // ============================================================================
 // App Configuration
 // ============================================================================
 
-export type AppConfig<TCtx> = {
+export interface AppConfig<TCtx> {
   /** App name (technical identifier) */
   name: string;
 
@@ -101,13 +101,13 @@ export type AppConfig<TCtx> = {
 
   /** Custom ESC behavior (default: go back) */
   onEsc?: (ctx: TCtx, screenId: string) => "back" | "stay" | "exit";
-};
+}
 
 // ============================================================================
 // Runtime State
 // ============================================================================
 
-export type AppState<TCtx> = {
+export interface AppState<TCtx> {
   /** Current screen ID */
   current: string;
 
@@ -119,7 +119,7 @@ export type AppState<TCtx> = {
 
   /** Last selected option value per screen (for cursor restoration) */
   lastSelected: Map<string, string>;
-};
+}
 
 // ============================================================================
 // Helpers for creating options (reduces boilerplate)
@@ -130,7 +130,7 @@ export function action<TCtx>(
   value: string,
   label: string,
   run: (ctx: TCtx) => Promise<string | void>,
-  description?: string
+  description?: string,
 ): ActionOption<TCtx> {
   return { type: "action", value, label, run, description };
 }
@@ -140,7 +140,7 @@ export function nav(
   value: string,
   label: string,
   to: string,
-  opts?: { description?: string; badge?: string }
+  opts?: { description?: string; badge?: string },
 ): NavOption {
   return { type: "nav", value, label, to, ...opts };
 }

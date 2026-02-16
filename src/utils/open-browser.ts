@@ -30,13 +30,19 @@ export function openBrowser(url: string): Promise<void> {
 
     if (platform === "darwin") {
       // macOS: use 'open' command
-      execFile("open", [url], () => resolve());
+      execFile("open", [url], () => {
+        resolve();
+      });
     } else if (platform === "win32") {
       // Windows: use 'cmd /c start' with empty title
-      execFile("cmd", ["/c", "start", "", url], () => resolve());
+      execFile("cmd", ["/c", "start", "", url], () => {
+        resolve();
+      });
     } else {
       // Linux/other: use xdg-open
-      execFile("xdg-open", [url], () => resolve());
+      execFile("xdg-open", [url], () => {
+        resolve();
+      });
     }
   });
 }

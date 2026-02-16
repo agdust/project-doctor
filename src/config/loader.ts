@@ -1,14 +1,14 @@
 import { readFile, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import JSON5 from "json5";
-import type { Config, ResolvedConfig, Severity, ProjectType, ProjectTypeSource } from "./types.js";
+import type { Config, ResolvedConfig, Severity, ProjectType } from "./types.js";
 import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "./constants.js";
 import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
 
-type PackageJson = {
+interface PackageJson {
   doctor?: Config;
-};
+}
 
 async function readJson5File<T>(path: string): Promise<T | null> {
   try {
@@ -57,7 +57,7 @@ export async function loadConfig(projectPath: string): Promise<Config | null> {
 
 export function resolveConfig(
   config: Config | null,
-  detection: ProjectTypeDetection
+  detection: ProjectTypeDetection,
 ): ResolvedConfig {
   if (!config) {
     return {
@@ -79,7 +79,8 @@ export function resolveConfig(
     checks: config.checks ?? DEFAULT_CONFIG.checks,
     tags: config.tags ?? DEFAULT_CONFIG.tags,
     groups: config.groups ?? DEFAULT_CONFIG.groups,
-    eslintOverwriteConfirmed: config.eslintOverwriteConfirmed ?? DEFAULT_CONFIG.eslintOverwriteConfirmed,
+    eslintOverwriteConfirmed:
+      config.eslintOverwriteConfirmed ?? DEFAULT_CONFIG.eslintOverwriteConfirmed,
   };
 }
 
@@ -93,13 +94,13 @@ async function fileExists(path: string): Promise<boolean> {
 }
 
 /** Result of project type detection */
-export type ProjectTypeDetection = {
+export interface ProjectTypeDetection {
   type: ProjectType;
   /** How the type was determined */
   source: "config" | "detected";
   /** If detected, which file triggered it (or "fallback" if no JS files found) */
   detectedFrom?: string;
-};
+}
 
 /**
  * Auto-detect project type based on files present in the project.
@@ -113,7 +114,9 @@ export async function detectProjectType(projectPath: string): Promise<ProjectTyp
 /**
  * Auto-detect project type with the cause of detection.
  */
-export async function detectProjectTypeWithCause(projectPath: string): Promise<ProjectTypeDetection> {
+export async function detectProjectTypeWithCause(
+  projectPath: string,
+): Promise<ProjectTypeDetection> {
   // Check for JS ecosystem indicators (in order of priority)
   const jsIndicators = [
     "package.json",
@@ -195,7 +198,8 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
 
   const merged: Config = {
     projectType: updates.projectType ?? existing?.projectType,
-    eslintOverwriteConfirmed: updates.eslintOverwriteConfirmed ?? existing?.eslintOverwriteConfirmed,
+    eslintOverwriteConfirmed:
+      updates.eslintOverwriteConfirmed ?? existing?.eslintOverwriteConfirmed,
     checks: Object.keys(mergedChecks).length > 0 ? mergedChecks : undefined,
     tags: Object.keys(mergedTags).length > 0 ? mergedTags : undefined,
     groups: Object.keys(mergedGroups).length > 0 ? mergedGroups : undefined,
@@ -212,7 +216,7 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
 export async function setCheckSeverity(
   projectPath: string,
   checkName: string,
-  severity: Severity
+  severity: Severity,
 ): Promise<void> {
   await updateConfig(projectPath, {
     checks: { [checkName]: severity },
@@ -223,7 +227,7 @@ export async function setCheckSeverity(
 export async function setTagSeverity(
   projectPath: string,
   tagName: string,
-  severity: Severity
+  severity: Severity,
 ): Promise<void> {
   await updateConfig(projectPath, {
     tags: { [tagName]: severity },
@@ -234,7 +238,7 @@ export async function setTagSeverity(
 export async function setGroupSeverity(
   projectPath: string,
   groupName: string,
-  severity: Severity
+  severity: Severity,
 ): Promise<void> {
   await updateConfig(projectPath, {
     groups: { [groupName]: severity },
@@ -242,10 +246,7 @@ export async function setGroupSeverity(
 }
 
 /** Set the project type in config */
-export async function setProjectType(
-  projectPath: string,
-  projectType: ProjectType
-): Promise<void> {
+export async function setProjectType(projectPath: string, projectType: ProjectType): Promise<void> {
   await updateConfig(projectPath, {
     projectType,
   });

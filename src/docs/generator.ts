@@ -7,14 +7,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const checksDir = join(__dirname, "..", "checks");
 const outputDir = join(__dirname, "..", "..", "docs");
 
-type CheckDoc = {
+interface CheckDoc {
   name: string;
   group: string;
   description: string;
   content: string;
   tags: string[];
   hasFix: boolean;
-};
+}
 
 function parseMarkdown(md: string): string {
   let html = md;
@@ -78,15 +78,15 @@ async function findCheckDocs(): Promise<CheckDoc[]> {
           ]);
 
           // Extract name from first h1
-          const nameMatch = docsContent.match(/^# (.+)$/m);
+          const nameMatch = /^# (.+)$/m.exec(docsContent);
           const name = nameMatch ? nameMatch[1] : item;
 
           // Extract description (first paragraph after h1)
-          const descMatch = docsContent.match(/^# .+\n\n(.+?)(\n\n|$)/m);
+          const descMatch = /^# .+\n\n(.+?)(\n\n|$)/m.exec(docsContent);
           const description = descMatch ? descMatch[1] : "";
 
           // Extract tags from check.ts
-          const tagsMatch = checkContent.match(/tags:\s*\[([^\]]+)\]/);
+          const tagsMatch = /tags:\s*\[([^\]]+)\]/.exec(checkContent);
           const tags = tagsMatch
             ? tagsMatch[1].split(",").map((t) => t.trim().replace(/['"]/g, ""))
             : [];
@@ -125,9 +125,7 @@ async function generateDocs(): Promise<void> {
   // Generate individual pages
   for (const doc of docs) {
     const nav = `<nav><a href="index.html">All Checks</a> / ${doc.group}</nav>`;
-    const tagsHtml = doc.tags
-      .map((t) => `<span class="tag ${t}">${t}</span>`)
-      .join(" ");
+    const tagsHtml = doc.tags.map((t) => `<span class="tag ${t}">${t}</span>`).join(" ");
     const fixBadge = doc.hasFix ? '<span class="tag fixable">auto-fix</span>' : "";
     const content = `
       <div>${tagsHtml} ${fixBadge}</div>
@@ -154,9 +152,7 @@ async function generateDocs(): Promise<void> {
     indexContent += `<h2>${group}</h2>\n`;
     indexContent += '<ul class="check-list">\n';
     for (const doc of groupDocs) {
-      const tagsHtml = doc.tags
-        .map((t) => `<span class="tag ${t}">${t}</span>`)
-        .join(" ");
+      const tagsHtml = doc.tags.map((t) => `<span class="tag ${t}">${t}</span>`).join(" ");
       const fixBadge = doc.hasFix ? '<span class="tag fixable">auto-fix</span>' : "";
       indexContent += `<li>
         <a href="${doc.name}.html">${doc.name}</a> ${tagsHtml} ${fixBadge}

@@ -20,7 +20,9 @@ export const check: Check<GitignoreContext> = {
     for (const file of SECRET_FILES) {
       const exists = await global.files.exists(file);
       if (exists) {
-        const isIgnored = patterns.some((p) => p === file || file.match(new RegExp(`^${p.replace("*", ".*")}$`)));
+        const isIgnored = patterns.some(
+          (p) => p === file || new RegExp(`^${p.replace("*", ".*")}$`).exec(file),
+        );
         if (!isIgnored) {
           notIgnored.push(file);
         }
@@ -43,7 +45,9 @@ export const check: Check<GitignoreContext> = {
       for (const file of SECRET_FILES) {
         const exists = await global.files.exists(file);
         if (exists) {
-          const isIgnored = patterns.some((p) => p === file || file.match(new RegExp(`^${p.replace("*", ".*")}$`)));
+          const isIgnored = patterns.some(
+            (p) => p === file || new RegExp(`^${p.replace("*", ".*")}$`).exec(file),
+          );
           if (!isIgnored) {
             toAdd.push(file);
           }

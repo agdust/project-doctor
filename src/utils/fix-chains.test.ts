@@ -15,9 +15,7 @@ describe("fix-chains", () => {
     });
 
     it("returns dependencies for checks in chains", () => {
-      expect(getDependencies("size-limit-configured")).toEqual([
-        "size-limit-installed",
-      ]);
+      expect(getDependencies("size-limit-configured")).toEqual(["size-limit-installed"]);
       expect(getDependencies("size-limit-script")).toEqual([
         "size-limit-installed",
         "size-limit-configured",
@@ -26,9 +24,7 @@ describe("fix-chains", () => {
 
     it("returns dependencies from multiple chains", () => {
       // editorconfig-has-root depends on editorconfig-exists
-      expect(getDependencies("editorconfig-has-root")).toEqual([
-        "editorconfig-exists",
-      ]);
+      expect(getDependencies("editorconfig-has-root")).toEqual(["editorconfig-exists"]);
     });
   });
 
@@ -102,10 +98,7 @@ describe("fix-chains", () => {
       ];
 
       const sorted = sortByChainAndPriority(checks, (c) => c.priority);
-      expect(sorted.map((c) => c.name)).toEqual([
-        "unknown-check-a",
-        "unknown-check-b",
-      ]);
+      expect(sorted.map((c) => c.name)).toEqual(["unknown-check-a", "unknown-check-b"]);
     });
 
     it("ensures dependencies come before dependent checks even with higher priority", () => {
@@ -116,10 +109,7 @@ describe("fix-chains", () => {
       ];
 
       const sorted = sortByChainAndPriority(checks, (c) => c.priority);
-      expect(sorted.map((c) => c.name)).toEqual([
-        "size-limit-installed",
-        "size-limit-script",
-      ]);
+      expect(sorted.map((c) => c.name)).toEqual(["size-limit-installed", "size-limit-script"]);
     });
   });
 });

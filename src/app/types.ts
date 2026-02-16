@@ -7,15 +7,15 @@
 import type { CheckResult, CheckTag, FixResult, GlobalContext } from "../types.js";
 
 /** An option for fixing an issue */
-export type FixOptionRunnable = {
+export interface FixOptionRunnable {
   id: string;
   label: string;
   description?: string;
   runFix: () => Promise<FixResult>;
-};
+}
 
 /** A check that has an available fix */
-export type FixableIssue = {
+export interface FixableIssue {
   name: string;
   group: string;
   tags: CheckTag[];
@@ -26,18 +26,18 @@ export type FixableIssue = {
   runFix?: () => Promise<FixResult>;
   /** For fixes with options - multiple choices */
   fixOptions?: FixOptionRunnable[];
-};
+}
 
 /** Summary stats for display */
-export type HealthStats = {
+export interface HealthStats {
   total: number;
   passed: number;
   failed: number;
   skipped: number;
-};
+}
 
 /** A failed check (may or may not have auto-fix) */
-export type FailedCheck = {
+export interface FailedCheck {
   name: string;
   group: string;
   tags: CheckTag[];
@@ -48,17 +48,17 @@ export type FailedCheck = {
   runFix?: () => Promise<FixResult>;
   /** For fixes with options - multiple choices */
   fixOptions?: FixOptionRunnable[];
-};
+}
 
 /** Failed checks count by category */
-export type FailedByCategory = {
+export interface FailedByCategory {
   required: number;
   recommended: number;
   opinionated: number;
-};
+}
 
 /** App context - shared mutable state */
-export type AppContext = {
+export interface AppContext {
   /** Project path being checked */
   projectPath: string;
 
@@ -96,4 +96,4 @@ export type AppContext = {
 
   /** Whether initial scan is complete */
   scanned: boolean;
-};
+}

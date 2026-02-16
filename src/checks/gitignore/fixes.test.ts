@@ -1,7 +1,11 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { createGlobalContext } from "../../context/global.js";
 import { loadContext } from "./context.js";
-import { copyFixtureToTemp, createEmptyTempDir, type TempFixture } from "../../test/fix-test-utils.js";
+import {
+  copyFixtureToTemp,
+  createEmptyTempDir,
+  type TempFixture,
+} from "../../test/fix-test-utils.js";
 import { check as noDuplicates } from "./no-duplicates/check.js";
 import { check as noSecretsCommitted } from "./no-secrets-committed/check.js";
 import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
@@ -60,7 +64,7 @@ node_modules
 # Duplicates below
 dist
 node_modules
-`
+`,
       );
 
       const global = await createGlobalContext(tempFixture.path);
@@ -85,7 +89,7 @@ node_modules
 
 dist
 dist
-`
+`,
       );
 
       const global = await createGlobalContext(tempFixture.path);
@@ -269,7 +273,9 @@ dist
       await fix.run(global2, ctx2);
 
       const content = await tempFixture.readFile(".gitignore");
-      const nodeModulesCount = content.split("\n").filter((l) => l.trim() === "node_modules").length;
+      const nodeModulesCount = content
+        .split("\n")
+        .filter((l) => l.trim() === "node_modules").length;
       expect(nodeModulesCount).toBe(1);
     });
 
@@ -379,7 +385,10 @@ dist
     it("should remove multiple lockfile patterns", async () => {
       tempFixture = await createEmptyTempDir("lockfile-multiple");
       await tempFixture.writeJson("package.json", { name: "test" });
-      await tempFixture.writeFile(".gitignore", "node_modules\npackage-lock.json\nyarn.lock\npnpm-lock.yaml\ndist\n");
+      await tempFixture.writeFile(
+        ".gitignore",
+        "node_modules\npackage-lock.json\nyarn.lock\npnpm-lock.yaml\ndist\n",
+      );
 
       const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);

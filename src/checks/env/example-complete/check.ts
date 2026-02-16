@@ -28,7 +28,7 @@ export const check: Check<EnvContext> = {
 
     return fail(
       name,
-      `.env.example missing ${missingVars.length} var${missingVars.length > 1 ? "s" : ""}: ${missingVars.join(", ")}`
+      `.env.example missing ${missingVars.length} var${missingVars.length > 1 ? "s" : ""}: ${missingVars.join(", ")}`,
     );
   },
   fix: {
@@ -47,7 +47,7 @@ export const check: Check<EnvContext> = {
           .map((line) => line.trim())
           .filter((line) => line && !line.startsWith("#"))
           .map((line) => line.split("=")[0])
-          .filter(Boolean)
+          .filter(Boolean),
       );
 
       // Find and add missing vars from .env
@@ -72,7 +72,10 @@ export const check: Check<EnvContext> = {
         await writeFile(examplePath, exampleContent, "utf-8");
       }
 
-      return { success: true, message: `Added ${linesToAdd.length} missing variable${linesToAdd.length > 1 ? "s" : ""}` };
+      return {
+        success: true,
+        message: `Added ${linesToAdd.length} missing variable${linesToAdd.length > 1 ? "s" : ""}`,
+      };
     },
   },
 };

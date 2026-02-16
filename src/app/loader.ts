@@ -8,11 +8,7 @@ import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult }
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
-import {
-  getFixPriority,
-  isGroupForProjectType,
-  loadWhyFromDocs,
-} from "../utils/checks.js";
+import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
 import type { AppContext, FixableIssue, FailedCheck, FailedByCategory } from "./types.js";
 
 /**
@@ -45,7 +41,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
 
   // Filter groups based on project type
   const groupsToRun = checkGroups.filter((g) =>
-    isGroupForProjectType(g.name, global.config.projectType)
+    isGroupForProjectType(g.name, global.config.projectType),
   );
 
   // Run all checks
@@ -53,10 +49,9 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     const groupContext = await group.loadContext(global);
 
     for (const check of group.checks) {
-      const baseResult = await (check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>)(
-        global,
-        groupContext
-      );
+      const baseResult = await (
+        check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>
+      )(global, groupContext);
 
       const result: CheckResult = { ...baseResult, group: group.name };
       allResults.push(result);
@@ -93,10 +88,18 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
               id: opt.id,
               label: opt.label,
               description: opt.description,
-              runFix: () => (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext),
+              runFix: () =>
+                (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(
+                  global,
+                  groupContext,
+                ),
             }));
           } else {
-            failedCheck.runFix = () => (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(global, groupContext);
+            failedCheck.runFix = () =>
+              (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(
+                global,
+                groupContext,
+              );
           }
         }
 

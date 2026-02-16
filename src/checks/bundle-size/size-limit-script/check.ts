@@ -14,7 +14,7 @@ export const check: Check<BundleSizeContext> = {
     }
 
     if (!ctx.hasSizeLimitScript) {
-      return fail(name, "no npm script runs size-limit (e.g. \"size\": \"size-limit\")");
+      return fail(name, 'no npm script runs size-limit (e.g. "size": "size-limit")');
     }
 
     return pass(name, "size-limit script found in package.json");

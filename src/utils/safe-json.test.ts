@@ -15,7 +15,7 @@ describe("safe-json", () => {
 
     it("should filter out __proto__ key", () => {
       const result = safeJsonParse<Record<string, unknown>>(
-        '{"__proto__": {"admin": true}, "name": "test"}'
+        '{"__proto__": {"admin": true}, "name": "test"}',
       );
       expect(result).toEqual({ name: "test" });
       // Check that __proto__ is not an own property
@@ -26,29 +26,27 @@ describe("safe-json", () => {
 
     it("should filter out constructor key", () => {
       const result = safeJsonParse<Record<string, unknown>>(
-        '{"constructor": {"prototype": {"admin": true}}, "name": "test"}'
+        '{"constructor": {"prototype": {"admin": true}}, "name": "test"}',
       );
       expect(result).toEqual({ name: "test" });
     });
 
     it("should filter out prototype key", () => {
       const result = safeJsonParse<Record<string, unknown>>(
-        '{"prototype": {"admin": true}, "name": "test"}'
+        '{"prototype": {"admin": true}, "name": "test"}',
       );
       expect(result).toEqual({ name: "test" });
     });
 
     it("should recursively sanitize nested objects", () => {
       const result = safeJsonParse<Record<string, unknown>>(
-        '{"nested": {"__proto__": {"admin": true}, "valid": "value"}}'
+        '{"nested": {"__proto__": {"admin": true}, "valid": "value"}}',
       );
       expect(result).toEqual({ nested: { valid: "value" } });
     });
 
     it("should handle arrays", () => {
-      const result = safeJsonParse<unknown[]>(
-        '[{"__proto__": {"admin": true}, "name": "test"}]'
-      );
+      const result = safeJsonParse<unknown[]>('[{"__proto__": {"admin": true}, "name": "test"}]');
       expect(result).toEqual([{ name: "test" }]);
     });
   });
@@ -61,7 +59,7 @@ describe("safe-json", () => {
 
     it("should filter out __proto__ in JSON5", () => {
       const result = safeJson5Parse<Record<string, unknown>>(
-        "{ __proto__: { admin: true }, name: 'test' }"
+        "{ __proto__: { admin: true }, name: 'test' }",
       );
       expect(result).toEqual({ name: "test" });
     });

@@ -13,7 +13,7 @@ export const check: Check<GitignoreContext> = {
   run: async (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
     const hasIt = patterns.some((p) =>
-      [".project-doctor/cache", ".project-doctor/cache/"].includes(p)
+      [".project-doctor/cache", ".project-doctor/cache/"].includes(p),
     );
     if (!hasIt) return fail(name, ".project-doctor/cache/ not ignored");
     return pass(name, "Project doctor cache directory ignored");

@@ -17,15 +17,11 @@ import { checkGroups } from "../registry.js";
 import { sortFixableChecks } from "../utils/fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
 import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
-import {
-  isGroupForProjectType,
-  isFixWithOptions,
-  getValidCheckNames,
-} from "../utils/checks.js";
+import { isGroupForProjectType, isFixWithOptions, getValidCheckNames } from "../utils/checks.js";
 import type { ResolvedConfig } from "../config/types.js";
 import { RESET, BOLD, DIM, GREEN, RED, YELLOW } from "../utils/colors.js";
 
-type FixableCheck = {
+interface FixableCheck {
   name: string;
   group: string;
   tags: CheckTag[];
@@ -34,14 +30,14 @@ type FixableCheck = {
   hasOptions: boolean;
   optionIds?: string[];
   runFix: (pickOption?: string) => Promise<FixResult>;
-};
+}
 
 function shouldIncludeCheck(
   checkName: string,
   checkTags: CheckTag[],
   groupName: string,
   config: ResolvedConfig,
-  options: FixFilterOptions
+  options: FixFilterOptions,
 ): boolean {
   // Check if this check is turned off in config
   if (isCheckOff(config, checkName)) {
@@ -77,23 +73,21 @@ function shouldIncludeCheck(
   return true;
 }
 
-export type FixFilterOptions = {
+export interface FixFilterOptions {
   groups?: string[];
   tags?: string[];
-};
+}
 
 async function collectFixableChecks(
   projectPath: string,
-  options: FixFilterOptions
+  options: FixFilterOptions,
 ): Promise<{ checks: FixableCheck[]; global: GlobalContext }> {
   const global = await createGlobalContext(projectPath);
   const config = global.config;
   const fixableChecks: FixableCheck[] = [];
 
   // Filter groups based on project type
-  const groupsToRun = checkGroups.filter((g) =>
-    isGroupForProjectType(g.name, config.projectType)
-  );
+  const groupsToRun = checkGroups.filter((g) => isGroupForProjectType(g.name, config.projectType));
 
   // Run all checks and collect fixable failures
   for (const group of groupsToRun) {
@@ -106,13 +100,12 @@ async function collectFixableChecks(
         continue;
       }
 
-      const baseResult = await (check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>)(
-        global,
-        groupContext
-      );
+      const baseResult = await (
+        check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>
+      )(global, groupContext);
 
       if (baseResult.status === "fail") {
-        const fix = check.fix as Fix<unknown>;
+        const fix = check.fix as Fix;
         const hasOptions = isFixWithOptions(fix);
         const optionIds = hasOptions ? fix.options.map((o) => o.id) : undefined;
 
@@ -133,7 +126,10 @@ async function collectFixableChecks(
               }
               return option.run(global, groupContext);
             } else {
-              return (fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> }).run(global, groupContext);
+              return (fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> }).run(
+                global,
+                groupContext,
+              );
             }
           },
         });
@@ -155,7 +151,7 @@ async function collectFixableChecks(
  */
 export async function runFixList(
   projectPath: string,
-  options: FixFilterOptions = {}
+  options: FixFilterOptions = {},
 ): Promise<void> {
   console.log();
   console.log(`${DIM}Scanning for fixable issues...${RESET}`);
@@ -169,13 +165,16 @@ export async function runFixList(
     return;
   }
 
-  console.log(`Found ${BOLD}${checks.length}${RESET} fixable issue${checks.length > 1 ? "s" : ""}:`);
+  console.log(
+    `Found ${BOLD}${checks.length}${RESET} fixable issue${checks.length > 1 ? "s" : ""}:`,
+  );
   console.log();
 
   for (const check of checks) {
-    const optionInfo = check.hasOptions && check.optionIds
-      ? ` ${DIM}(options: ${check.optionIds.join(", ")})${RESET}`
-      : "";
+    const optionInfo =
+      check.hasOptions && check.optionIds
+        ? ` ${DIM}(options: ${check.optionIds.join(", ")})${RESET}`
+        : "";
     console.log(`  ${YELLOW}${check.name}${RESET}${optionInfo}`);
     console.log(`    ${DIM}${check.message}${RESET}`);
   }
@@ -200,10 +199,7 @@ export type FixRunOptions = FixFilterOptions & {
  * @param options - Filter options and fix selection
  * @returns Exit code: 0 if all fixes succeeded, 1 if any failed
  */
-export async function runFixAll(
-  projectPath: string,
-  options: FixRunOptions = {}
-): Promise<number> {
+export async function runFixAll(projectPath: string, options: FixRunOptions = {}): Promise<number> {
   console.log();
   console.log(`${DIM}Scanning for fixable issues...${RESET}`);
   console.log();
@@ -234,7 +230,9 @@ export async function runFixAll(
         failed++;
       }
     } catch (error) {
-      console.log(`    ${RED}✗ Error: ${error instanceof Error ? error.message : "Unknown error"}${RESET}`);
+      console.log(
+        `    ${RED}✗ Error: ${error instanceof Error ? error.message : "Unknown error"}${RESET}`,
+      );
       failed++;
     }
   }
@@ -264,13 +262,13 @@ export async function runFixAll(
 export async function runFixOne(
   projectPath: string,
   checkName: string,
-  options: FixRunOptions = {}
+  options: FixRunOptions = {},
 ): Promise<number> {
   // Validate check name
   const validChecks = getValidCheckNames();
   if (!validChecks.has(checkName)) {
     console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
-    console.error(`Run "project-doctor fix" to see fixable issues.`);
+    console.error('Run "project-doctor fix" to see fixable issues.');
     return 2;
   }
 
@@ -302,7 +300,9 @@ export async function runFixOne(
       return 1;
     }
   } catch (error) {
-    console.log(`  ${RED}✗ Error: ${error instanceof Error ? error.message : "Unknown error"}${RESET}`);
+    console.log(
+      `  ${RED}✗ Error: ${error instanceof Error ? error.message : "Unknown error"}${RESET}`,
+    );
     console.log();
     return 1;
   }

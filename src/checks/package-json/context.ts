@@ -1,6 +1,6 @@
 import type { GlobalContext } from "../../types.js";
 
-export type PackageJson = {
+export interface PackageJson {
   name?: string;
   version?: string;
   description?: string;
@@ -14,13 +14,13 @@ export type PackageJson = {
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
   workspaces?: string[] | { packages: string[] };
-};
+}
 
-export type PackageJsonContext = {
+export interface PackageJsonContext {
   raw: string | null;
   parsed: PackageJson | null;
   parseError: string | null;
-};
+}
 
 export async function loadContext(global: GlobalContext): Promise<PackageJsonContext> {
   const raw = await global.files.readText("package.json");
