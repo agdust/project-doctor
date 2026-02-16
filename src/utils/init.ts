@@ -1,8 +1,7 @@
-import { mkdir, writeFile, access } from "node:fs/promises";
+import { writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
-
-const CONFIG_DIR = ".project-doctor";
-const CONFIG_FILE = "config.json5";
+import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "../config/constants.js";
+import { RESET, GREEN, YELLOW } from "./colors.js";
 
 const DEFAULT_CONFIG = `{
   // Disable specific checks
@@ -28,16 +27,16 @@ export async function runInit(projectPath: string): Promise<void> {
   // Check if config already exists
   try {
     await access(configPath);
-    console.log(`  \x1b[33m!\x1b[0m Config already exists at ${CONFIG_DIR}/${CONFIG_FILE}`);
+    console.log(`  ${YELLOW}!${RESET} Config already exists at ${CONFIG_DIR}/${CONFIG_FILE}`);
     console.log();
     return;
   } catch {
     // Config doesn't exist, continue
   }
 
-  await mkdir(configDir, { recursive: true });
+  await ensureConfigDir(projectPath);
   await writeFile(configPath, DEFAULT_CONFIG, "utf-8");
 
-  console.log(`  \x1b[32m✓\x1b[0m Created ${CONFIG_DIR}/${CONFIG_FILE}`);
+  console.log(`  ${GREEN}✓${RESET} Created ${CONFIG_DIR}/${CONFIG_FILE}`);
   console.log();
 }

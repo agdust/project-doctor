@@ -1,9 +1,9 @@
-import { readFile, writeFile, mkdir, access } from "node:fs/promises";
+import { readFile, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType, ProjectTypeSource } from "./types.js";
 import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
-import { CONFIG_DIR, CONFIG_FILE } from "./constants.js";
+import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "./constants.js";
 import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
 
 type PackageJson = {
@@ -201,8 +201,8 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
     groups: Object.keys(mergedGroups).length > 0 ? mergedGroups : undefined,
   };
 
-  // Ensure config directory exists
-  await mkdir(configDir, { recursive: true });
+  // Ensure config directory exists with .gitignore
+  await ensureConfigDir(projectPath);
 
   // Write merged config as JSON5
   await writeFile(configPath, JSON5.stringify(merged, null, 2) + "\n", "utf-8");

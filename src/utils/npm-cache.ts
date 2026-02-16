@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import type { AuditResult } from "./deps-checker.js";
+import { ensureConfigDir } from "../config/constants.js";
 
 const CACHE_DIR = ".project-doctor/cache";
 const CACHE_FILE = "npm-cache.json";
@@ -49,8 +50,11 @@ async function loadCacheData(cachePath: string): Promise<NpmCacheData> {
   }
 }
 
-async function saveCacheData(cacheDir: string, cachePath: string, data: NpmCacheData): Promise<void> {
+async function saveCacheData(projectPath: string, cacheDir: string, cachePath: string, data: NpmCacheData): Promise<void> {
   try {
+    // Ensure .project-doctor exists with .gitignore
+    await ensureConfigDir(projectPath);
+    // Create cache subdirectory
     await mkdir(cacheDir, { recursive: true });
     await writeFile(cachePath, JSON.stringify(data, null, 2), "utf-8");
   } catch {
@@ -123,7 +127,7 @@ export async function createNpmCache(projectPath: string): Promise<NpmCache> {
 
     async flush(): Promise<void> {
       if (dirty) {
-        await saveCacheData(cacheDir, cachePath, data);
+        await saveCacheData(projectPath, cacheDir, cachePath, data);
         dirty = false;
       }
     },

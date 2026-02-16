@@ -1,9 +1,10 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { checkDeps, type AuditResult } from "./deps-checker.js";
 import type { CheckResultBase, GlobalContext } from "../types.js";
+import { ensureConfigDir } from "../config/constants.js";
 
 type SnapshotEntry = {
   date: string;
@@ -38,10 +39,9 @@ async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
 }
 
 async function saveHistory(projectPath: string, history: SnapshotEntry[]): Promise<void> {
-  const historyDir = join(projectPath, HISTORY_DIR);
-  const historyPath = join(historyDir, HISTORY_FILE);
+  const historyPath = join(projectPath, HISTORY_DIR, HISTORY_FILE);
 
-  await mkdir(historyDir, { recursive: true });
+  await ensureConfigDir(projectPath);
   await writeFile(historyPath, JSON.stringify(history, null, 2) + "\n", "utf-8");
 }
 
