@@ -324,7 +324,7 @@ describe("package-json fixes", () => {
 
       const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
       expect(pkg.exports).toBeDefined();
-      expect((pkg.exports as Record<string, unknown>)["."].import).toBe("./dist/index.js");
+      expect(((pkg.exports as Record<string, unknown>)["."] as Record<string, unknown>).import).toBe("./dist/index.js");
     });
   });
 

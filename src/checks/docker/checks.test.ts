@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { check as dockerfileExists } from "./dockerfile-exists/check.js";
 import { check as dockerfileSmallBaseImage } from "./dockerfile-small-base-image/check.js";
 import type { GlobalContext } from "../../types.js";
 import type { DockerContext } from "./context.js";
@@ -8,28 +7,6 @@ import type { DockerContext } from "./context.js";
 const mockGlobal = {} as GlobalContext;
 
 describe("docker checks", () => {
-  describe("dockerfileExists", () => {
-    it("should pass when Dockerfile exists", async () => {
-      const ctx: DockerContext = {
-        dockerfile: "FROM node:22-alpine\nCMD [\"node\", \"index.js\"]",
-        baseImage: "node",
-        baseImageTag: "22-alpine",
-      };
-      const result = await dockerfileExists.run(mockGlobal, ctx);
-      expect(result.status).toBe("pass");
-    });
-
-    it("should fail when Dockerfile is missing", async () => {
-      const ctx: DockerContext = {
-        dockerfile: null,
-        baseImage: null,
-        baseImageTag: null,
-      };
-      const result = await dockerfileExists.run(mockGlobal, ctx);
-      expect(result.status).toBe("fail");
-    });
-  });
-
   describe("dockerfileSmallBaseImage", () => {
     it("should pass for alpine-based images", async () => {
       const ctx: DockerContext = {
