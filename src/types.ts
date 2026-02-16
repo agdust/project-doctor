@@ -36,7 +36,11 @@ export type CheckTool = `tool:${string}`;
 
 export type CheckEffort = "effort:low" | "effort:medium" | "effort:high";
 
-export type CheckTag = CheckScope | CheckRequirement | CheckTool | CheckEffort;
+export type CheckSource = `source:${string}`;
+
+export type CheckCategory = "security";
+
+export type CheckTag = CheckScope | CheckRequirement | CheckTool | CheckEffort | CheckSource | CheckCategory;
 
 export type FileCache = {
   readText(relativePath: string): Promise<string | null>;

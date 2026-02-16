@@ -28,6 +28,7 @@ export const JS_GROUPS = new Set([
   "testing",
   "bundle-size",
   "jscpd",
+  "npm-security",
 ]);
 
 /**
