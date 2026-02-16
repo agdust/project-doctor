@@ -25,6 +25,7 @@ import { runList } from "./commands/list.js";
 import { runInfo } from "./commands/info.js";
 import { printCheckResultsAsJson } from "./commands/check.js";
 import { runFixList, runFixAll, runFixOne } from "./commands/fix.js";
+import { RESET, BOLD, DIM, RED } from "./utils/colors.js";
 
 function printHelp(): void {
   console.log(`
@@ -148,9 +149,9 @@ function printCheckList(): void {
   for (const check of checks) {
     if (check.group !== currentGroup) {
       currentGroup = check.group;
-      console.log(`\n\x1b[1m[${currentGroup}]\x1b[0m`);
+      console.log(`\n${BOLD}[${currentGroup}]${RESET}`);
     }
-    const tags = check.tags.map((t) => `\x1b[90m${t}\x1b[0m`).join(" ");
+    const tags = check.tags.map((t) => `${DIM}${t}${RESET}`).join(" ");
     console.log(`  ${check.name}`);
     console.log(`    ${check.description}`);
     console.log(`    ${tags}`);
@@ -234,7 +235,7 @@ async function handleConfigCommand(args: string[]): Promise<void> {
 
     if (settingName === "project-type") {
       if (!settingValue) {
-        console.error("\x1b[31mError: Missing project type. Use 'js' or 'generic'.\x1b[0m");
+        console.error("${RED}Error: Missing project type. Use 'js' or 'generic'.${RESET}");
         process.exit(2);
       }
       const projectPath = getProjectPath(args.slice(3));
@@ -242,7 +243,7 @@ async function handleConfigCommand(args: string[]): Promise<void> {
       return;
     }
 
-    console.error(`\x1b[31mError: Unknown config setting "${settingName}". Use 'project-type'.\x1b[0m`);
+    console.error(`${RED}Error: Unknown config setting "${settingName}". Use 'project-type'.${RESET}`);
     process.exit(2);
   }
 
@@ -268,14 +269,14 @@ async function handleDisableCommand(args: string[]): Promise<void> {
 
   const type = args[0];
   if (!type || !["check", "tag", "group"].includes(type)) {
-    console.error("\x1b[31mError: Missing or invalid type. Use 'check', 'tag', or 'group'.\x1b[0m");
+    console.error("${RED}Error: Missing or invalid type. Use 'check', 'tag', or 'group'.${RESET}");
     process.exit(2);
   }
   args.shift();
 
   const name = args[0];
   if (!name || name.startsWith("-")) {
-    console.error(`\x1b[31mError: Missing ${type} name.\x1b[0m`);
+    console.error(`${RED}Error: Missing ${type} name.${RESET}`);
     process.exit(2);
   }
   args.shift();
@@ -300,14 +301,14 @@ async function handleEnableCommand(args: string[]): Promise<void> {
 
   const type = args[0];
   if (!type || !["check", "tag", "group"].includes(type)) {
-    console.error("\x1b[31mError: Missing or invalid type. Use 'check', 'tag', or 'group'.\x1b[0m");
+    console.error("${RED}Error: Missing or invalid type. Use 'check', 'tag', or 'group'.${RESET}");
     process.exit(2);
   }
   args.shift();
 
   const name = args[0];
   if (!name || name.startsWith("-")) {
-    console.error(`\x1b[31mError: Missing ${type} name.\x1b[0m`);
+    console.error(`${RED}Error: Missing ${type} name.${RESET}`);
     process.exit(2);
   }
   args.shift();
@@ -332,7 +333,7 @@ async function handleMuteCommand(args: string[]): Promise<void> {
 
   const checkName = args[0];
   if (!checkName || checkName.startsWith("-")) {
-    console.error("\x1b[31mError: Missing check name.\x1b[0m");
+    console.error("${RED}Error: Missing check name.${RESET}");
     process.exit(2);
   }
   args.shift();
@@ -361,7 +362,7 @@ async function handleUnmuteCommand(args: string[]): Promise<void> {
 
   const checkName = args[0];
   if (!checkName || checkName.startsWith("-")) {
-    console.error("\x1b[31mError: Missing check name.\x1b[0m");
+    console.error("${RED}Error: Missing check name.${RESET}");
     process.exit(2);
   }
   args.shift();
@@ -399,7 +400,7 @@ async function handleInfoCommand(args: string[]): Promise<void> {
 
   const checkName = args[0];
   if (!checkName || checkName.startsWith("-")) {
-    console.error("\x1b[31mError: Missing check name.\x1b[0m");
+    console.error("${RED}Error: Missing check name.${RESET}");
     process.exit(2);
   }
   args.shift();
@@ -559,7 +560,7 @@ async function handleEslintCommand(args: string[]): Promise<void> {
       await runMainWizard(projectPath);
       return;
     default:
-      console.log(`\x1b[31mUnknown eslint subcommand: ${subcommand}\x1b[0m`);
+      console.log(`${RED}Unknown eslint subcommand: ${subcommand}${RESET}`);
       console.log();
       printEslintHelp();
       return;

@@ -10,12 +10,7 @@ import { loadConfig, loadAndResolveConfig, setProjectType } from "../config/load
 import type { ProjectType, Severity } from "../config/types.js";
 import { isSkipUntil, parseSkipUntil } from "../config/types.js";
 import { listGroups } from "../registry.js";
-
-const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
-const DIM = "\x1b[90m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
+import { RESET, BOLD, DIM, GREEN, YELLOW, RED } from "../utils/colors.js";
 
 function formatSeverity(severity: Severity): string {
   if (severity === "off") {
@@ -41,6 +36,14 @@ function formatProjectTypeSource(source: "config" | "detected", detectedFrom?: s
   return `${DIM}(auto-detected)${RESET}`;
 }
 
+/**
+ * Display current project configuration.
+ *
+ * Shows project type, configured checks, tags, and groups
+ * with their current severity settings.
+ *
+ * @param projectPath - Absolute path to the project directory
+ */
 export async function runConfigShow(projectPath: string): Promise<void> {
   const resolved = await loadAndResolveConfig(projectPath);
 
@@ -88,13 +91,19 @@ export async function runConfigShow(projectPath: string): Promise<void> {
   }
 }
 
+/**
+ * Set the project type in configuration.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param projectType - Project type: "js" or "generic"
+ */
 export async function runConfigSetProjectType(
   projectPath: string,
   projectType: string
 ): Promise<void> {
   // Validate project type
   if (projectType !== "js" && projectType !== "generic") {
-    console.error(`\x1b[31mError: Invalid project type "${projectType}". Must be "js" or "generic".\x1b[0m`);
+    console.error(`${RED}Error: Invalid project type "${projectType}". Must be "js" or "generic".${RESET}`);
     process.exit(2);
   }
 
@@ -102,6 +111,11 @@ export async function runConfigSetProjectType(
   console.log(`Project type set to "${projectType}"`);
 }
 
+/**
+ * Display current configuration as JSON.
+ *
+ * @param projectPath - Absolute path to the project directory
+ */
 export async function runConfigShowJson(projectPath: string): Promise<void> {
   const resolved = await loadAndResolveConfig(projectPath);
 

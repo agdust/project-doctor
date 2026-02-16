@@ -36,7 +36,6 @@ npm install
 
 ## Usage
 
-TODO: Add usage instructions
 `;
       const readmePath = join(global.projectPath, "README.md");
       await writeFile(readmePath, content, "utf-8");

@@ -13,7 +13,14 @@ import {
   getValidGroupNames,
   getValidTagNames,
 } from "../utils/checks.js";
+import { RED, RESET } from "../utils/colors.js";
 
+/**
+ * Re-enable a previously disabled check.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param checkName - Name of the check to enable
+ */
 export async function runEnableCheck(
   projectPath: string,
   checkName: string
@@ -21,7 +28,7 @@ export async function runEnableCheck(
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
-    console.error(`\x1b[31mError: Unknown check "${checkName}".\x1b[0m`);
+    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
     console.error(`Run "project-doctor list" to see available checks.`);
     process.exit(2);
   }
@@ -30,6 +37,12 @@ export async function runEnableCheck(
   console.log(`Enabled check: ${checkName}`);
 }
 
+/**
+ * Re-enable all checks with a specific tag.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param tagName - Name of the tag to enable
+ */
 export async function runEnableTag(
   projectPath: string,
   tagName: string
@@ -37,7 +50,7 @@ export async function runEnableTag(
   const validTags = getValidTagNames();
 
   if (!validTags.has(tagName)) {
-    console.error(`\x1b[31mError: Unknown tag "${tagName}".\x1b[0m`);
+    console.error(`${RED}Error: Unknown tag "${tagName}".${RESET}`);
     console.error(`Valid tags: ${Array.from(validTags).join(", ")}`);
     process.exit(2);
   }
@@ -46,6 +59,12 @@ export async function runEnableTag(
   console.log(`Enabled tag: ${tagName}`);
 }
 
+/**
+ * Re-enable an entire check group.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param groupName - Name of the group to enable
+ */
 export async function runEnableGroup(
   projectPath: string,
   groupName: string
@@ -53,7 +72,7 @@ export async function runEnableGroup(
   const validGroups = getValidGroupNames();
 
   if (!validGroups.has(groupName)) {
-    console.error(`\x1b[31mError: Unknown group "${groupName}".\x1b[0m`);
+    console.error(`${RED}Error: Unknown group "${groupName}".${RESET}`);
     console.error(`Valid groups: ${Array.from(validGroups).join(", ")}`);
     process.exit(2);
   }

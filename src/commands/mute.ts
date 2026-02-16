@@ -14,6 +14,7 @@
 import { setCheckSeverity } from "../config/loader.js";
 import { createSkipUntil } from "../config/types.js";
 import { getValidCheckNames } from "../utils/checks.js";
+import { RED, RESET } from "../utils/colors.js";
 
 function addWeeks(date: Date, weeks: number): Date {
   const result = new Date(date);
@@ -47,6 +48,16 @@ export type MuteOptions = {
   until?: string;
 };
 
+/**
+ * Temporarily mute a check until a specified date.
+ *
+ * The check will be skipped until the mute expires, then
+ * automatically becomes active again.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param checkName - Name of the check to mute
+ * @param options - Duration options (weeks, months, or until date)
+ */
 export async function runMute(
   projectPath: string,
   checkName: string,
@@ -55,7 +66,7 @@ export async function runMute(
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
-    console.error(`\x1b[31mError: Unknown check "${checkName}".\x1b[0m`);
+    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
     console.error(`Run "project-doctor list" to see available checks.`);
     process.exit(2);
   }
@@ -66,19 +77,19 @@ export async function runMute(
   if (options.until) {
     const parsed = parseDate(options.until);
     if (!parsed) {
-      console.error(`\x1b[31mError: Invalid date format "${options.until}". Use YYYY-MM-DD.\x1b[0m`);
+      console.error(`${RED}Error: Invalid date format "${options.until}". Use YYYY-MM-DD.${RESET}`);
       process.exit(2);
     }
 
     if (parsed <= now) {
-      console.error(`\x1b[31mError: Date must be in the future.\x1b[0m`);
+      console.error(`${RED}Error: Date must be in the future.${RESET}`);
       process.exit(2);
     }
 
     muteUntil = parsed;
   } else if (options.months) {
     if (options.months <= 0) {
-      console.error(`\x1b[31mError: Months must be a positive number.\x1b[0m`);
+      console.error(`${RED}Error: Months must be a positive number.${RESET}`);
       process.exit(2);
     }
     muteUntil = addMonths(now, options.months);
@@ -86,7 +97,7 @@ export async function runMute(
     // Default: 2 weeks
     const weeks = options.weeks ?? 2;
     if (weeks <= 0) {
-      console.error(`\x1b[31mError: Weeks must be a positive number.\x1b[0m`);
+      console.error(`${RED}Error: Weeks must be a positive number.${RESET}`);
       process.exit(2);
     }
     muteUntil = addWeeks(now, weeks);
@@ -99,6 +110,12 @@ export async function runMute(
   console.log(`Muted check "${checkName}" until ${dateStr}`);
 }
 
+/**
+ * Remove mute from a check, making it active immediately.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param checkName - Name of the check to unmute
+ */
 export async function runUnmute(
   projectPath: string,
   checkName: string
@@ -106,7 +123,7 @@ export async function runUnmute(
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
-    console.error(`\x1b[31mError: Unknown check "${checkName}".\x1b[0m`);
+    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
     console.error(`Run "project-doctor list" to see available checks.`);
     process.exit(2);
   }

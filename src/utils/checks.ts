@@ -30,7 +30,13 @@ export const JS_GROUPS = new Set([
   "jscpd",
 ]);
 
-/** Check if a group applies to the given project type */
+/**
+ * Check if a group applies to the given project type.
+ *
+ * @param groupName - Name of the check group
+ * @param projectType - Project type: "js" or "generic"
+ * @returns true if the group should run for this project type
+ */
 export function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
   if (projectType === "js") return true;
   // For "generic" projects, skip JS-specific groups
@@ -42,13 +48,17 @@ export function isGroupForProjectType(groupName: string, projectType: ProjectTyp
 // ============================================================================
 
 /**
- * Calculate fix priority score: lower = fix first
+ * Calculate fix priority score: lower = fix first.
  *
  * Formula: importance * 3 + effort
  * - importance: required=0, recommended=1, opinionated=2
  * - effort: low=0, medium=1, high=2
  *
  * This creates a priority curve that fixes important+easy issues first.
+ *
+ * @param tags - Tags of the check
+ * @param rootTags - Tags of the chain root (for dependency chains)
+ * @returns Priority score (0-8, lower = higher priority)
  */
 export function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
   const importance = tags.includes("required") ? 0
@@ -73,7 +83,15 @@ export type CheckStatusInfo = {
 };
 
 /**
- * Determine the effective status of a check based on config
+ * Determine the effective status of a check based on config.
+ *
+ * Considers check-level, tag-level, and group-level configuration.
+ *
+ * @param checkName - Name of the check
+ * @param checkTags - Tags associated with the check
+ * @param groupName - Name of the group containing the check
+ * @param config - Resolved project configuration
+ * @returns Status info with mute expiry date if applicable
  */
 export function getCheckStatus(
   checkName: string,

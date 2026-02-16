@@ -4,4 +4,22 @@ dist/
 *.log
 .env
 .env.local
-.project-doctor/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test coverage
+coverage/
+
+# Cache
+.eslintcache
+.prettiercache
+*.tsbuildinfo

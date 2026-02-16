@@ -18,12 +18,7 @@ import {
   buildFixableMap,
   type CheckStatus,
 } from "../utils/checks.js";
-
-const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
-const DIM = "\x1b[90m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
+import { RESET, BOLD, DIM, GREEN, YELLOW } from "../utils/colors.js";
 
 export type ListOptions = {
   groups?: string[];
@@ -57,6 +52,15 @@ function formatTags(tags: string[]): string {
   return tags.map((t) => `${DIM}${t}${RESET}`).join(", ");
 }
 
+/**
+ * List all available checks with their status.
+ *
+ * Supports filtering by group, tag, and status.
+ * Output formats: table (default), json, names.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param options - Filter and format options
+ */
 export async function runList(
   projectPath: string,
   options: ListOptions

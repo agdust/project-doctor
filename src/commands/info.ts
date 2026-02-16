@@ -14,12 +14,7 @@ import {
   loadWhyFromDocs,
   type CheckInfo,
 } from "../utils/checks.js";
-
-const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
-const DIM = "\x1b[90m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
+import { RESET, BOLD, DIM, GREEN, YELLOW, RED } from "../utils/colors.js";
 
 type CheckInfoOutput = CheckInfo & {
   why?: string;
@@ -29,6 +24,16 @@ export type InfoOptions = {
   format?: "text" | "json";
 };
 
+/**
+ * Display detailed information about a specific check.
+ *
+ * Shows check description, tags, status, fix options,
+ * and "why this matters" documentation.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param checkName - Name of the check to show info for
+ * @param options - Output format options
+ */
 export async function runInfo(
   projectPath: string,
   checkName: string,
@@ -38,7 +43,7 @@ export async function runInfo(
   const info = getCheckInfo(checkName, config);
 
   if (!info) {
-    console.error(`\x1b[31mError: Unknown check "${checkName}".\x1b[0m`);
+    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
     console.error(`Run "project-doctor list" to see available checks.`);
     process.exit(2);
   }

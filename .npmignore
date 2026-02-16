@@ -1,0 +1,45 @@
+# Source files (only publish dist/)
+src/
+*.ts
+!dist/**/*.d.ts
+
+# Test files
+*.test.ts
+*.test.js
+__tests__/
+test/
+tests/
+coverage/
+
+# Development files
+.git/
+.github/
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Config files
+tsconfig.json
+vitest.config.ts
+eslint.config.js
+.prettierrc
+.editorconfig
+
+# Documentation (keep README)
+context/
+CLAUDE.md
+*.md
+!README.md
+!LICENSE
+!CHANGELOG.md
+
+# Project doctor's own config
+.project-doctor/
+
+# Misc
+*.log
+npm-debug.log*
+.env
+.env.*

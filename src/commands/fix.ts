@@ -24,13 +24,7 @@ import {
   getValidCheckNames,
 } from "../utils/checks.js";
 import type { ResolvedConfig } from "../config/types.js";
-
-const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
-const DIM = "\x1b[90m";
-const GREEN = "\x1b[32m";
-const RED = "\x1b[31m";
-const YELLOW = "\x1b[33m";
+import { RESET, BOLD, DIM, GREEN, RED, YELLOW } from "../utils/colors.js";
 
 type FixableCheck = {
   name: string;
@@ -165,7 +159,13 @@ async function collectFixableChecks(
 }
 
 /**
- * List all fixable issues (no fixes applied)
+ * List all fixable issues without applying any fixes.
+ *
+ * Scans the project for failing checks that have fixes available,
+ * then prints them to stdout.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param options - Filter options (groups, tags)
  */
 export async function runFixList(
   projectPath: string,
@@ -205,7 +205,14 @@ export type FixRunOptions = FixFilterOptions & {
 };
 
 /**
- * Fix all issues
+ * Fix all fixable issues automatically.
+ *
+ * Scans the project, identifies failing checks with fixes,
+ * and applies all fixes in priority order.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param options - Filter options and fix selection
+ * @returns Exit code: 0 if all fixes succeeded, 1 if any failed
  */
 export async function runFixAll(
   projectPath: string,
@@ -258,7 +265,15 @@ export async function runFixAll(
 }
 
 /**
- * Fix a specific check by name
+ * Fix a specific check by name.
+ *
+ * Validates the check exists, runs it to confirm failure,
+ * then applies the fix.
+ *
+ * @param projectPath - Absolute path to the project directory
+ * @param checkName - Name of the check to fix
+ * @param options - Fix selection options
+ * @returns Exit code: 0 if fixed, 1 if fix failed, 2 if check not found
  */
 export async function runFixOne(
   projectPath: string,
