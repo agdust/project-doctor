@@ -29,6 +29,8 @@ Source: [npm Security Best Practices](https://github.com/lirantal/npm-security-b
 
 ## How to fix
 
+See the detailed guide: [Work in Dev Containers](https://github.com/lirantal/npm-security-best-practices?tab=readme-ov-file#8-work-in-dev-containers)
+
 Create `.devcontainer/devcontainer.json`:
 
 ```json
