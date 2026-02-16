@@ -56,6 +56,7 @@
     "check": "node --import tsx ./src/cli.ts",
     "lint": "eslint src",
     "knip": "knip",
+    "jscpd": "jscpd src",
     "format": "prettier --write src",
     "test": "vitest",
     "prepublishOnly": "npm run build && npm test -- --run",
@@ -75,6 +76,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "jscpd": "^4.0.8",
     "knip": "^5.83.1",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
