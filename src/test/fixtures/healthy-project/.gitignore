@@ -5,3 +5,4 @@ dist
 .npmrc
 *.log
 .project-doctor/
+.project-doctor/cache/
