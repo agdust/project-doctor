@@ -1,4 +1,4 @@
-# Design Decision: Configuration System
+# Design: Configuration System
 
 ## Goal
 
@@ -9,8 +9,8 @@ Allow users to customize check behavior per project using an ESLint-style config
 ## Config File Location
 
 **File names (in order of precedence):**
-1. `.project-doctor/config.json5` - JSON5 config (preferred)
-2. `.project-doctor/config.json` - JSON config (legacy)
+1. `.project-doctor/config.json5` (preferred)
+2. `.project-doctor/config.json`
 3. `doctor` key in `package.json`
 
 ---
@@ -35,20 +35,17 @@ type Config = {
 
   // Disable entire groups
   groups?: Record<string, Severity>;
-
-  // Internal: user confirmed ESLint config overwrite
-  eslintOverwriteConfirmed?: boolean;
 };
 ```
 
 ---
 
-## Example Configs
+## Examples
 
 ### Disable opinionated checks
 ```json5
 {
-  tags: { "opinionated": "off" },
+  tags: { "opinionated": "off" }
 }
 ```
 
@@ -57,8 +54,8 @@ type Config = {
 {
   checks: {
     "changelog-exists": "off",
-    "contributing-exists": "off",
-  },
+    "contributing-exists": "off"
+  }
 }
 ```
 
@@ -67,31 +64,22 @@ type Config = {
 {
   groups: {
     "testing": "off",
-    "bundle-size": "off",
-  },
+    "bundle-size": "off"
+  }
 }
 ```
 
-### Combination
-```json5
-{
-  checks: { "changelog-exists": "off" },
-  tags: { "opinionated": "off" },
-  groups: { "eslint": "off" },
-}
-```
-
-### Temporarily skip until a date
+### Temporarily skip a check
 ```json5
 {
   checks: {
-    // Will be skipped until June 1st 2025, then becomes "error"
-    "tsconfig-strict-enabled": "skip-until-2025-06-01",
-  },
+    // Skipped until this date, then becomes "error"
+    "tsconfig-strict-enabled": "skip-until-2025-06-01"
+  }
 }
 ```
 
-**Validation:** If the date is invalid or more than 3 years in the future, it's treated as "error" (not skipped).
+**Note:** If the date is invalid or more than 3 years in the future, it's treated as "error".
 
 ---
 
@@ -112,37 +100,27 @@ type Config = {
 | `src/config/constants.ts` | Config file names and paths |
 | `src/config/loader.ts` | Find, parse, resolve, and update config |
 | `src/context/global.ts` | Add config to GlobalContext |
-| `src/utils/runner.ts` | Apply config filters (isCheckOff, isTagOff, isGroupOff) |
-| `src/cli.ts` | Merge CLI flags with config |
+| `src/utils/runner.ts` | Apply config filters |
 
 ---
 
 ## Helper Functions
 
 ```typescript
-// Check if a check is disabled
 isCheckOff(config: ResolvedConfig, checkName: string): boolean
-
-// Check if a tag is disabled
 isTagOff(config: ResolvedConfig, tagName: string): boolean
-
-// Check if a group is disabled
 isGroupOff(config: ResolvedConfig, groupName: string): boolean
-
-// Update config file with new values
 updateConfig(projectPath: string, updates: Partial<Config>): Promise<void>
-
-// Set check severity
 setCheckSeverity(projectPath: string, checkName: string, severity: Severity): Promise<void>
 ```
 
 ---
 
-## Rationale
+## Design Rationale
 
-- **ESLint-style format**: Familiar to developers, consistent pattern
-- **JSON5 support**: Allows comments, trailing commas
+- **ESLint-style format**: Familiar to developers
+- **JSON5 support**: Allows comments and trailing commas
 - **Merged object approach**: Easier to manage than array exclusions
-- **Severity levels**: Only "off" and "error" for now (warn may be added later)
+- **Severity levels**: "off" and "error" (warn may be added later)
 - **Per-project config**: Each project has its own preferences
 - **CLI overrides config**: Allows one-off runs without editing config
