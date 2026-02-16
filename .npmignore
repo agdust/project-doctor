@@ -6,6 +6,10 @@ src/
 # Test files
 *.test.ts
 *.test.js
+*.test.d.ts
+dist/**/*.test.js
+dist/**/*.test.d.ts
+dist/test/
 __tests__/
 test/
 tests/

@@ -1,12 +1,54 @@
 {
   "name": "project-doctor",
   "version": "0.1.0",
-  "description": "Project health checks, setup and migration helpers",
+  "description": "Project health checks with auto fixes.",
   "type": "module",
   "license": "LGPL-3.0-or-later",
+  "author": "Mikhail Nekrytov",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agdust/project-doctor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/agdust/project-doctor/issues"
+  },
+  "homepage": "https://github.com/agdust/project-doctor#readme",
+  "keywords": [
+    "cli",
+    "linter",
+    "project-health",
+    "best-practices",
+    "nodejs",
+    "typescript",
+    "eslint",
+    "prettier",
+    "gitignore",
+    "package-json",
+    "tsconfig",
+    "code-quality",
+    "developer-tools",
+    "project-setup"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
   "bin": {
     "project-doctor": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc && npm run copy-assets",
     "copy-assets": "cp -r src/checks/docs/license-exists/licenses dist/checks/docs/license-exists/",
@@ -15,14 +57,9 @@
     "lint": "eslint src",
     "format": "prettier --write src",
     "test": "vitest",
+    "prepublishOnly": "npm run build && npm test -- --run",
     "docs": "sx src/docs/generator.ts",
     "claude": "claude --dangerously-skip-permissions"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.7.0",
-    "vitest": "^4.0.16"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -34,5 +71,11 @@
     "eslint": "^9.39.2",
     "json5": "^2.2.3",
     "typescript-eslint": "^8.50.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.16"
   }
 }
