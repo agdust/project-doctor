@@ -7,6 +7,7 @@ import { check as hasNodeModules } from "./has-node-modules/check.js";
 import { check as hasDist } from "./has-dist/check.js";
 import { check as hasEnv } from "./has-env/check.js";
 import { check as noDuplicates } from "./no-duplicates/check.js";
+import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
 
 describe("gitignore checks", () => {
   describe("context loading", () => {
@@ -121,6 +122,33 @@ describe("gitignore checks", () => {
       const global = await createGlobalContext(fixtures.empty);
       const ctx = await loadContext(global);
       const result = await noDuplicates.run(global, ctx);
+
+      expect(result.status).toBe("skip");
+    });
+  });
+
+  describe("lockfileNotIgnored", () => {
+    it("should pass when lockfiles are not ignored", async () => {
+      const global = await createGlobalContext(fixtures.healthy);
+      const ctx = await loadContext(global);
+      const result = await lockfileNotIgnored.run(global, ctx);
+
+      expect(result.status).toBe("pass");
+    });
+
+    it("should fail when lockfile is ignored", async () => {
+      const global = await createGlobalContext(fixtures.broken);
+      const ctx = await loadContext(global);
+      const result = await lockfileNotIgnored.run(global, ctx);
+
+      expect(result.status).toBe("fail");
+      expect(result.message).toContain("package-lock.json");
+    });
+
+    it("should skip when .gitignore is missing", async () => {
+      const global = await createGlobalContext(fixtures.empty);
+      const ctx = await loadContext(global);
+      const result = await lockfileNotIgnored.run(global, ctx);
 
       expect(result.status).toBe("skip");
     });

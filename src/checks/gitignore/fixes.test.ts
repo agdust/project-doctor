@@ -4,6 +4,7 @@ import { loadContext } from "./context.js";
 import { copyFixtureToTemp, createEmptyTempDir, type TempFixture } from "../../test/fix-test-utils.js";
 import { check as noDuplicates } from "./no-duplicates/check.js";
 import { check as noSecretsCommitted } from "./no-secrets-committed/check.js";
+import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
 
 describe("gitignore fixes", () => {
   let tempFixture: TempFixture;
@@ -338,6 +339,111 @@ dist
 
       const checkResult = await noDuplicates.run(global, ctx);
       expect(checkResult.status).toBe("skip");
+    });
+  });
+
+  describe("lockfile-not-ignored fix", () => {
+    it("should remove lockfile patterns from gitignore", async () => {
+      tempFixture = await createEmptyTempDir("lockfile-ignored");
+      await tempFixture.writeJson("package.json", { name: "test" });
+      await tempFixture.writeFile(".gitignore", "node_modules\npackage-lock.json\ndist\n");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      // Verify check fails
+      const checkResult = await lockfileNotIgnored.run(global, ctx);
+      expect(checkResult.status).toBe("fail");
+
+      // Run fix
+      const fix = lockfileNotIgnored.fix;
+      expect(fix).toBeDefined();
+      if (!fix || "options" in fix) throw new Error("Expected simple fix");
+
+      const fixResult = await fix.run(global, ctx);
+      expect(fixResult.success).toBe(true);
+
+      // Verify pattern was removed
+      const content = await tempFixture.readFile(".gitignore");
+      expect(content).not.toContain("package-lock.json");
+      expect(content).toContain("node_modules");
+      expect(content).toContain("dist");
+
+      // Verify check now passes
+      const global2 = await createGlobalContext(tempFixture.path);
+      const ctx2 = await loadContext(global2);
+      const checkResult2 = await lockfileNotIgnored.run(global2, ctx2);
+      expect(checkResult2.status).toBe("pass");
+    });
+
+    it("should remove multiple lockfile patterns", async () => {
+      tempFixture = await createEmptyTempDir("lockfile-multiple");
+      await tempFixture.writeJson("package.json", { name: "test" });
+      await tempFixture.writeFile(".gitignore", "node_modules\npackage-lock.json\nyarn.lock\npnpm-lock.yaml\ndist\n");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const fix = lockfileNotIgnored.fix;
+      if (!fix || "options" in fix) throw new Error("Expected simple fix");
+
+      await fix.run(global, ctx);
+
+      const content = await tempFixture.readFile(".gitignore");
+      expect(content).not.toContain("package-lock.json");
+      expect(content).not.toContain("yarn.lock");
+      expect(content).not.toContain("pnpm-lock.yaml");
+    });
+
+    it("should remove wildcard lockfile patterns", async () => {
+      tempFixture = await createEmptyTempDir("lockfile-wildcard");
+      await tempFixture.writeJson("package.json", { name: "test" });
+      await tempFixture.writeFile(".gitignore", "node_modules\n*.lock\ndist\n");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const fix = lockfileNotIgnored.fix;
+      if (!fix || "options" in fix) throw new Error("Expected simple fix");
+
+      await fix.run(global, ctx);
+
+      const content = await tempFixture.readFile(".gitignore");
+      expect(content).not.toContain("*.lock");
+    });
+
+    it("should pass for healthy project (lockfiles not ignored)", async () => {
+      tempFixture = await copyFixtureToTemp("healthy");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await lockfileNotIgnored.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
+    });
+
+    it("should be idempotent", async () => {
+      tempFixture = await createEmptyTempDir("lockfile-idempotent");
+      await tempFixture.writeJson("package.json", { name: "test" });
+      await tempFixture.writeFile(".gitignore", "node_modules\npackage-lock.json\ndist\n");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const fix = lockfileNotIgnored.fix;
+      if (!fix || "options" in fix) throw new Error("Expected simple fix");
+
+      // Run fix twice
+      await fix.run(global, ctx);
+
+      const global2 = await createGlobalContext(tempFixture.path);
+      const ctx2 = await loadContext(global2);
+      await fix.run(global2, ctx2);
+
+      const content = await tempFixture.readFile(".gitignore");
+      expect(content).toContain("node_modules");
+      expect(content).toContain("dist");
+      expect(content).not.toContain("package-lock.json");
     });
   });
 });
