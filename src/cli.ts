@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 import { parseArgs } from "node:util";
-import { resolve } from "node:path";
+import { resolve, dirname, join } from "node:path";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { CheckTag } from "./types.js";
 import { listChecks, listGroups } from "./registry.js";
 import { runChecks } from "./utils/runner.js";
@@ -26,6 +28,12 @@ import { runInfo } from "./commands/info.js";
 import { printCheckResultsAsJson } from "./commands/check.js";
 import { runFixList, runFixAll, runFixOne } from "./commands/fix.js";
 import { RESET, BOLD, DIM, RED } from "./utils/colors.js";
+
+// Read version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packageJsonPath = join(__dirname, "..", "package.json");
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8")) as { version: string };
+const VERSION = packageJson.version;
 
 function printHelp(): void {
   console.log(`
@@ -138,7 +146,7 @@ Tags:
 }
 
 function printVersion(): void {
-  console.log("project-doctor v0.1.0");
+  console.log(`project-doctor v${VERSION}`);
 }
 
 function printCheckList(): void {
