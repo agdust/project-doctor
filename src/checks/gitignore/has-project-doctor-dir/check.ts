@@ -10,12 +10,11 @@ export const check: Check<GitignoreContext> = {
   name,
   description: "Check if .project-doctor/cache/ is ignored",
   tags: ["node", "recommended", "effort:low"],
-  run: async (_global, { raw, patterns }) => {
-    if (!raw) return skip(name, "No .gitignore");
-    const hasIt = patterns.some((p) =>
-      [".project-doctor/cache", ".project-doctor/cache/"].includes(p),
-    );
-    if (!hasIt) return fail(name, ".project-doctor/cache/ not ignored");
+  run: async (_global, { raw, gitignore }) => {
+    if (!raw || !gitignore) return skip(name, "No .gitignore");
+    if (!gitignore.ignores(".project-doctor/cache/file.json")) {
+      return fail(name, ".project-doctor/cache/ not ignored");
+    }
     return pass(name, "Project doctor cache directory ignored");
   },
   fix: {

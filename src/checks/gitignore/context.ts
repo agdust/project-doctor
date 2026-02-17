@@ -1,53 +1,41 @@
+/**
+ * Gitignore Context
+ *
+ * Uses the unified gitignore utility for proper pattern matching.
+ */
+
 import type { GlobalContext } from "../../types.js";
+import { parseGitignore, type GitignoreInstance } from "../../utils/gitignore.js";
 
 export interface GitignoreContext {
+  /** The raw content of the .gitignore file (null if not found) */
   raw: string | null;
+  /** The parsed gitignore instance for checking paths */
+  gitignore: GitignoreInstance | null;
+  /** Raw patterns from .gitignore (for checks that inspect the file itself) */
   patterns: string[];
 }
 
 /**
- * Escape regex metacharacters in a string.
- * Used to safely convert gitignore patterns to regex.
- * Note: We escape * here, then convert \* back to .* for glob matching.
+ * Extract patterns from raw .gitignore content.
+ * Returns non-empty, non-comment lines.
  */
-function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-/**
- * Check if a filename matches a gitignore pattern.
- * Safely handles glob patterns without ReDoS vulnerability.
- */
-export function matchesPattern(pattern: string, filename: string): boolean {
-  // Exact match
-  if (pattern === filename) return true;
-
-  // Only handle simple * wildcards safely
-  if (!pattern.includes("*")) return false;
-
-  // Escape regex metacharacters, then convert * to .*
-  const escaped = escapeRegex(pattern);
-  const regexPattern = escaped.replace(/\\\*/g, ".*");
-
-  try {
-    const regex = new RegExp(`^${regexPattern}$`);
-    return regex.test(filename);
-  } catch {
-    // Invalid pattern - treat as no match
-    return false;
-  }
+function extractPatterns(raw: string): string[] {
+  return raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"));
 }
 
 export async function loadContext(global: GlobalContext): Promise<GitignoreContext> {
   const raw = await global.files.readText(".gitignore");
   if (!raw) {
-    return { raw: null, patterns: [] };
+    return { raw: null, gitignore: null, patterns: [] };
   }
 
-  const patterns = raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"));
-
-  return { raw, patterns };
+  return {
+    raw,
+    gitignore: parseGitignore(raw),
+    patterns: extractPatterns(raw),
+  };
 }

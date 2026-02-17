@@ -73,6 +73,7 @@
     "@inquirer/prompts": "^8.1.0",
     "@stylistic/eslint-plugin": "^5.8.0",
     "eslint": "^9.39.2",
+    "ignore": "^7.0.5",
     "json5": "^2.2.3",
     "typescript-eslint": "^8.50.0"
   },

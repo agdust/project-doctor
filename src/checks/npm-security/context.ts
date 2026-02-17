@@ -8,6 +8,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { GlobalContext } from "../../types.js";
+import { isIgnored, parseGitignore, type GitignoreInstance } from "../../utils/gitignore.js";
 
 interface PackageJson {
   devDependencies?: Record<string, string>;
@@ -21,6 +22,8 @@ export interface NpmSecurityContext {
   npmrcGitignored: boolean;
   /** Content of .gitignore file */
   gitignore: string | null;
+  /** Parsed gitignore instance for path checking */
+  gitignoreInstance: GitignoreInstance | null;
   /** Whether .devcontainer directory exists */
   hasDevcontainer: boolean;
   /** devDependencies from package.json */
@@ -31,26 +34,6 @@ export interface NpmSecurityContext {
   ciWorkflows: string[];
   /** Content of pnpm-workspace.yaml or package.json for pnpm config */
   pnpmConfig: string | null;
-}
-
-/**
- * Check if a file path matches any gitignore pattern
- */
-function isGitignored(gitignore: string | null, filename: string): boolean {
-  if (!gitignore) return false;
-
-  const lines = gitignore.split("\n");
-  for (const line of lines) {
-    const trimmed = line.trim();
-    // Skip comments and empty lines
-    if (!trimmed || trimmed.startsWith("#")) continue;
-
-    // Simple pattern matching (exact match or with leading slash)
-    if (trimmed === filename || trimmed === `/${filename}`) {
-      return true;
-    }
-  }
-  return false;
 }
 
 async function loadCIWorkflows(projectPath: string): Promise<string[]> {
@@ -81,6 +64,9 @@ export async function loadContext(global: GlobalContext): Promise<NpmSecurityCon
   const gitignore = await global.files.readText(".gitignore");
   const packageJson = await global.files.readJson<PackageJson>("package.json");
 
+  // Parse gitignore for path checking
+  const gitignoreInstance = gitignore ? parseGitignore(gitignore) : null;
+
   // Check for devcontainer
   const devcontainerJson = await global.files.readText(".devcontainer/devcontainer.json");
   const hasDevcontainer = devcontainerJson !== null;
@@ -93,8 +79,9 @@ export async function loadContext(global: GlobalContext): Promise<NpmSecurityCon
 
   return {
     npmrc,
-    npmrcGitignored: isGitignored(gitignore, ".npmrc"),
+    npmrcGitignored: isIgnored(gitignore, ".npmrc"),
     gitignore,
+    gitignoreInstance,
     hasDevcontainer,
     devDependencies: packageJson?.devDependencies ?? {},
     scripts: packageJson?.scripts ?? {},

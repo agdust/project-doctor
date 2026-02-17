@@ -17,22 +17,13 @@ export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if .env files are ignored in .gitignore",
   tags: ["universal", "required", "effort:low", "security", "source:lirantal-npm-security"],
-  run: async (_global, { gitignore }) => {
-    if (!gitignore) {
+  run: async (_global, { gitignoreInstance }) => {
+    if (!gitignoreInstance) {
       return fail(name, ".gitignore not found");
     }
 
-    // Check for common .env patterns
-    const envPatterns = [
-      /^\s*\.env\s*$/m,
-      /^\s*\.env\.\*\s*$/m,
-      /^\s*\.env\.local\s*$/m,
-      /^\s*\.env\*\s*$/m,
-    ];
-
-    const hasEnvIgnore = envPatterns.some((pattern) => pattern.test(gitignore));
-
-    if (hasEnvIgnore) {
+    // Check if .env or .env.local would be ignored
+    if (gitignoreInstance.ignoresAny([".env", ".env.local"])) {
       return pass(name, ".env files are ignored in .gitignore");
     }
 

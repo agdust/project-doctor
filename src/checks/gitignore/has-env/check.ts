@@ -10,12 +10,12 @@ export const check: Check<GitignoreContext> = {
   name,
   description: "Check if .env files are ignored",
   tags: ["universal", "required", "effort:low"],
-  run: async (_global, { raw, patterns }) => {
-    if (!raw) return skip(name, "No .gitignore");
-    const hasIt = patterns.some(
-      (p) => [".env", ".env.local", ".env*.local", "*.env"].includes(p) || p.startsWith(".env"),
-    );
-    if (!hasIt) return fail(name, ".env files not ignored");
+  run: async (_global, { raw, gitignore }) => {
+    if (!raw || !gitignore) return skip(name, "No .gitignore");
+    // Check if .env or .env.local would be ignored
+    if (!gitignore.ignoresAny([".env", ".env.local"])) {
+      return fail(name, ".env files not ignored");
+    }
     return pass(name, ".env files ignored");
   },
   fix: {
