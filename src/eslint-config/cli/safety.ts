@@ -2,21 +2,23 @@
  * ESLint CLI - Safety checks before modifying config
  *
  * Checks git status and requires user confirmation if:
- * - No git repo initialized (risk of data loss)
  * - Uncommitted changes to eslint config files
+ *
+ * Note: The "no git repo" check is now handled at the app entrance
+ * via src/utils/git-safety.ts. This module focuses on ESLint-specific
+ * uncommitted changes checks.
  *
  * Confirmation is cached in the project config so users don't
  * have to type the challenge phrase every time.
  */
 
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { input } from "./prompts.js";
 import { color } from "./ui.js";
 import { isBack } from "./types.js";
 import { createMatcher } from "../../typing-challenge/typing-challenge.js";
 import { loadConfig, updateConfig } from "../../config/loader.js";
+import { hasGitRepo } from "../../utils/git-safety.js";
 
 const CHALLENGE_PHRASE = "i allow eslint overwriting";
 
@@ -45,10 +47,9 @@ export interface SafetyStatus {
  * Check git status for the project
  */
 export function checkGitStatus(projectPath: string): SafetyStatus {
-  const gitDir = join(projectPath, ".git");
-  const hasGitRepo = existsSync(gitDir);
+  const hasGit = hasGitRepo(projectPath);
 
-  if (!hasGitRepo) {
+  if (!hasGit) {
     return { hasGitRepo: false, hasPendingChanges: false, pendingFiles: [] };
   }
 
@@ -115,8 +116,12 @@ async function saveConfirmationToConfig(projectPath: string): Promise<void> {
 }
 
 /**
- * Run safety check and prompt for confirmation if needed
- * Returns true if safe to proceed, false if user cancelled
+ * Run safety check and prompt for confirmation if needed.
+ * Returns true if safe to proceed, false if user cancelled.
+ *
+ * Note: The "no git repo" case is now handled at app entrance
+ * (src/utils/git-safety.ts). This function focuses on ESLint-specific
+ * uncommitted changes checks.
  */
 export async function ensureSafeToModify(projectPath: string): Promise<boolean> {
   // Skip if already confirmed this session
@@ -132,24 +137,13 @@ export async function ensureSafeToModify(projectPath: string): Promise<boolean> 
 
   const status = checkGitStatus(projectPath);
 
-  // Case 1: No git repo - warn about data loss
+  // No git repo - user already confirmed at app entrance via noGitConfirmed
+  // Just proceed without additional prompting
   if (!status.hasGitRepo) {
-    console.log();
-    console.log(`  ${color.yellow("⚠")} ${color.bold("Warning: No git repository detected")}`);
-    console.log();
-    console.log(`  ${color.dim("This project is not under version control.")}`);
-    console.log(`  ${color.dim("Changes to your ESLint config cannot be easily reverted.")}`);
-    console.log();
-
-    const confirmed = await promptChallenge("To proceed without git protection");
-    if (!confirmed) return false;
-
-    await saveConfirmationToConfig(projectPath);
-    sessionConfirmed = true;
     return true;
   }
 
-  // Case 2: Git repo with pending eslint config changes
+  // Git repo with pending eslint config changes - require confirmation
   if (status.hasPendingChanges) {
     console.log();
     console.log(
@@ -172,7 +166,7 @@ export async function ensureSafeToModify(projectPath: string): Promise<boolean> 
     return true;
   }
 
-  // Case 3: Git repo, no pending changes - safe to proceed
+  // Git repo, no pending changes - safe to proceed
   return true;
 }
 

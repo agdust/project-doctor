@@ -81,6 +81,7 @@ export function resolveConfig(
     groups: config.groups ?? DEFAULT_CONFIG.groups,
     eslintOverwriteConfirmed:
       config.eslintOverwriteConfirmed ?? DEFAULT_CONFIG.eslintOverwriteConfirmed,
+    noGitConfirmed: config.noGitConfirmed ?? DEFAULT_CONFIG.noGitConfirmed,
   };
 }
 

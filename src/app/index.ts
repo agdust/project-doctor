@@ -8,6 +8,7 @@ import { runApp, type AppConfig } from "../cli-framework/index.js";
 import { blank, text, muted, divider, colors } from "../cli-framework/index.js";
 import type { AppContext } from "./types.js";
 import { createAppContext } from "./loader.js";
+import { ensureGitSafety } from "../utils/git-safety.js";
 import { homeScreen } from "./screens/home.js";
 import { issuesScreen } from "./screens/issues.js";
 import { overviewScreen } from "./screens/overview.js";
@@ -24,6 +25,12 @@ import { categoriesScreen } from "./screens/categories.js";
 import { aboutScreen } from "./screens/about.js";
 
 export async function runProjectDoctorApp(projectPath: string): Promise<void> {
+  // Check git safety before proceeding
+  const safeToRun = await ensureGitSafety(projectPath);
+  if (!safeToRun) {
+    process.exit(0);
+  }
+
   // Show initial loading
   blank();
   muted("Scanning project...");

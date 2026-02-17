@@ -89,6 +89,8 @@ export interface Config {
   groups?: Record<string, Severity>;
   /** User confirmed ESLint config overwriting */
   eslintOverwriteConfirmed?: boolean;
+  /** User confirmed running without git protection */
+  noGitConfirmed?: boolean;
 }
 
 /** How project type was determined */
@@ -106,6 +108,7 @@ export interface ResolvedConfig {
   tags: Record<string, Severity>;
   groups: Record<string, Severity>;
   eslintOverwriteConfirmed: boolean;
+  noGitConfirmed: boolean;
 }
 
 export const DEFAULT_CONFIG: ResolvedConfig = {
@@ -116,4 +119,5 @@ export const DEFAULT_CONFIG: ResolvedConfig = {
   tags: {},
   groups: {},
   eslintOverwriteConfirmed: false,
+  noGitConfirmed: false,
 };
