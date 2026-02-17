@@ -1,4 +1,4 @@
-import type { Check, CheckGroup, GlobalContext, GroupContextLoader } from "./types.js";
+import type { Check, CheckGroup, GroupContextLoader } from "./types.js";
 
 import {
   loadContext as loadPackageJsonContext,
@@ -97,11 +97,3 @@ export function listChecks(): {
   );
 }
 
-export async function runGroupChecks<T>(
-  group: CheckGroup<T>,
-  global: GlobalContext,
-): Promise<{ name: string; results: Awaited<ReturnType<Check<T>["run"]>>[] }> {
-  const groupContext = await group.loadContext(global);
-  const results = await Promise.all(group.checks.map((check) => check.run(global, groupContext)));
-  return { name: group.name, results };
-}

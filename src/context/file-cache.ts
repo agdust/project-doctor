@@ -1,5 +1,5 @@
 import { readFile, stat } from "node:fs/promises";
-import { join, resolve, relative } from "node:path";
+import { resolve, relative } from "node:path";
 import type { FileCache } from "../types.js";
 import { safeJsonParse } from "../utils/safe-json.js";
 

@@ -111,7 +111,10 @@ async function fetchLatestVersion(
     // URL-encode the package name (handles scoped packages like @scope/name)
     const encodedName = encodeURIComponent(packageName).replace("%40", "@").replace("%2F", "/");
     const response = await fetch(`https://registry.npmjs.org/${encodedName}/latest`);
-    if (!response.ok) return null;
+    if (!response.ok) {
+      // Package might not exist or be private
+      return null;
+    }
     const data = (await response.json()) as { version?: string };
     const version = typeof data.version === "string" ? data.version : null;
 
@@ -121,8 +124,12 @@ async function fetchLatestVersion(
     }
 
     return version;
-  } catch {
-    // Network error or invalid response
+  } catch (error) {
+    // Log network errors in debug mode (when DEBUG env is set)
+    if (process.env.DEBUG) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[DEBUG] Failed to fetch ${packageName}: ${errorMessage}`);
+    }
     return null;
   }
 }

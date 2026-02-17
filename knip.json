@@ -10,12 +10,9 @@
     "src/docs/**"
   ],
   "ignoreDependencies": [
-    "@inquirer/core",
-    "@eslint/js"
+    "@inquirer/core"
   ],
   "ignoreBinaries": [
-    "prettier",
-    "sx",
     "claude"
   ],
   "ignoreExportsUsedInFile": true,

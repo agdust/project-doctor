@@ -43,12 +43,37 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
 
   // Run all checks
   for (const group of groupsToRun) {
-    const groupContext = await group.loadContext(global);
+    let groupContext: unknown;
+    try {
+      groupContext = await group.loadContext(global);
+    } catch (error) {
+      // If group context loading fails, mark all checks in group as failed
+      for (const check of group.checks) {
+        const result: CheckResult = {
+          name: check.name,
+          group: group.name,
+          status: "fail",
+          message: `Group context error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        };
+        allResults.push(result);
+      }
+      continue;
+    }
 
     for (const check of group.checks) {
-      const baseResult = await (
-        check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>
-      )(global, groupContext);
+      let baseResult: CheckResultBase;
+      try {
+        baseResult = await (
+          check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>
+        )(global, groupContext);
+      } catch (error) {
+        // Convert thrown errors to failed check results
+        baseResult = {
+          name: check.name,
+          status: "fail",
+          message: `Check error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        };
+      }
 
       const result: CheckResult = { ...baseResult, group: group.name };
       allResults.push(result);

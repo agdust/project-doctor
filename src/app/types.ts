@@ -28,14 +28,6 @@ export interface FixableIssue {
   fixOptions?: FixOptionRunnable[];
 }
 
-/** Summary stats for display */
-export interface HealthStats {
-  total: number;
-  passed: number;
-  failed: number;
-  skipped: number;
-}
-
 /** A failed check (may or may not have auto-fix) */
 export interface FailedCheck {
   name: string;

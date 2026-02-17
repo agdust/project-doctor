@@ -32,29 +32,9 @@ export function printSection(title: string): void {
   console.log();
 }
 
-// Hint text (dimmed)
-export function printHint(text: string): void {
-  console.log(`  \x1b[90m${text}\x1b[0m`);
-}
-
 // Success message
 export function printSuccess(text: string): void {
   console.log(`  \x1b[32m✓\x1b[0m ${text}`);
-}
-
-// Error message
-export function printError(text: string): void {
-  console.log(`  \x1b[31m✗\x1b[0m ${text}`);
-}
-
-// Warning message
-export function printWarning(text: string): void {
-  console.log(`  \x1b[33m!\x1b[0m ${text}`);
-}
-
-// Info message
-export function printInfo(text: string): void {
-  console.log(`  \x1b[36mℹ\x1b[0m ${text}`);
 }
 
 // Cancelled message

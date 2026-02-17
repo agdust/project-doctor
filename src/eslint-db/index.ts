@@ -104,22 +104,12 @@ export function getPluginByName(name: string): PluginDefinition | undefined {
   return plugins.find((p) => p.name === name || p.prefix === name);
 }
 
-export function getPluginByPrefix(prefix: string): PluginDefinition | undefined {
-  return plugins.find((p) => p.prefix === prefix);
-}
-
 // =============================================================================
 // Rule Queries
 // =============================================================================
 
 export function getAllRules(): RuleDefinition[] {
   return allRules;
-}
-
-export function getRulesFromPlugin(pluginName: string): RuleDefinition[] {
-  const plugin = getPluginByName(pluginName);
-  if (!plugin) return [];
-  return allRules.filter((r) => r.plugin === plugin.name);
 }
 
 export function getRuleByName(name: string): RuleDefinition | undefined {
@@ -148,18 +138,6 @@ export function getRulesByStrictness(maxStrictness: RuleStrictness): RuleDefinit
     if (!ruleStrictness) return false; // Exclude rules without strictness tag
     return STRICTNESS_ORDER[ruleStrictness] <= maxOrder;
   });
-}
-
-export function getFixableRules(): RuleDefinition[] {
-  return allRules.filter((r) => r.fixable);
-}
-
-export function getTypeCheckingRules(): RuleDefinition[] {
-  return allRules.filter((r) => r.requiresTypeChecking);
-}
-
-export function getNonDeprecatedRules(): RuleDefinition[] {
-  return allRules.filter((r) => !r.deprecated);
 }
 
 export function getTaggedRules(): RuleDefinition[] {

@@ -10,48 +10,88 @@ interface PackageJson {
   doctor?: Config;
 }
 
-async function readJson5File<T>(path: string): Promise<T | null> {
+interface ReadResult<T> {
+  data: T | null;
+  exists: boolean;
+  parseError: boolean;
+}
+
+async function readJson5File<T>(path: string): Promise<ReadResult<T>> {
   try {
     const content = await readFile(path, "utf-8");
     // Use safe parsing to prevent prototype pollution
-    return safeJson5Parse<T>(content);
-  } catch {
-    // File doesn't exist or can't be read
-    return null;
+    const data = safeJson5Parse<T>(content);
+    if (data === null) {
+      // File exists but failed to parse
+      return { data: null, exists: true, parseError: true };
+    }
+    return { data, exists: true, parseError: false };
+  } catch (error) {
+    // Check if it's a "file not found" error vs other errors
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT") {
+      return { data: null, exists: false, parseError: false };
+    }
+    // Other read errors (permissions, etc.)
+    if (process.env.DEBUG) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[DEBUG] Error reading ${path}: ${msg}`);
+    }
+    return { data: null, exists: true, parseError: true };
   }
 }
 
-async function readJsonFile<T>(path: string): Promise<T | null> {
+async function readJsonFile<T>(path: string): Promise<ReadResult<T>> {
   try {
     const content = await readFile(path, "utf-8");
     // Use safe parsing to prevent prototype pollution
-    return safeJsonParse<T>(content);
-  } catch {
-    // File doesn't exist or can't be read
-    return null;
+    const data = safeJsonParse<T>(content);
+    if (data === null) {
+      // File exists but failed to parse
+      return { data: null, exists: true, parseError: true };
+    }
+    return { data, exists: true, parseError: false };
+  } catch (error) {
+    // Check if it's a "file not found" error vs other errors
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT") {
+      return { data: null, exists: false, parseError: false };
+    }
+    // Other read errors (permissions, etc.)
+    if (process.env.DEBUG) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[DEBUG] Error reading ${path}: ${msg}`);
+    }
+    return { data: null, exists: true, parseError: true };
   }
 }
 
 export async function loadConfig(projectPath: string): Promise<Config | null> {
   // Try .project-doctor/config.json5 first
   const json5Path = join(projectPath, ".project-doctor", "config.json5");
-  const json5Config = await readJson5File<Config>(json5Path);
-  if (json5Config) {
-    return json5Config;
+  const json5Result = await readJson5File<Config>(json5Path);
+  if (json5Result.data) {
+    return json5Result.data;
+  }
+  if (json5Result.exists && json5Result.parseError) {
+    console.warn(`Warning: Could not parse ${json5Path} - using defaults`);
   }
 
   // Try legacy .project-doctor/config.json
   const jsonPath = join(projectPath, ".project-doctor", "config.json");
-  const jsonConfig = await readJsonFile<Config>(jsonPath);
-  if (jsonConfig) {
-    return jsonConfig;
+  const jsonResult = await readJsonFile<Config>(jsonPath);
+  if (jsonResult.data) {
+    return jsonResult.data;
+  }
+  if (jsonResult.exists && jsonResult.parseError) {
+    console.warn(`Warning: Could not parse ${jsonPath} - using defaults`);
   }
 
   // Try package.json#doctor
   const packagePath = join(projectPath, "package.json");
-  const packageJson = await readJsonFile<PackageJson>(packagePath);
-  if (packageJson?.doctor) {
-    return packageJson.doctor;
+  const packageResult = await readJsonFile<PackageJson>(packagePath);
+  if (packageResult.data?.doctor) {
+    return packageResult.data.doctor;
   }
 
   return null;
@@ -110,11 +150,6 @@ export interface ProjectTypeDetection {
  * Auto-detect project type based on files present in the project.
  * Returns "js" if any JS/Node ecosystem files are found, "generic" otherwise.
  */
-export async function detectProjectType(projectPath: string): Promise<ProjectType> {
-  const result = await detectProjectTypeWithCause(projectPath);
-  return result.type;
-}
-
 /**
  * Auto-detect project type with the cause of detection.
  */

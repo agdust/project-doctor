@@ -55,27 +55,6 @@ export const fixChains: string[][] = [
 ];
 
 /**
- * Build a map of check name → chain position for efficient lookup.
- * Returns { checkName: { chainIndex: number, position: number } }
- */
-export function buildChainIndex(): Map<string, { chainIndex: number; position: number }> {
-  const index = new Map<string, { chainIndex: number; position: number }>();
-
-  fixChains.forEach((chain, chainIndex) => {
-    chain.forEach((checkName, position) => {
-      // If a check appears in multiple chains, use the one where it appears earliest
-      // (i.e., where it has the most dependencies)
-      const existing = index.get(checkName);
-      if (!existing || position > existing.position) {
-        index.set(checkName, { chainIndex, position });
-      }
-    });
-  });
-
-  return index;
-}
-
-/**
  * Get the root dependency for a check (first element in its chain).
  * Returns the check itself if it has no dependencies.
  */

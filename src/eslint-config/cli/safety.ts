@@ -94,13 +94,6 @@ export function checkGitStatus(projectPath: string): SafetyStatus {
 let sessionConfirmed = false;
 
 /**
- * Reset session confirmation (for testing)
- */
-export function resetSessionConfirmation(): void {
-  sessionConfirmed = false;
-}
-
-/**
  * Check if user has previously confirmed via config
  */
 async function isConfirmedInConfig(projectPath: string): Promise<boolean> {

@@ -24,10 +24,6 @@ export function isExit(result: unknown): result is typeof EXIT {
   return result === EXIT;
 }
 
-export function isNavigation(result: unknown): result is NavigationAction {
-  return isBack(result) || isExit(result);
-}
-
 // Screen definition - a unit of UI
 export interface Screen<TContext = void> {
   id: string;
@@ -54,22 +50,4 @@ export interface Choice<T> {
   name: string;
   value: T;
   description?: string;
-}
-
-// Standard back choice
-export function backChoice<T>(label = "← Back"): Choice<T | typeof BACK> {
-  return {
-    name: `\x1b[90m${label}\x1b[0m`,
-    value: BACK as T | typeof BACK,
-    description: "Return to previous menu",
-  };
-}
-
-// Standard exit choice
-export function exitChoice<T>(label = "🚪 Exit"): Choice<T | typeof EXIT> {
-  return {
-    name: label,
-    value: EXIT as T | typeof EXIT,
-    description: "Exit the application",
-  };
 }

@@ -8,7 +8,6 @@
 
 import {
   select as inquirerSelect,
-  confirm as inquirerConfirm,
   checkbox as inquirerCheckbox,
   input as inquirerInput,
 } from "@inquirer/prompts";
@@ -91,33 +90,6 @@ export async function select<T>(config: SelectConfig<T>): Promise<T | Navigation
     }
     if (isCancellation(error)) {
       // ESC pressed - go back
-      return BACK;
-    }
-    throw error;
-  }
-}
-
-export interface ConfirmConfig {
-  message: string;
-  default?: boolean;
-}
-
-/**
- * Confirm prompt with automatic ESC handling
- * - ESC returns BACK
- * - Ctrl+C throws to trigger app exit
- */
-export async function confirm(config: ConfirmConfig): Promise<boolean | typeof BACK> {
-  try {
-    return await inquirerConfirm({
-      message: config.message,
-      default: config.default,
-    });
-  } catch (error) {
-    if (isForceExit(error)) {
-      throw error;
-    }
-    if (isCancellation(error)) {
       return BACK;
     }
     throw error;
