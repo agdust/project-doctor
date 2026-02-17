@@ -37,8 +37,13 @@ import {
 // Read version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJsonPath = join(__dirname, "..", "package.json");
-const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8")) as { version: string };
-const VERSION = packageJson.version;
+let VERSION = "0.0.0";
+try {
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8")) as { version?: string };
+  VERSION = packageJson.version ?? VERSION;
+} catch {
+  // Fallback version if package.json is missing or malformed
+}
 
 function printVersion(): void {
   console.log(`project-doctor v${VERSION}`);

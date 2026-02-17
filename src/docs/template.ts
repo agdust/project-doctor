@@ -119,9 +119,16 @@ export function htmlPage(title: string, content: string, nav: string): string {
 </html>`;
 }
 
+/**
+ * Escape HTML special characters to prevent XSS.
+ *
+ * IMPORTANT: The order of replacements matters!
+ * Ampersand (&) must be escaped first, otherwise we'd double-escape
+ * the ampersands in &lt; &gt; etc.
+ */
 export function escapeHtml(str: string): string {
   return str
-    .replace(/&/g, "&amp;")
+    .replace(/&/g, "&amp;") // Must be first to avoid double-escaping
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");

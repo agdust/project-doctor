@@ -58,6 +58,9 @@ export function computeDiff(
   };
 }
 
+// TODO: Replace JSON.stringify comparison with proper deep equality.
+// Current approach is fragile: property order matters, and circular refs would throw.
+// Consider using a deep-equal utility or structuredClone for comparison.
 function ruleValuesEqual(a: RuleValue, b: RuleValue): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }

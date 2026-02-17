@@ -91,6 +91,7 @@ export class App<TCtx> {
     let ctrlCPressed = false;
 
     const onData = (data: Buffer) => {
+      if (data.length === 0) return;
       // ESC key is 0x1b (27)
       if (data[0] === 0x1b && data.length === 1) {
         escPressed = true;

@@ -16,11 +16,20 @@ interface ReadResult<T> {
   parseError: boolean;
 }
 
-async function readJson5File<T>(path: string): Promise<ReadResult<T>> {
+/** Helper to check if an error is a Node.js error with a code property */
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && "code" in error;
+}
+
+/** Generic file reader with configurable parser */
+async function readFileWithParser<T>(
+  path: string,
+  parser: (content: string) => T | null,
+): Promise<ReadResult<T>> {
   try {
     const content = await readFile(path, "utf-8");
     // Use safe parsing to prevent prototype pollution
-    const data = safeJson5Parse<T>(content);
+    const data = parser(content);
     if (data === null) {
       // File exists but failed to parse
       return { data: null, exists: true, parseError: true };
@@ -28,8 +37,7 @@ async function readJson5File<T>(path: string): Promise<ReadResult<T>> {
     return { data, exists: true, parseError: false };
   } catch (error) {
     // Check if it's a "file not found" error vs other errors
-    const code = (error as NodeJS.ErrnoException).code;
-    if (code === "ENOENT") {
+    if (isNodeError(error) && error.code === "ENOENT") {
       return { data: null, exists: false, parseError: false };
     }
     // Other read errors (permissions, etc.)
@@ -41,29 +49,12 @@ async function readJson5File<T>(path: string): Promise<ReadResult<T>> {
   }
 }
 
+async function readJson5File<T>(path: string): Promise<ReadResult<T>> {
+  return readFileWithParser(path, safeJson5Parse<T>);
+}
+
 async function readJsonFile<T>(path: string): Promise<ReadResult<T>> {
-  try {
-    const content = await readFile(path, "utf-8");
-    // Use safe parsing to prevent prototype pollution
-    const data = safeJsonParse<T>(content);
-    if (data === null) {
-      // File exists but failed to parse
-      return { data: null, exists: true, parseError: true };
-    }
-    return { data, exists: true, parseError: false };
-  } catch (error) {
-    // Check if it's a "file not found" error vs other errors
-    const code = (error as NodeJS.ErrnoException).code;
-    if (code === "ENOENT") {
-      return { data: null, exists: false, parseError: false };
-    }
-    // Other read errors (permissions, etc.)
-    if (process.env.DEBUG) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error(`[DEBUG] Error reading ${path}: ${msg}`);
-    }
-    return { data: null, exists: true, parseError: true };
-  }
+  return readFileWithParser(path, safeJsonParse<T>);
 }
 
 export async function loadConfig(projectPath: string): Promise<Config | null> {

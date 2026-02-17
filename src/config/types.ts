@@ -36,8 +36,19 @@ export function parseSkipUntil(value: string): Date | null {
   // Validate ISO date format YYYY-MM-DD
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
 
-  const date = new Date(dateStr + "T23:59:59");
-  if (isNaN(date.getTime())) return null;
+  // Parse and validate the date components
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day, 23, 59, 59);
+
+  // Check if the date is valid (e.g., reject "2025-02-30")
+  if (
+    isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
 
   return date;
 }

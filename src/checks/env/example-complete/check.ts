@@ -46,7 +46,11 @@ export const check: Check<EnvContext> = {
           .split("\n")
           .map((line) => line.trim())
           .filter((line) => line && !line.startsWith("#"))
-          .map((line) => line.split("=")[0])
+          .map((line) => {
+            // Handle both VAR=value and VAR (without value)
+            const eqIndex = line.indexOf("=");
+            return eqIndex !== -1 ? line.slice(0, eqIndex) : line;
+          })
           .filter(Boolean),
       );
 
@@ -55,11 +59,13 @@ export const check: Check<EnvContext> = {
       for (const line of envContent.split("\n")) {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith("#")) continue;
-        const varName = trimmed.split("=")[0];
+        // Handle both VAR=value and VAR (without value)
+        const eqIndex = trimmed.indexOf("=");
+        const varName = eqIndex !== -1 ? trimmed.slice(0, eqIndex) : trimmed;
         if (varName && !exampleVars.has(varName)) {
           // Add variable without value
-          const eqIndex = line.indexOf("=");
-          linesToAdd.push(eqIndex !== -1 ? line.slice(0, eqIndex + 1) : line);
+          const lineEqIndex = line.indexOf("=");
+          linesToAdd.push(lineEqIndex !== -1 ? line.slice(0, lineEqIndex + 1) : line);
         }
       }
 

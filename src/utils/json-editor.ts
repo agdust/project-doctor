@@ -17,8 +17,12 @@ export async function readJson<T>(projectPath: string, filename: string): Promis
   try {
     const content = await readFile(join(projectPath, filename), "utf-8");
     return safeJsonParse<T>(content);
-  } catch {
-    // File doesn't exist or can't be read
+  } catch (error) {
+    // Log in debug mode to help diagnose issues (permissions, etc.)
+    if (process.env.DEBUG) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[DEBUG] readJson(${filename}): ${msg}`);
+    }
     return null;
   }
 }
@@ -61,6 +65,10 @@ export async function updateJson<T extends object>(
  */
 export function setNestedField<T extends object>(obj: T, path: string, value: unknown): T {
   const parts = path.split(".");
+  if (parts.length === 0 || (parts.length === 1 && parts[0] === "")) {
+    return obj; // Empty path, return unchanged
+  }
+
   let current: Record<string, unknown> = obj as Record<string, unknown>;
 
   for (let i = 0; i < parts.length - 1; i++) {

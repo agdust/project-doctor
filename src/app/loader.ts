@@ -4,6 +4,7 @@
  * Scans project, runs checks, and populates app context.
  */
 
+import { basename } from "node:path";
 import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult } from "../types.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
@@ -21,7 +22,7 @@ async function getProjectName(global: GlobalContext, projectPath: string): Promi
     const pkg = safeJsonParse<{ name?: string }>(pkgContent);
     if (pkg && typeof pkg.name === "string") return pkg.name;
   }
-  return projectPath.split("/").pop() ?? "project";
+  return basename(projectPath) || "project";
 }
 
 /**

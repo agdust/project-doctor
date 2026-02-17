@@ -62,6 +62,8 @@ function parseConfigContent(content: string, filePath: string): ParsedConfig {
 
   // Match rule definitions using regex
   // Handles: "rule-name": "error", "rule-name": ["error", options]
+  // TODO: This regex is fragile and can't handle nested arrays/objects in rule options.
+  // Consider using a proper JS/TS parser (e.g., @babel/parser, typescript) for robust parsing.
   const rulePattern = /["']([^"']+)["']\s*:\s*(\[[^\]]*\]|"[^"]*"|'[^']*')/;
 
   for (const line of lines) {
