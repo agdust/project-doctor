@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import type { AuditResult } from "./deps-checker.js";
 import { ensureConfigDir } from "../config/constants.js";
+import { safeJsonParse } from "./safe-json.js";
 
 const CACHE_DIR = ".project-doctor/cache";
 const CACHE_FILE = "npm-cache.json";
@@ -39,13 +40,14 @@ function isExpired(cachedAt: number): boolean {
 async function loadCacheData(cachePath: string): Promise<NpmCacheData> {
   try {
     const content = await readFile(cachePath, "utf-8");
-    const data = JSON.parse(content) as NpmCacheData;
+    const data = safeJsonParse<NpmCacheData>(content);
     // Validate structure
-    if (typeof data.versions !== "object" || data.versions === null) {
+    if (!data || typeof data.versions !== "object" || data.versions === null) {
       return { versions: {}, audit: null };
     }
     return data;
   } catch {
+    // Cache file doesn't exist or can't be read
     return { versions: {}, audit: null };
   }
 }

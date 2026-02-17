@@ -16,6 +16,7 @@ async function readJson5File<T>(path: string): Promise<T | null> {
     // Use safe parsing to prevent prototype pollution
     return safeJson5Parse<T>(content);
   } catch {
+    // File doesn't exist or can't be read
     return null;
   }
 }
@@ -26,6 +27,7 @@ async function readJsonFile<T>(path: string): Promise<T | null> {
     // Use safe parsing to prevent prototype pollution
     return safeJsonParse<T>(content);
   } catch {
+    // File doesn't exist or can't be read
     return null;
   }
 }
@@ -90,6 +92,7 @@ async function fileExists(path: string): Promise<boolean> {
     await access(path);
     return true;
   } catch {
+    // File doesn't exist or isn't accessible
     return false;
   }
 }

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
+import { safeJsonParse } from "../../../utils/safe-json.js";
 
 const name = "readme-exists";
 
@@ -21,10 +22,10 @@ export const check: Check<DocsContext> = {
       try {
         const pkgPath = join(global.projectPath, "package.json");
         const pkgContent = await readFile(pkgPath, "utf-8");
-        const pkg = JSON.parse(pkgContent) as { name?: string };
-        if (typeof pkg.name === "string") projectName = pkg.name;
+        const pkg = safeJsonParse<{ name?: string }>(pkgContent);
+        if (pkg && typeof pkg.name === "string") projectName = pkg.name;
       } catch {
-        // Use default
+        // package.json doesn't exist, use default name
       }
       const content = `# ${projectName}
 

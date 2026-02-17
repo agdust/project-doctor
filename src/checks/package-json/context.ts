@@ -1,4 +1,5 @@
 import type { GlobalContext } from "../../types.js";
+import { safeJsonParse } from "../../utils/safe-json.js";
 
 export interface PackageJson {
   name?: string;
@@ -28,11 +29,9 @@ export async function loadContext(global: GlobalContext): Promise<PackageJsonCon
     return { raw: null, parsed: null, parseError: null };
   }
 
-  try {
-    const parsed = JSON.parse(raw) as PackageJson;
-    return { raw, parsed, parseError: null };
-  } catch (e) {
-    const error = e instanceof Error ? e.message : "Unknown parse error";
-    return { raw, parsed: null, parseError: error };
+  const parsed = safeJsonParse<PackageJson>(raw);
+  if (!parsed) {
+    return { raw, parsed: null, parseError: "Invalid JSON" };
   }
+  return { raw, parsed, parseError: null };
 }

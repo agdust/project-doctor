@@ -7,6 +7,7 @@
 
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { safeJsonParse } from "./safe-json.js";
 
 /**
  * Read and parse a JSON file.
@@ -15,8 +16,9 @@ import { join } from "node:path";
 export async function readJson<T>(projectPath: string, filename: string): Promise<T | null> {
   try {
     const content = await readFile(join(projectPath, filename), "utf-8");
-    return JSON.parse(content) as T;
+    return safeJsonParse<T>(content);
   } catch {
+    // File doesn't exist or can't be read
     return null;
   }
 }

@@ -82,12 +82,13 @@ describe("CLI", () => {
   });
 
   describe("overview command", () => {
+    // This test makes network calls to npm registry, so needs longer timeout
     it("should show overview for healthy project", async () => {
       const { stdout, code } = await runCli(`overview ${fixtures.healthy}`);
 
       expect(code).toBe(0);
       expect(stdout).toContain("healthy-project");
-    });
+    }, 15000);
   });
 
   describe("init command", () => {

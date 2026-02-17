@@ -1,4 +1,5 @@
 import type { GlobalContext } from "../../types.js";
+import { safeJsonParse } from "../../utils/safe-json.js";
 
 export interface TestingContext {
   hasTestScript: boolean;
@@ -11,15 +12,15 @@ export async function loadContext(global: GlobalContext): Promise<TestingContext
     return { hasTestScript: false, testScriptValue: null };
   }
 
-  try {
-    const pkg = JSON.parse(pkgRaw) as { scripts?: { test?: string } };
-    const testScript = pkg.scripts?.test;
-    const hasTestScript = typeof testScript === "string" && testScript.length > 0;
-    return {
-      hasTestScript,
-      testScriptValue: hasTestScript ? testScript : null,
-    };
-  } catch {
+  const pkg = safeJsonParse<{ scripts?: { test?: string } }>(pkgRaw);
+  if (!pkg) {
     return { hasTestScript: false, testScriptValue: null };
   }
+
+  const testScript = pkg.scripts?.test;
+  const hasTestScript = typeof testScript === "string" && testScript.length > 0;
+  return {
+    hasTestScript,
+    testScriptValue: hasTestScript ? testScript : null,
+  };
 }

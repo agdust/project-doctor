@@ -1,6 +1,7 @@
 import { readFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import type { ParsedConfig, RuleValue } from "../types.js";
+import { safeJsonParse } from "../../utils/safe-json.js";
 
 const CONFIG_FILES = [
   "eslint.config.js",
@@ -17,6 +18,7 @@ export async function findConfigFile(projectPath: string): Promise<string | null
       await access(filePath);
       return filePath;
     } catch {
+      // File doesn't exist, try next
       continue;
     }
   }
@@ -33,44 +35,64 @@ export async function readExistingConfig(projectPath: string): Promise<ParsedCon
     const content = await readFile(filePath, "utf-8");
     return parseConfigContent(content, filePath);
   } catch {
+    // File can't be read
     return null;
   }
 }
 
 // Maximum number of rules to parse (prevents DoS on malformed files)
 const MAX_RULES = 10000;
+// Maximum line length to process (prevents ReDoS on very long lines)
+const MAX_LINE_LENGTH = 1000;
+// Maximum content size to process (10MB)
+const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
 
 function parseConfigContent(content: string, filePath: string): ParsedConfig {
   const rules: Record<string, RuleValue> = {};
 
+  // Guard against excessively large files
+  if (content.length > MAX_CONTENT_SIZE) {
+    return { rules: {}, hasTypeChecking: false, filePath };
+  }
+
+  // Process line by line to prevent ReDoS on long content
+  // This is safer than running a global regex on the entire file
+  const lines = content.split("\n");
+  let ruleCount = 0;
+
   // Match rule definitions using regex
   // Handles: "rule-name": "error", "rule-name": ["error", options]
-  const rulePattern = /["']([^"']+)["']\s*:\s*(\[[^\]]*\]|"[^"]*"|'[^']*')/g;
+  const rulePattern = /["']([^"']+)["']\s*:\s*(\[[^\]]*\]|"[^"]*"|'[^']*')/;
 
-  let match;
-  let iterations = 0;
-  while ((match = rulePattern.exec(content)) !== null) {
-    // Prevent DoS from malformed files with excessive matches
-    if (++iterations > MAX_RULES) {
-      break;
-    }
+  for (const line of lines) {
+    // Skip very long lines to prevent ReDoS
+    if (line.length > MAX_LINE_LENGTH) continue;
+
+    // Stop if we've found too many rules
+    if (ruleCount >= MAX_RULES) break;
+
+    const match = rulePattern.exec(line);
+    if (!match) continue;
 
     const [, name, valueStr] = match;
 
     // Skip if not a rule name pattern (contains / for plugin rules or is bare word)
     if (!isRuleName(name)) continue;
 
-    try {
-      // Normalize quotes for JSON parsing
-      const normalized = valueStr.replace(/'/g, '"');
-      const value = JSON.parse(normalized) as RuleValue;
+    ruleCount++;
+
+    // Normalize quotes for JSON parsing
+    const normalized = valueStr.replace(/'/g, '"');
+    const value = safeJsonParse<RuleValue>(normalized);
+    if (value !== null) {
       rules[name] = value;
-    } catch {
-      // Try parsing as simple string
-      const stripped = valueStr.replace(/['"]/g, "");
-      if (stripped === "error" || stripped === "warn" || stripped === "off") {
-        rules[name] = stripped;
-      }
+      continue;
+    }
+
+    // Try parsing as simple string
+    const stripped = valueStr.replace(/['"]/g, "");
+    if (stripped === "error" || stripped === "warn" || stripped === "off") {
+      rules[name] = stripped;
     }
   }
 

@@ -1,6 +1,23 @@
 import { readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve, relative } from "node:path";
 import type { FileCache } from "../types.js";
+import { safeJsonParse } from "../utils/safe-json.js";
+
+/**
+ * Validate that a relative path doesn't escape the project directory.
+ * Prevents path traversal attacks (e.g., "../../../etc/passwd").
+ */
+function validateRelativePath(projectPath: string, relativePath: string): string {
+  const fullPath = resolve(projectPath, relativePath);
+  const resolvedRelative = relative(projectPath, fullPath);
+
+  // Path escapes project directory if it starts with ".." or is absolute
+  if (resolvedRelative.startsWith("..") || resolve(resolvedRelative) === resolvedRelative) {
+    throw new Error(`Path traversal not allowed: ${relativePath}`);
+  }
+
+  return fullPath;
+}
 
 export function createFileCache(projectPath: string): FileCache {
   const textCache = new Map<string, string | null>();
@@ -13,12 +30,13 @@ export function createFileCache(projectPath: string): FileCache {
         return textCache.get(relativePath) ?? null;
       }
 
-      const fullPath = join(projectPath, relativePath);
       try {
+        const fullPath = validateRelativePath(projectPath, relativePath);
         const content = await readFile(fullPath, "utf-8");
         textCache.set(relativePath, content);
         return content;
       } catch {
+        // File doesn't exist, path invalid, or read error
         textCache.set(relativePath, null);
         return null;
       }
@@ -36,14 +54,9 @@ export function createFileCache(projectPath: string): FileCache {
         return null;
       }
 
-      try {
-        const parsed = JSON.parse(text) as T;
-        jsonCache.set(cacheKey, parsed);
-        return parsed;
-      } catch {
-        jsonCache.set(cacheKey, null);
-        return null;
-      }
+      const parsed = safeJsonParse<T>(text);
+      jsonCache.set(cacheKey, parsed);
+      return parsed;
     },
 
     async exists(relativePath: string): Promise<boolean> {
@@ -51,12 +64,13 @@ export function createFileCache(projectPath: string): FileCache {
         return existsCache.get(relativePath) ?? false;
       }
 
-      const fullPath = join(projectPath, relativePath);
       try {
+        const fullPath = validateRelativePath(projectPath, relativePath);
         await stat(fullPath);
         existsCache.set(relativePath, true);
         return true;
       } catch {
+        // File doesn't exist, path invalid, or stat error
         existsCache.set(relativePath, false);
         return false;
       }

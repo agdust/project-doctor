@@ -1,4 +1,5 @@
 import type { GlobalContext } from "../../types.js";
+import { safeJsonParse } from "../../utils/safe-json.js";
 
 export interface TsConfig {
   compilerOptions?: {
@@ -25,11 +26,9 @@ export async function loadContext(global: GlobalContext): Promise<TsConfigContex
     return { raw: null, parsed: null, parseError: null };
   }
 
-  try {
-    const parsed = JSON.parse(raw) as TsConfig;
-    return { raw, parsed, parseError: null };
-  } catch (e) {
-    const error = e instanceof Error ? e.message : "Unknown parse error";
-    return { raw, parsed: null, parseError: error };
+  const parsed = safeJsonParse<TsConfig>(raw);
+  if (!parsed) {
+    return { raw, parsed: null, parseError: "Invalid JSON" };
   }
+  return { raw, parsed, parseError: null };
 }

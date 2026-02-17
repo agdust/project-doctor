@@ -1,6 +1,7 @@
 import { createGlobalContext } from "../context/global.js";
 import { checkDeps, type AuditResult } from "./deps-checker.js";
 import { runAllChecksRaw } from "./runner.js";
+import { safeJsonParse } from "./safe-json.js";
 
 interface OverviewResult {
   projectName: string;
@@ -24,14 +25,10 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
 
   // Get project name
   let projectName = projectPath.split("/").pop() ?? "project";
-  try {
-    const pkgContent = await global.files.readText("package.json");
-    if (pkgContent) {
-      const pkg = JSON.parse(pkgContent) as { name?: string };
-      if (typeof pkg.name === "string") projectName = pkg.name;
-    }
-  } catch {
-    // Use folder name
+  const pkgContent = await global.files.readText("package.json");
+  if (pkgContent) {
+    const pkg = safeJsonParse<{ name?: string }>(pkgContent);
+    if (pkg && typeof pkg.name === "string") projectName = pkg.name;
   }
 
   // Run all checks

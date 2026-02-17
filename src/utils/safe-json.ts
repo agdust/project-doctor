@@ -43,6 +43,7 @@ export function safeJsonParse<T>(content: string): T | null {
     const parsed: unknown = JSON.parse(content);
     return sanitizeObject(parsed) as T;
   } catch {
+    // Invalid JSON
     return null;
   }
 }
@@ -56,6 +57,7 @@ export function safeJson5Parse<T>(content: string): T | null {
     const parsed: unknown = JSON5.parse(content);
     return sanitizeObject(parsed) as T;
   } catch {
+    // Invalid JSON5
     return null;
   }
 }

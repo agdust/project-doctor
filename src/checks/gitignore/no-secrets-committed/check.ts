@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
-import type { GitignoreContext } from "../context.js";
+import { type GitignoreContext, matchesPattern } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
 const name = "gitignore-no-secrets-committed";
@@ -20,9 +20,7 @@ export const check: Check<GitignoreContext> = {
     for (const file of SECRET_FILES) {
       const exists = await global.files.exists(file);
       if (exists) {
-        const isIgnored = patterns.some(
-          (p) => p === file || new RegExp(`^${p.replace("*", ".*")}$`).exec(file),
-        );
+        const isIgnored = patterns.some((p) => matchesPattern(p, file));
         if (!isIgnored) {
           notIgnored.push(file);
         }
@@ -45,9 +43,7 @@ export const check: Check<GitignoreContext> = {
       for (const file of SECRET_FILES) {
         const exists = await global.files.exists(file);
         if (exists) {
-          const isIgnored = patterns.some(
-            (p) => p === file || new RegExp(`^${p.replace("*", ".*")}$`).exec(file),
-          );
+          const isIgnored = patterns.some((p) => matchesPattern(p, file));
           if (!isIgnored) {
             toAdd.push(file);
           }

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createNpmCache, computeLockfileHash, type NpmCache } from "./npm-cache.js";
+import { safeJsonParse } from "./safe-json.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -59,10 +60,47 @@ function getUpdateType(current: string, latest: string): VersionInfo["updateType
   return "unknown";
 }
 
+/**
+ * Validate npm package name format.
+ * Based on npm naming rules: https://docs.npmjs.com/cli/v10/configuring-npm/package-json#name
+ */
+function isValidPackageName(name: string): boolean {
+  // Must be non-empty and max 214 characters
+  if (!name || name.length > 214) return false;
+
+  // Scoped packages: @scope/name
+  if (name.startsWith("@")) {
+    const parts = name.slice(1).split("/");
+    if (parts.length !== 2) return false;
+    const [scope, pkg] = parts;
+    return isValidNamePart(scope) && isValidNamePart(pkg);
+  }
+
+  return isValidNamePart(name);
+}
+
+function isValidNamePart(name: string): boolean {
+  // Must start with lowercase letter or digit, contain only safe URL characters
+  // Allowed: lowercase letters, digits, hyphens, underscores, dots
+  return /^[a-z0-9][a-z0-9._-]*$/.test(name);
+}
+
+/**
+ * Delay helper for rate limiting
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function fetchLatestVersion(
   packageName: string,
   cache: NpmCache | null,
 ): Promise<string | null> {
+  // Validate package name to prevent URL injection
+  if (!isValidPackageName(packageName)) {
+    return null;
+  }
+
   // Try cache first
   if (cache) {
     const cached = cache.getVersion(packageName);
@@ -70,7 +108,9 @@ async function fetchLatestVersion(
   }
 
   try {
-    const response = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
+    // URL-encode the package name (handles scoped packages like @scope/name)
+    const encodedName = encodeURIComponent(packageName).replace("%40", "@").replace("%2F", "/");
+    const response = await fetch(`https://registry.npmjs.org/${encodedName}/latest`);
     if (!response.ok) return null;
     const data = (await response.json()) as { version?: string };
     const version = typeof data.version === "string" ? data.version : null;
@@ -82,6 +122,7 @@ async function fetchLatestVersion(
 
     return version;
   } catch {
+    // Network error or invalid response
     return null;
   }
 }
@@ -103,7 +144,11 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
   let pkg: PackageJson;
   try {
     const content = await readFile(packageJsonPath, "utf-8");
-    pkg = JSON.parse(content) as PackageJson;
+    const parsed = safeJsonParse<PackageJson>(content);
+    if (!parsed) {
+      throw new Error("Invalid package.json");
+    }
+    pkg = parsed;
   } catch {
     throw new Error("Could not read package.json");
   }
@@ -128,7 +173,14 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
 
   // Process in batches to avoid overwhelming the registry
   const batchSize = 10;
+  const batchDelayMs = 100; // Rate limit: 100ms between batches
+
   for (let i = 0; i < deps.length; i += batchSize) {
+    // Add delay between batches (but not before the first batch)
+    if (i > 0) {
+      await delay(batchDelayMs);
+    }
+
     const batch = deps.slice(i, i + batchSize);
     const results = await Promise.all(
       batch.map(async (dep) => {
@@ -246,7 +298,8 @@ interface NpmAuditData {
 
 function parseAuditOutput(output: string): AuditResult | null {
   try {
-    const data = JSON.parse(output) as NpmAuditData;
+    const data = safeJsonParse<NpmAuditData>(output);
+    if (!data) return null;
 
     // npm audit format
     if (data.metadata?.vulnerabilities) {
@@ -266,6 +319,7 @@ function parseAuditOutput(output: string): AuditResult | null {
 
     return null;
   } catch {
+    // JSON parsing failed
     return null;
   }
 }

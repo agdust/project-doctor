@@ -4,6 +4,7 @@ import { createGlobalContext } from "../context/global.js";
 import { checkDeps, type AuditResult } from "./deps-checker.js";
 import { ensureConfigDir } from "../config/constants.js";
 import { runAllChecksRaw } from "./runner.js";
+import { safeJsonParse } from "./safe-json.js";
 
 interface SnapshotEntry {
   date: string;
@@ -31,8 +32,9 @@ async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
   const historyPath = join(projectPath, HISTORY_DIR, HISTORY_FILE);
   try {
     const content = await readFile(historyPath, "utf-8");
-    return JSON.parse(content) as SnapshotEntry[];
+    return safeJsonParse<SnapshotEntry[]>(content) ?? [];
   } catch {
+    // History file doesn't exist yet
     return [];
   }
 }
