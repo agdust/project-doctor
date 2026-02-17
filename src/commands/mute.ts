@@ -14,7 +14,7 @@
 import { setCheckSeverity } from "../config/loader.js";
 import { createSkipUntil } from "../config/types.js";
 import { getValidCheckNames } from "../utils/checks.js";
-import { RED, RESET } from "../utils/colors.js";
+import { red } from "../utils/colors.js";
 
 function addWeeks(date: Date, weeks: number): Date {
   const result = new Date(date);
@@ -66,7 +66,7 @@ export async function runMute(
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
-    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
+    console.error(red(`Error: Unknown check "${checkName}".`));
     console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }
@@ -77,19 +77,19 @@ export async function runMute(
   if (options.until) {
     const parsed = parseDate(options.until);
     if (!parsed) {
-      console.error(`${RED}Error: Invalid date format "${options.until}". Use YYYY-MM-DD.${RESET}`);
+      console.error(red(`Error: Invalid date format "${options.until}". Use YYYY-MM-DD.`));
       process.exit(2);
     }
 
     if (parsed <= now) {
-      console.error(`${RED}Error: Date must be in the future.${RESET}`);
+      console.error(red("Error: Date must be in the future."));
       process.exit(2);
     }
 
     muteUntil = parsed;
   } else if (options.months) {
     if (options.months <= 0) {
-      console.error(`${RED}Error: Months must be a positive number.${RESET}`);
+      console.error(red("Error: Months must be a positive number."));
       process.exit(2);
     }
     muteUntil = addMonths(now, options.months);
@@ -97,7 +97,7 @@ export async function runMute(
     // Default: 2 weeks
     const weeks = options.weeks ?? 2;
     if (weeks <= 0) {
-      console.error(`${RED}Error: Weeks must be a positive number.${RESET}`);
+      console.error(red("Error: Weeks must be a positive number."));
       process.exit(2);
     }
     muteUntil = addWeeks(now, weeks);
@@ -120,7 +120,7 @@ export async function runUnmute(projectPath: string, checkName: string): Promise
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
-    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
+    console.error(red(`Error: Unknown check "${checkName}".`));
     console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }

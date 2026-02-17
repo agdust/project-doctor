@@ -10,7 +10,7 @@
 
 import { loadAndResolveConfig } from "../config/loader.js";
 import { getCheckInfo, loadWhyFromDocs, type CheckInfo } from "../utils/checks.js";
-import { RESET, BOLD, DIM, GREEN, YELLOW, RED } from "../utils/colors.js";
+import { bold, dim, green, yellow, red } from "../utils/colors.js";
 
 type CheckInfoOutput = CheckInfo & {
   why?: string;
@@ -39,7 +39,7 @@ export async function runInfo(
   const info = getCheckInfo(checkName, config);
 
   if (!info) {
-    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
+    console.error(red(`Error: Unknown check "${checkName}".`));
     console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }
@@ -59,42 +59,42 @@ export async function runInfo(
 
   // Text format
   console.log();
-  console.log(`${BOLD}Check:${RESET} ${output.name}`);
-  console.log(`${BOLD}Group:${RESET} ${output.group}`);
-  console.log(`${BOLD}Description:${RESET} ${output.description}`);
+  console.log(`${bold("Check:")} ${output.name}`);
+  console.log(`${bold("Group:")} ${output.group}`);
+  console.log(`${bold("Description:")} ${output.description}`);
   console.log();
-  console.log(`${BOLD}Tags:${RESET} ${output.tags.join(", ")}`);
+  console.log(`${bold("Tags:")} ${output.tags.join(", ")}`);
   console.log();
 
   const statusColor =
-    output.status === "enabled" ? GREEN : output.status === "muted" ? YELLOW : DIM;
-  let statusStr = `${statusColor}${output.status}${RESET}`;
+    output.status === "enabled" ? green : output.status === "muted" ? yellow : dim;
+  let statusStr = statusColor(output.status);
   if (output.mutedUntil) {
     statusStr += ` (until ${output.mutedUntil})`;
   }
-  console.log(`${BOLD}Status:${RESET} ${statusStr}`);
-  console.log(`${BOLD}Has Fix:${RESET} ${output.fixable ? `${GREEN}yes${RESET}` : "no"}`);
+  console.log(`${bold("Status:")} ${statusStr}`);
+  console.log(`${bold("Has Fix:")} ${output.fixable ? green("yes") : "no"}`);
 
   if (output.fixDescription) {
     console.log();
-    console.log(`${BOLD}Fix Description:${RESET}`);
+    console.log(`${bold("Fix Description:")}`);
     console.log(`  ${output.fixDescription}`);
   }
 
   if (output.fixOptions && output.fixOptions.length > 0) {
     console.log();
-    console.log(`${BOLD}Fix Options:${RESET}`);
+    console.log(`${bold("Fix Options:")}`);
     for (const opt of output.fixOptions) {
-      console.log(`  ${DIM}[${opt.id}]${RESET} ${opt.label}`);
+      console.log(`  ${dim(`[${opt.id}]`)} ${opt.label}`);
       if (opt.description) {
-        console.log(`    ${DIM}${opt.description}${RESET}`);
+        console.log(`    ${dim(opt.description)}`);
       }
     }
   }
 
   if (output.why) {
     console.log();
-    console.log(`${BOLD}Why This Matters:${RESET}`);
+    console.log(`${bold("Why This Matters:")}`);
     console.log("─".repeat(60));
     console.log(output.why);
   }

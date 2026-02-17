@@ -9,30 +9,30 @@
 import { loadAndResolveConfig, setProjectType } from "../config/loader.js";
 import type { ProjectType, Severity } from "../config/types.js";
 import { isSkipUntil, parseSkipUntil } from "../config/types.js";
-import { RESET, BOLD, DIM, GREEN, YELLOW, RED } from "../utils/colors.js";
+import { bold, dim, green, yellow, red } from "../utils/colors.js";
 
 function formatSeverity(severity: Severity): string {
   if (severity === "off") {
-    return `${DIM}off${RESET}`;
+    return dim("off");
   }
   if (isSkipUntil(severity)) {
     const date = parseSkipUntil(severity);
     if (date) {
-      return `${YELLOW}skip-until-${date.toISOString().split("T")[0]}${RESET}`;
+      return yellow(`skip-until-${date.toISOString().split("T")[0]}`);
     }
-    return `${DIM}${severity}${RESET}`;
+    return dim(severity);
   }
-  return `${GREEN}error${RESET}`;
+  return green("error");
 }
 
 function formatProjectTypeSource(source: "config" | "detected", detectedFrom?: string): string {
   if (source === "config") {
-    return `${DIM}(from config)${RESET}`;
+    return dim("(from config)");
   }
   if (detectedFrom && detectedFrom !== "fallback") {
-    return `${DIM}(auto-detected from ${detectedFrom})${RESET}`;
+    return dim(`(auto-detected from ${detectedFrom})`);
   }
-  return `${DIM}(auto-detected)${RESET}`;
+  return dim("(auto-detected)");
 }
 
 /**
@@ -48,46 +48,46 @@ export async function runConfigShow(projectPath: string): Promise<void> {
 
   console.log();
   console.log(
-    `${BOLD}Project Type:${RESET} ${resolved.projectType} ${formatProjectTypeSource(resolved.projectTypeSource, resolved.projectTypeDetectedFrom)}`,
+    `${bold("Project Type:")} ${resolved.projectType} ${formatProjectTypeSource(resolved.projectTypeSource, resolved.projectTypeDetectedFrom)}`,
   );
   console.log();
 
   // Show checks configuration
   const checkEntries = Object.entries(resolved.checks);
   if (checkEntries.length > 0) {
-    console.log(`${BOLD}Checks:${RESET}`);
+    console.log(`${bold("Checks:")}`);
     for (const [name, severity] of checkEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
     console.log();
   } else {
-    console.log(`${BOLD}Checks:${RESET} ${DIM}(none configured)${RESET}`);
+    console.log(`${bold("Checks:")} ${dim("(none configured)")}`);
     console.log();
   }
 
   // Show tags configuration
   const tagEntries = Object.entries(resolved.tags);
   if (tagEntries.length > 0) {
-    console.log(`${BOLD}Tags:${RESET}`);
+    console.log(`${bold("Tags:")}`);
     for (const [name, severity] of tagEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
     console.log();
   } else {
-    console.log(`${BOLD}Tags:${RESET} ${DIM}(none configured)${RESET}`);
+    console.log(`${bold("Tags:")} ${dim("(none configured)")}`);
     console.log();
   }
 
   // Show groups configuration
   const groupEntries = Object.entries(resolved.groups);
   if (groupEntries.length > 0) {
-    console.log(`${BOLD}Groups:${RESET}`);
+    console.log(`${bold("Groups:")}`);
     for (const [name, severity] of groupEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
     console.log();
   } else {
-    console.log(`${BOLD}Groups:${RESET} ${DIM}(none configured)${RESET}`);
+    console.log(`${bold("Groups:")} ${dim("(none configured)")}`);
     console.log();
   }
 }
@@ -104,9 +104,7 @@ export async function runConfigSetProjectType(
 ): Promise<void> {
   // Validate project type
   if (projectType !== "js" && projectType !== "generic") {
-    console.error(
-      `${RED}Error: Invalid project type "${projectType}". Must be "js" or "generic".${RESET}`,
-    );
+    console.error(red(`Error: Invalid project type "${projectType}". Must be "js" or "generic".`));
     process.exit(2);
   }
 

@@ -1,14 +1,26 @@
 /**
- * ANSI Color Codes
+ * Color utilities using picocolors
  *
- * Centralized color constants for consistent CLI output.
- * Use these instead of inline ANSI codes throughout the codebase.
+ * Provides color functions for CLI output with automatic
+ * terminal color support detection.
  */
 
-export const RESET = "\x1b[0m";
-export const BOLD = "\x1b[1m";
-export const DIM = "\x1b[90m";
-export const RED = "\x1b[31m";
-export const GREEN = "\x1b[32m";
-export const YELLOW = "\x1b[33m";
-export const CYAN = "\x1b[36m";
+import pc from "picocolors";
+
+// Re-export picocolors functions for convenience
+export const bold = pc.bold;
+export const dim = pc.dim;
+export const red = pc.red;
+export const green = pc.green;
+export const yellow = pc.yellow;
+export const cyan = pc.cyan;
+export const blue = pc.blue;
+export const magenta = pc.magenta;
+export const gray = pc.gray;
+export const white = pc.white;
+
+// Combination helpers
+export const boldRed = (s: string) => pc.bold(pc.red(s));
+export const boldGreen = (s: string) => pc.bold(pc.green(s));
+export const boldYellow = (s: string) => pc.bold(pc.yellow(s));
+export const boldCyan = (s: string) => pc.bold(pc.cyan(s));

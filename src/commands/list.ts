@@ -14,7 +14,7 @@
 import { loadAndResolveConfig } from "../config/loader.js";
 import { listChecks } from "../registry.js";
 import { getCheckStatus, buildFixableMap, type CheckStatus } from "../utils/checks.js";
-import { RESET, BOLD, DIM, GREEN, YELLOW } from "../utils/colors.js";
+import { bold, dim, green, yellow } from "../utils/colors.js";
 
 export interface ListOptions {
   groups?: string[];
@@ -36,16 +36,16 @@ interface CheckListInfo {
 function formatStatus(status: CheckStatus, mutedUntil?: string): string {
   switch (status) {
     case "enabled":
-      return `${GREEN}enabled${RESET}`;
+      return green("enabled");
     case "disabled":
-      return `${DIM}disabled${RESET}`;
+      return dim("disabled");
     case "muted":
-      return `${YELLOW}muted${mutedUntil ? ` (until ${mutedUntil})` : ""}${RESET}`;
+      return yellow(`muted${mutedUntil ? ` (until ${mutedUntil})` : ""}`);
   }
 }
 
 function formatTags(tags: string[]): string {
-  return tags.map((t) => `${DIM}${t}${RESET}`).join(", ");
+  return tags.map((t) => dim(t)).join(", ");
 }
 
 /**
@@ -119,9 +119,9 @@ export async function runList(projectPath: string, options: ListOptions): Promis
   // Print header
   console.log();
   console.log(
-    `${BOLD}${"Check Name".padEnd(nameWidth)}${RESET}  ` +
-      `${BOLD}${"Group".padEnd(groupWidth)}${RESET}  ` +
-      `${BOLD}Tags${RESET}`,
+    `${bold("Check Name".padEnd(nameWidth))}  ` +
+      `${bold("Group".padEnd(groupWidth))}  ` +
+      `${bold("Tags")}`,
   );
   console.log("─".repeat(nameWidth + groupWidth + 60));
 
@@ -129,7 +129,7 @@ export async function runList(projectPath: string, options: ListOptions): Promis
   for (const check of checks) {
     const statusStr = formatStatus(check.status, check.mutedUntil);
     const tagsStr = formatTags(check.tags);
-    const fixableStr = check.fixable ? `${GREEN}[fixable]${RESET}` : "";
+    const fixableStr = check.fixable ? green("[fixable]") : "";
 
     console.log(
       `${check.name.padEnd(nameWidth)}  ` + `${check.group.padEnd(groupWidth)}  ` + tagsStr,

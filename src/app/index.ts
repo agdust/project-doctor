@@ -67,10 +67,10 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
         blank();
         divider();
         blank();
-        if (fixed > 0) text(`\x1b[32m✓\x1b[0m ${fixed} fixed`);
-        if (mutedCount > 0) text(`\x1b[33m⏸\x1b[0m ${mutedCount} muted`);
-        if (disabled > 0) text(`\x1b[33m⊘\x1b[0m ${disabled} disabled`);
-        if (skipped > 0) text(`\x1b[90m→\x1b[0m ${skipped} skipped`);
+        if (fixed > 0) text(`${colors.green}✓${colors.reset} ${fixed} fixed`);
+        if (mutedCount > 0) text(`${colors.yellow}⏸${colors.reset} ${mutedCount} muted`);
+        if (disabled > 0) text(`${colors.yellow}⊘${colors.reset} ${disabled} disabled`);
+        if (skipped > 0) text(`${colors.dim}→${colors.reset} ${skipped} skipped`);
       }
       blank();
     },

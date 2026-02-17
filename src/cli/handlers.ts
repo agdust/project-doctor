@@ -16,7 +16,7 @@ import { runEslintShow } from "../eslint-config/commands/show.js";
 import { runEslintAdd } from "../eslint-config/commands/add.js";
 import { runEslintDiff } from "../eslint-config/commands/diff.js";
 import { runMainWizard } from "../eslint-config/commands/main.js";
-import { RESET, RED } from "../utils/colors.js";
+import { red } from "../utils/colors.js";
 import { getProjectPath, isPath } from "./utils.js";
 import { printEslintHelp, printFixHelp } from "./help.js";
 
@@ -29,14 +29,14 @@ function parseConfigTargetArgs(args: string[]): {
 } {
   const type = args[0];
   if (!type || !["check", "tag", "group"].includes(type)) {
-    console.error(`${RED}Error: Missing or invalid type. Use 'check', 'tag', or 'group'.${RESET}`);
+    console.error(`${red("Error:")} Missing or invalid type. Use 'check', 'tag', or 'group'.`);
     process.exit(2);
   }
   args.shift();
 
   const name = args[0];
   if (!name || name.startsWith("-")) {
-    console.error(`${RED}Error: Missing ${type} name.${RESET}`);
+    console.error(`${red("Error:")} Missing ${type} name.`);
     process.exit(2);
   }
   args.shift();
@@ -52,7 +52,7 @@ export async function handleConfigCommand(args: string[]): Promise<void> {
 
     if (settingName === "project-type") {
       if (!settingValue) {
-        console.error(`${RED}Error: Missing project type. Use 'js' or 'generic'.${RESET}`);
+        console.error(`${red("Error:")} Missing project type. Use 'js' or 'generic'.`);
         process.exit(2);
       }
       const projectPath = getProjectPath(args.slice(3));
@@ -61,7 +61,7 @@ export async function handleConfigCommand(args: string[]): Promise<void> {
     }
 
     console.error(
-      `${RED}Error: Unknown config setting "${settingName}". Use 'project-type'.${RESET}`,
+      `${red("Error:")} Unknown config setting "${settingName}". Use 'project-type'.`,
     );
     process.exit(2);
   }
@@ -118,7 +118,7 @@ export async function handleEnableCommand(args: string[]): Promise<void> {
 export async function handleMuteCommand(args: string[]): Promise<void> {
   const checkName = args[0];
   if (!checkName || checkName.startsWith("-")) {
-    console.error(`${RED}Error: Missing check name.${RESET}`);
+    console.error(`${red("Error:")} Missing check name.`);
     process.exit(2);
   }
   args.shift();
@@ -145,7 +145,7 @@ export async function handleMuteCommand(args: string[]): Promise<void> {
 export async function handleUnmuteCommand(args: string[]): Promise<void> {
   const checkName = args[0];
   if (!checkName || checkName.startsWith("-")) {
-    console.error(`${RED}Error: Missing check name.${RESET}`);
+    console.error(`${red("Error:")} Missing check name.`);
     process.exit(2);
   }
   args.shift();
@@ -179,7 +179,7 @@ export async function handleListCommand(args: string[]): Promise<void> {
 export async function handleInfoCommand(args: string[]): Promise<void> {
   const checkName = args[0];
   if (!checkName || checkName.startsWith("-")) {
-    console.error(`${RED}Error: Missing check name.${RESET}`);
+    console.error(`${red("Error:")} Missing check name.`);
     process.exit(2);
   }
   args.shift();
@@ -314,7 +314,7 @@ export async function handleEslintCommand(args: string[]): Promise<void> {
       await runMainWizard(projectPath);
       return;
     default:
-      console.log(`${RED}Unknown eslint subcommand: ${subcommand}${RESET}`);
+      console.log(red(`Unknown eslint subcommand: ${subcommand}`));
       console.log();
       printEslintHelp();
       return;

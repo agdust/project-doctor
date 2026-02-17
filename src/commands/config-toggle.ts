@@ -4,7 +4,7 @@
 
 import { setCheckSeverity, setTagSeverity, setGroupSeverity } from "../config/loader.js";
 import { getValidCheckNames, getValidGroupNames, getValidTagNames } from "../utils/checks.js";
-import { RED, RESET } from "../utils/colors.js";
+import { red } from "../utils/colors.js";
 import type { Severity } from "../config/types.js";
 
 type ToggleAction = "enable" | "disable";
@@ -25,7 +25,7 @@ export async function toggleCheck(
   const validChecks = getValidCheckNames();
 
   if (!validChecks.has(checkName)) {
-    console.error(`${RED}Error: Unknown check "${checkName}".${RESET}`);
+    console.error(red(`Error: Unknown check "${checkName}".`));
     console.error('Run "project-doctor list" to see available checks.');
     process.exit(2);
   }
@@ -42,7 +42,7 @@ export async function toggleTag(
   const validTags = getValidTagNames();
 
   if (!validTags.has(tagName)) {
-    console.error(`${RED}Error: Unknown tag "${tagName}".${RESET}`);
+    console.error(red(`Error: Unknown tag "${tagName}".`));
     console.error(`Valid tags: ${Array.from(validTags).join(", ")}`);
     process.exit(2);
   }
@@ -59,7 +59,7 @@ export async function toggleGroup(
   const validGroups = getValidGroupNames();
 
   if (!validGroups.has(groupName)) {
-    console.error(`${RED}Error: Unknown group "${groupName}".${RESET}`);
+    console.error(red(`Error: Unknown group "${groupName}".`));
     console.error(`Valid groups: ${Array.from(validGroups).join(", ")}`);
     process.exit(2);
   }

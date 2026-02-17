@@ -1,4 +1,5 @@
 import type { CheckResult, CheckStatus } from "../types.js";
+import { green, red, dim, bold } from "./colors.js";
 
 const STATUS_ICONS: Record<CheckStatus, string> = {
   pass: "\u2713",
@@ -6,21 +7,17 @@ const STATUS_ICONS: Record<CheckStatus, string> = {
   skip: "\u2014",
 };
 
-const STATUS_COLORS: Record<CheckStatus, string> = {
-  pass: "\x1b[32m",
-  fail: "\x1b[31m",
-  skip: "\x1b[90m",
+const STATUS_FORMATTERS: Record<CheckStatus, (s: string) => string> = {
+  pass: green,
+  fail: red,
+  skip: dim,
 };
-
-const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
 
 export function formatResult(result: CheckResult, useColor = true): string {
   const icon = STATUS_ICONS[result.status];
-  const color = useColor ? STATUS_COLORS[result.status] : "";
-  const reset = useColor ? RESET : "";
+  const formatter = useColor ? STATUS_FORMATTERS[result.status] : (s: string) => s;
 
-  return `${color}${icon}${reset} ${result.name}: ${result.message}`;
+  return `${formatter(icon)} ${result.name}: ${result.message}`;
 }
 
 function groupResults(results: CheckResult[]): Map<string, CheckResult[]> {
@@ -52,9 +49,7 @@ export function printResults(results: CheckResult[], options: PrintOptions = {})
       continue;
     }
 
-    const bold = useColor ? BOLD : "";
-    const reset = useColor ? RESET : "";
-    console.log(`${bold}${groupName}${reset}`);
+    console.log(useColor ? bold(groupName) : groupName);
 
     const resultsToShow = fullReport ? groupResults : issues;
     for (const result of resultsToShow) {
@@ -71,9 +66,9 @@ export function printSummary(results: CheckResult[]): void {
   const summary = getSummary(results);
   const parts: string[] = [];
 
-  if (summary.passed > 0) parts.push(`\x1b[32m${summary.passed} passed\x1b[0m`);
-  if (summary.failed > 0) parts.push(`\x1b[31m${summary.failed} failed\x1b[0m`);
-  if (summary.skipped > 0) parts.push(`\x1b[90m${summary.skipped} skipped\x1b[0m`);
+  if (summary.passed > 0) parts.push(green(`${summary.passed} passed`));
+  if (summary.failed > 0) parts.push(red(`${summary.failed} failed`));
+  if (summary.skipped > 0) parts.push(dim(`${summary.skipped} skipped`));
 
   console.log(`Summary: ${parts.join(", ")} (${summary.total} total)`);
 }

@@ -21,7 +21,7 @@ import { runSnapshot, runHistory } from "./utils/snapshot.js";
 import { runInit } from "./utils/init.js";
 import { runProjectDoctorApp } from "./app/index.js";
 import { printCheckResultsAsJson } from "./commands/check.js";
-import { RESET, BOLD, DIM, RED } from "./utils/colors.js";
+import { bold, dim, red } from "./utils/colors.js";
 import {
   printHelp,
   handleConfigCommand,
@@ -53,9 +53,9 @@ function printCheckList(): void {
   for (const check of checks) {
     if (check.group !== currentGroup) {
       currentGroup = check.group;
-      console.log(`\n${BOLD}[${currentGroup}]${RESET}`);
+      console.log(`\n${bold(`[${currentGroup}]`)}`);
     }
-    const tags = check.tags.map((t) => `${DIM}${t}${RESET}`).join(" ");
+    const tags = check.tags.map((t) => dim(t)).join(" ");
     console.log(`  ${check.name}`);
     console.log(`    ${check.description}`);
     console.log(`    ${tags}`);
@@ -227,16 +227,16 @@ async function main(): Promise<void> {
 
 // Global error handlers
 process.on("unhandledRejection", (reason) => {
-  console.error(`${RED}Unhandled Promise Rejection:${RESET}`, reason);
+  console.error(red("Unhandled Promise Rejection:"), reason);
   process.exit(1);
 });
 
 process.on("uncaughtException", (error) => {
-  console.error(`${RED}Uncaught Exception:${RESET}`, error);
+  console.error(red("Uncaught Exception:"), error);
   process.exit(1);
 });
 
 main().catch((error) => {
-  console.error(`${RED}Fatal error:${RESET}`, error);
+  console.error(red("Fatal error:"), error);
   process.exit(1);
 });

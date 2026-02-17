@@ -1,7 +1,7 @@
 import { writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "../config/constants.js";
-import { RESET, GREEN, YELLOW } from "./colors.js";
+import { green, yellow } from "./colors.js";
 
 const DEFAULT_CONFIG = `{
   // Disable specific checks
@@ -27,7 +27,7 @@ export async function runInit(projectPath: string): Promise<void> {
   // Check if config already exists
   try {
     await access(configPath);
-    console.log(`  ${YELLOW}!${RESET} Config already exists at ${CONFIG_DIR}/${CONFIG_FILE}`);
+    console.log(`  ${yellow("!")} Config already exists at ${CONFIG_DIR}/${CONFIG_FILE}`);
     console.log();
     return;
   } catch {
@@ -37,6 +37,6 @@ export async function runInit(projectPath: string): Promise<void> {
   await ensureConfigDir(projectPath);
   await writeFile(configPath, DEFAULT_CONFIG, "utf-8");
 
-  console.log(`  ${GREEN}✓${RESET} Created ${CONFIG_DIR}/${CONFIG_FILE}`);
+  console.log(`  ${green("✓")} Created ${CONFIG_DIR}/${CONFIG_FILE}`);
   console.log();
 }

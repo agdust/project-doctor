@@ -10,7 +10,7 @@ import { join } from "node:path";
 import * as readline from "node:readline";
 import { loadConfig, updateConfig } from "../config/loader.js";
 import { createMatcher } from "../typing-challenge/typing-challenge.js";
-import { RESET, BOLD, DIM, YELLOW, RED, GREEN, CYAN } from "./colors.js";
+import { bold, dim, yellow, red, green, cyan } from "./colors.js";
 
 const CHALLENGE_PHRASE = "i understand the risks";
 
@@ -64,31 +64,31 @@ export async function ensureGitSafety(projectPath: string): Promise<boolean> {
   // Show warning
   console.log();
   console.log();
-  console.log(`  ${YELLOW}┌${"─".repeat(58)}┐${RESET}`);
-  console.log(`  ${YELLOW}│${RESET}  ${BOLD}${YELLOW}WARNING: No Git Repository Detected${RESET}${" ".repeat(21)}${YELLOW}│${RESET}`);
-  console.log(`  ${YELLOW}└${"─".repeat(58)}┘${RESET}`);
+  console.log(`  ${yellow(`┌${"─".repeat(58)}┐`)}`);
+  console.log(`  ${yellow("│")}  ${bold(yellow("WARNING: No Git Repository Detected"))}${" ".repeat(21)}${yellow("│")}`);
+  console.log(`  ${yellow(`└${"─".repeat(58)}┘`)}`);
   console.log();
-  console.log(`  ${DIM}This project is not under version control.${RESET}`);
-  console.log(`  ${DIM}Project Doctor can modify files as part of auto-fixes.${RESET}`);
-  console.log(`  ${DIM}Without git, you cannot easily undo these changes.${RESET}`);
+  console.log(`  ${dim("This project is not under version control.")}`);
+  console.log(`  ${dim("Project Doctor can modify files as part of auto-fixes.")}`);
+  console.log(`  ${dim("Without git, you cannot easily undo these changes.")}`);
   console.log();
-  console.log(`  ${BOLD}Recommended:${RESET} Run ${CYAN}git init${RESET} before proceeding.`);
+  console.log(`  ${bold("Recommended:")} Run ${cyan("git init")} before proceeding.`);
   console.log();
-  console.log(`  ${DIM}To continue anyway, type: ${RESET}${CYAN}${CHALLENGE_PHRASE}${RESET}`);
+  console.log(`  ${dim("To continue anyway, type:")} ${cyan(CHALLENGE_PHRASE)}`);
   console.log();
 
   const answer = await promptInput("Type to confirm (or press Enter to cancel)");
 
   if (!answer.trim()) {
     console.log();
-    console.log(`  ${RED}Cancelled.${RESET} Initialize git with: ${CYAN}git init${RESET}`);
+    console.log(`  ${red("Cancelled.")} Initialize git with: ${cyan("git init")}`);
     console.log();
     return false;
   }
 
   if (!matchesChallenge(answer)) {
     console.log();
-    console.log(`  ${RED}Confirmation did not match.${RESET} Operation cancelled.`);
+    console.log(`  ${red("Confirmation did not match.")} Operation cancelled.`);
     console.log();
     return false;
   }
@@ -97,7 +97,7 @@ export async function ensureGitSafety(projectPath: string): Promise<boolean> {
   await updateConfig(projectPath, { noGitConfirmed: true });
 
   console.log();
-  console.log(`  ${GREEN}Confirmed.${RESET} ${DIM}This warning won't appear again for this project.${RESET}`);
+  console.log(`  ${green("Confirmed.")} ${dim("This warning won't appear again for this project.")}`);
   console.log();
 
   return true;
