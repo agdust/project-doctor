@@ -2,8 +2,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import semver from "semver";
 import { createNpmCache, computeLockfileHash, type NpmCache } from "./npm-cache.js";
 import { safeJsonParse } from "./safe-json.js";
+import { bold, dim, green, yellow, red } from "./colors.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -35,29 +37,50 @@ export interface DepsCheckResult {
   audit: AuditResult | null;
 }
 
-function parseVersion(version: string): { major: number; minor: number; patch: number } | null {
-  // Remove ^ ~ >= etc
-  const cleaned = version.replace(/^[\^~>=<]+/, "");
-  const match = /^(\d+)\.(\d+)\.(\d+)/.exec(cleaned);
-  if (!match) return null;
-  return {
-    major: parseInt(match[1], 10),
-    minor: parseInt(match[2], 10),
-    patch: parseInt(match[3], 10),
-  };
+/**
+ * Determine the type of update between two versions using semver.
+ */
+function getUpdateType(current: string, latest: string): VersionInfo["updateType"] {
+  const currentClean = semver.coerce(current);
+  const latestClean = semver.coerce(latest);
+
+  if (!currentClean || !latestClean) return "unknown";
+
+  // Check for prerelease
+  const latestParsed = semver.parse(latest);
+  if (latestParsed?.prerelease && latestParsed.prerelease.length > 0) {
+    return "prerelease";
+  }
+
+  const diff = semver.diff(currentClean, latestClean);
+
+  switch (diff) {
+    case "major":
+    case "premajor":
+      return "major";
+    case "minor":
+    case "preminor":
+      return "minor";
+    case "patch":
+    case "prepatch":
+      return "patch";
+    case "prerelease":
+      return "prerelease";
+    default:
+      return "unknown";
+  }
 }
 
-function getUpdateType(current: string, latest: string): VersionInfo["updateType"] {
-  const currentParsed = parseVersion(current);
-  const latestParsed = parseVersion(latest);
+/**
+ * Check if latest version is greater than current version using semver.
+ */
+function isOutdated(current: string, latest: string): boolean {
+  const currentClean = semver.coerce(current);
+  const latestClean = semver.coerce(latest);
 
-  if (!currentParsed || !latestParsed) return "unknown";
+  if (!currentClean || !latestClean) return false;
 
-  if (latestParsed.major > currentParsed.major) return "major";
-  if (latestParsed.minor > currentParsed.minor) return "minor";
-  if (latestParsed.patch > currentParsed.patch) return "patch";
-
-  return "unknown";
+  return semver.gt(latestClean, currentClean);
 }
 
 /**
@@ -202,26 +225,10 @@ export async function checkDeps(options: DepsCheckerOptions): Promise<DepsCheckR
         continue;
       }
 
-      const currentClean = dep.version.replace(/^[\^~>=<]+/, "");
-      if (currentClean === latest) {
+      // Check if it's actually outdated using semver
+      if (!isOutdated(dep.version, latest)) {
         upToDate++;
         continue;
-      }
-
-      // Check if it's actually outdated (not just different format)
-      const currentParsed = parseVersion(dep.version);
-      const latestParsed = parseVersion(latest);
-
-      if (currentParsed && latestParsed) {
-        const isOutdated =
-          latestParsed.major > currentParsed.major ||
-          latestParsed.minor > currentParsed.minor ||
-          latestParsed.patch > currentParsed.patch;
-
-        if (!isOutdated) {
-          upToDate++;
-          continue;
-        }
       }
 
       outdated.push({
@@ -338,11 +345,9 @@ export function printDepsReport(result: DepsCheckResult): void {
 
   // Outdated packages
   if (outdated.length === 0) {
-    console.log("  \x1b[32m✓ All dependencies are up to date\x1b[0m");
+    console.log(`  ${green("✓ All dependencies are up to date")}`);
   } else {
-    console.log(
-      `  Found \x1b[1m${outdated.length}\x1b[0m outdated package${outdated.length > 1 ? "s" : ""}`,
-    );
+    console.log(`  Found ${bold(String(outdated.length))} outdated package${outdated.length > 1 ? "s" : ""}`);
     console.log();
 
     // Group by update type
@@ -353,53 +358,53 @@ export function printDepsReport(result: DepsCheckResult): void {
       (d) => d.updateType === "unknown" || d.updateType === "prerelease",
     );
 
-    const printSection = (items: VersionInfo[], label: string, color: string) => {
+    const printSection = (items: VersionInfo[], label: string, colorFn: (s: string) => string) => {
       if (items.length === 0) return;
-      console.log(`  ${color}${label}\x1b[0m`);
+      console.log(`  ${colorFn(label)}`);
       for (const dep of items) {
-        const devLabel = dep.type === "devDependencies" ? " \x1b[90m(dev)\x1b[0m" : "";
+        const devLabel = dep.type === "devDependencies" ? ` ${dim("(dev)")}` : "";
         console.log(`    ${dep.name}${devLabel}`);
-        console.log(`      \x1b[90m${dep.current}\x1b[0m → \x1b[32m${dep.latest}\x1b[0m`);
+        console.log(`      ${dim(dep.current)} → ${green(dep.latest)}`);
       }
       console.log();
     };
 
-    printSection(major, "Major updates (breaking changes possible)", "\x1b[31m");
-    printSection(minor, "Minor updates (new features)", "\x1b[33m");
-    printSection(patch, "Patch updates (bug fixes)", "\x1b[32m");
-    printSection(other, "Other updates", "\x1b[90m");
+    printSection(major, "Major updates (breaking changes possible)", red);
+    printSection(minor, "Minor updates (new features)", yellow);
+    printSection(patch, "Patch updates (bug fixes)", green);
+    printSection(other, "Other updates", dim);
   }
 
   // Security audit
-  console.log("  \x1b[90m─────────────────────────────────────────\x1b[0m");
+  console.log(`  ${dim("─────────────────────────────────────────")}`);
   console.log();
-  console.log("  \x1b[1mSecurity Audit\x1b[0m");
+  console.log(`  ${bold("Security Audit")}`);
   console.log();
 
   if (!audit) {
-    console.log("    \x1b[90mCould not run npm audit\x1b[0m");
+    console.log(`    ${dim("Could not run npm audit")}`);
   } else if (audit.total === 0) {
-    console.log("    \x1b[32m✓ No vulnerabilities found\x1b[0m");
+    console.log(`    ${green("✓ No vulnerabilities found")}`);
   } else {
     if (audit.critical > 0) {
-      console.log(`    \x1b[31m${audit.critical} critical\x1b[0m`);
+      console.log(`    ${red(`${audit.critical} critical`)}`);
     }
     if (audit.high > 0) {
-      console.log(`    \x1b[31m${audit.high} high\x1b[0m`);
+      console.log(`    ${red(`${audit.high} high`)}`);
     }
     if (audit.moderate > 0) {
-      console.log(`    \x1b[33m${audit.moderate} moderate\x1b[0m`);
+      console.log(`    ${yellow(`${audit.moderate} moderate`)}`);
     }
     if (audit.low > 0) {
-      console.log(`    \x1b[90m${audit.low} low\x1b[0m`);
+      console.log(`    ${dim(`${audit.low} low`)}`);
     }
   }
 
   // Summary
   console.log();
-  console.log("  \x1b[90m─────────────────────────────────────────\x1b[0m");
+  console.log(`  ${dim("─────────────────────────────────────────")}`);
   console.log();
-  console.log("  \x1b[1mSummary\x1b[0m");
+  console.log(`  ${bold("Summary")}`);
   console.log(`    ${outdated.length} outdated`);
   console.log(`    ${upToDate} up to date`);
   if (failed.length > 0) {
@@ -413,7 +418,7 @@ export function printDepsReport(result: DepsCheckResult): void {
 
 export async function runDepsChecker(options: DepsCheckerOptions): Promise<void> {
   console.log();
-  console.log("  \x1b[90mChecking dependencies...\x1b[0m");
+  console.log(`  ${dim("Checking dependencies...")}`);
 
   const result = await checkDeps(options);
   printDepsReport(result);
