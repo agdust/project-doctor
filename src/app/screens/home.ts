@@ -4,6 +4,7 @@
  * Shows project health summary and main navigation options.
  */
 
+import { dim, red, green } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { nav, action, separator } from "../../cli-framework/index.js";
 import { blank, text } from "../../cli-framework/index.js";
@@ -19,15 +20,15 @@ export const homeScreen: Screen<AppContext> = {
     const typeLabel = config.projectType === "js" ? "JavaScript/Node" : "Generic";
 
     if (config.projectTypeSource === "config") {
-      text(`\x1b[90mProject type: ${typeLabel}\x1b[0m`);
+      text(dim(`Project type: ${typeLabel}`));
     } else {
       const detectedFrom = config.projectTypeDetectedFrom;
       if (detectedFrom === "fallback") {
-        text(`\x1b[90mProject type: ${typeLabel} (no JS files detected)\x1b[0m`);
+        text(dim(`Project type: ${typeLabel} (no JS files detected)`));
       } else {
-        text(`\x1b[90mProject type: ${typeLabel} (detected from ${detectedFrom})\x1b[0m`);
+        text(dim(`Project type: ${typeLabel} (detected from ${detectedFrom})`));
       }
-      text("\x1b[90mYou can set project type manually in Config → Project type\x1b[0m");
+      text(dim("You can set project type manually in Config → Project type"));
     }
     blank();
 
@@ -36,9 +37,9 @@ export const homeScreen: Screen<AppContext> = {
     const total = ctx.allResults.length;
 
     if (failed > 0) {
-      text(`\x1b[31mFailed checks ${failed}/${total}\x1b[0m`);
+      text(red(`Failed checks ${failed}/${total}`));
     } else {
-      text(`\x1b[32mAll checks passing (${total})\x1b[0m`);
+      text(green(`All checks passing (${total})`));
     }
     blank();
 

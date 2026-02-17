@@ -1,14 +1,15 @@
+import { bold, dim, green, yellow, red } from "../../utils/colors.js";
 import type { ConfigDiff, RuleValue } from "../types.js";
 
 export function formatDiff(diff: ConfigDiff): string {
   const lines: string[] = [];
 
   lines.push("");
-  lines.push("\x1b[1mProposed Changes:\x1b[0m");
+  lines.push(bold("Proposed Changes:"));
   lines.push("");
 
   if (diff.entries.length === 0) {
-    lines.push("  \x1b[90mNo changes - configuration is up to date\x1b[0m");
+    lines.push(`  ${dim("No changes - configuration is up to date")}`);
     lines.push("");
     return lines.join("\n");
   }
@@ -18,46 +19,46 @@ export function formatDiff(diff: ConfigDiff): string {
   const removed = diff.entries.filter((e) => e.action === "remove");
 
   if (added.length > 0) {
-    lines.push("  \x1b[32mNew rules (+)\x1b[0m");
+    lines.push(`  ${green("New rules (+)")}`);
     for (const entry of added.slice(0, 20)) {
-      lines.push(`    \x1b[32m+\x1b[0m ${entry.rule}: ${formatValue(entry.proposed)}`);
+      lines.push(`    ${green("+")} ${entry.rule}: ${formatValue(entry.proposed)}`);
     }
     if (added.length > 20) {
-      lines.push(`    \x1b[90m... and ${added.length - 20} more\x1b[0m`);
+      lines.push(`    ${dim(`... and ${added.length - 20} more`)}`);
     }
     lines.push("");
   }
 
   if (changed.length > 0) {
-    lines.push("  \x1b[33mChanged rules (~)\x1b[0m");
+    lines.push(`  ${yellow("Changed rules (~)")}`);
     for (const entry of changed.slice(0, 10)) {
-      lines.push(`    \x1b[33m~\x1b[0m ${entry.rule}`);
-      lines.push(`        \x1b[31m- ${formatValue(entry.current)}\x1b[0m`);
-      lines.push(`        \x1b[32m+ ${formatValue(entry.proposed)}\x1b[0m`);
+      lines.push(`    ${yellow("~")} ${entry.rule}`);
+      lines.push(`        ${red(`- ${formatValue(entry.current)}`)}`);
+      lines.push(`        ${green(`+ ${formatValue(entry.proposed)}`)}`);
     }
     if (changed.length > 10) {
-      lines.push(`    \x1b[90m... and ${changed.length - 10} more\x1b[0m`);
+      lines.push(`    ${dim(`... and ${changed.length - 10} more`)}`);
     }
     lines.push("");
   }
 
   if (removed.length > 0) {
-    lines.push("  \x1b[31mRemoved rules (-)\x1b[0m");
+    lines.push(`  ${red("Removed rules (-)")}`);
     for (const entry of removed.slice(0, 10)) {
-      lines.push(`    \x1b[31m-\x1b[0m ${entry.rule}`);
+      lines.push(`    ${red("-")} ${entry.rule}`);
     }
     if (removed.length > 10) {
-      lines.push(`    \x1b[90m... and ${removed.length - 10} more\x1b[0m`);
+      lines.push(`    ${dim(`... and ${removed.length - 10} more`)}`);
     }
     lines.push("");
   }
 
-  lines.push("\x1b[90m  ─────────────────────────────────────────\x1b[0m");
+  lines.push(dim("  ─────────────────────────────────────────"));
   lines.push("");
-  lines.push("  \x1b[1mSummary\x1b[0m");
-  lines.push(`    \x1b[32m+${diff.summary.added}\x1b[0m added`);
-  lines.push(`    \x1b[33m~${diff.summary.changed}\x1b[0m changed`);
-  lines.push(`    \x1b[31m-${diff.summary.removed}\x1b[0m removed`);
+  lines.push(`  ${bold("Summary")}`);
+  lines.push(`    ${green(`+${diff.summary.added}`)} added`);
+  lines.push(`    ${yellow(`~${diff.summary.changed}`)} changed`);
+  lines.push(`    ${red(`-${diff.summary.removed}`)} removed`);
   lines.push("");
 
   return lines.join("\n");

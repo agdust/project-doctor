@@ -4,6 +4,7 @@
  * Shows detailed information about a selected failed check.
  */
 
+import { bold, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, separator } from "../../cli-framework/index.js";
 import { blank, text, muted, success, error } from "../../cli-framework/index.js";
@@ -46,13 +47,13 @@ export const overviewDetailScreen: Screen<AppContext> = {
     }
 
     // Check name and message
-    text(`\x1b[31m✗\x1b[0m  \x1b[1m${check.name}\x1b[0m`);
+    text(`${red("✗")}  ${bold(check.name)}`);
     text(`   ${check.message}`);
     blank();
 
     // Why section
     if (check.why) {
-      text("\x1b[1mWhy this matters\x1b[0m");
+      text(bold("Why this matters"));
       blank();
       // Indent and wrap the why text
       const lines = check.why.split("\n");
@@ -64,7 +65,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
 
     // Fix available
     if (check.fixDescription) {
-      text(`\x1b[36mFix available:\x1b[0m ${check.fixDescription}`);
+      text(`${cyan("Fix available:")} ${check.fixDescription}`);
       blank();
     }
 

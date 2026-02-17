@@ -4,6 +4,7 @@
  * Shows issues summary with options to view details or fix.
  */
 
+import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { nav, action } from "../../cli-framework/index.js";
 import { blank, text } from "../../cli-framework/index.js";
@@ -18,7 +19,7 @@ export const issuesScreen: Screen<AppContext> = {
     const totalFailed = ctx.failedChecks.length;
     const totalFixable = ctx.issues.length;
 
-    text(`\x1b[31mIssues: ${totalFailed} (${totalFixable} auto-fixable)\x1b[0m`);
+    text(red(`Issues: ${totalFailed} (${totalFixable} auto-fixable)`));
     blank();
 
     // Category breakdown - all failed with fixable count

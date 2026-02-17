@@ -4,6 +4,7 @@ import { createGlobalContext } from "../context/global.js";
 import { ensureConfigDir } from "../config/constants.js";
 import { runAllChecksRaw } from "./runner.js";
 import { safeJsonParse } from "./safe-json.js";
+import { bold, dim, red, green } from "./colors.js";
 
 interface SnapshotEntry {
   date: string;
@@ -61,7 +62,7 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
 
 export async function runSnapshot(projectPath: string): Promise<void> {
   console.log();
-  console.log("  \x1b[90mTaking snapshot...\x1b[0m");
+  console.log(`  ${dim("Taking snapshot...")}`);
 
   const snapshot = await takeSnapshot(projectPath);
   const history = await loadHistory(projectPath);
@@ -80,10 +81,10 @@ export async function runSnapshot(projectPath: string): Promise<void> {
   await saveHistory(projectPath, history);
 
   console.log();
-  console.log(`  \x1b[32m✓\x1b[0m Snapshot saved for ${snapshot.date}`);
+  console.log(`  ${green("✓")} Snapshot saved for ${snapshot.date}`);
   console.log(`    ${snapshot.checks.passed}/${snapshot.checks.total} checks passing`);
   console.log();
-  console.log(`  \x1b[90mSaved to ${HISTORY_DIR}/${HISTORY_FILE}\x1b[0m`);
+  console.log(`  ${dim(`Saved to ${HISTORY_DIR}/${HISTORY_FILE}`)}`);
   console.log();
 }
 
@@ -93,18 +94,18 @@ export async function runHistory(projectPath: string): Promise<void> {
   console.log();
 
   if (history.length === 0) {
-    console.log("  \x1b[90mNo snapshots yet. Run 'project-doctor snapshot' to create one.\x1b[0m");
+    console.log(`  ${dim("No snapshots yet. Run 'project-doctor snapshot' to create one.")}`);
     console.log();
     return;
   }
 
-  console.log("  \x1b[1mProject Health History\x1b[0m");
+  console.log(`  ${bold("Project Health History")}`);
   console.log();
-  console.log("  \x1b[90mDate          Checks\x1b[0m");
-  console.log("  \x1b[90m─────────────────────────\x1b[0m");
+  console.log(`  ${dim("Date          Checks")}`);
+  console.log(`  ${dim("─────────────────────────")}`);
 
   for (const entry of history) {
-    const checkStatus = entry.checks.failed === 0 ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m";
+    const checkStatus = entry.checks.failed === 0 ? green("✓") : red("✗");
     const checkText = `${entry.checks.passed}/${entry.checks.total}`;
 
     console.log(`  ${entry.date}    ${checkStatus} ${checkText}`);
@@ -119,14 +120,14 @@ export async function runHistory(projectPath: string): Promise<void> {
     console.log();
     if (checkDiff < 0) {
       console.log(
-        `  \x1b[32m↑ Fixed ${Math.abs(checkDiff)} issue${Math.abs(checkDiff) > 1 ? "s" : ""} since ${first.date}\x1b[0m`,
+        `  ${green(`↑ Fixed ${Math.abs(checkDiff)} issue${Math.abs(checkDiff) > 1 ? "s" : ""} since ${first.date}`)}`,
       );
     } else if (checkDiff > 0) {
       console.log(
-        `  \x1b[31m↓ ${checkDiff} new issue${checkDiff > 1 ? "s" : ""} since ${first.date}\x1b[0m`,
+        `  ${red(`↓ ${checkDiff} new issue${checkDiff > 1 ? "s" : ""} since ${first.date}`)}`,
       );
     } else {
-      console.log(`  \x1b[90m→ No change since ${first.date}\x1b[0m`);
+      console.log(`  ${dim(`→ No change since ${first.date}`)}`);
     }
   }
 

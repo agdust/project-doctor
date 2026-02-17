@@ -4,6 +4,7 @@
  * Shows project goals, values, and usage information.
  */
 
+import { bold, dim } from "../../utils/colors.js";
 import type { Screen } from "../../cli-framework/index.js";
 import { blank, text, muted } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
@@ -13,32 +14,32 @@ export const aboutScreen: Screen<AppContext> = {
   parent: "home",
 
   render: () => {
-    text("\x1b[1mProject Doctor\x1b[0m");
+    text(bold("Project Doctor"));
     muted("Health checks for your projects");
     blank();
 
-    text("\x1b[1mGoals\x1b[0m");
+    text(bold("Goals"));
     text("  Detect configuration issues early");
     text("  Enforce best practices consistently");
     text("  Reduce time spent on project setup");
     text("  Track issues over the time");
     blank();
 
-    text("\x1b[1mValues\x1b[0m");
+    text(bold("Values"));
     text("  Opinionated, no configuration required");
     text("  Fix issues, not just report them");
     text("  Minimal noise, actionable output");
     text("  Convenient, all you info you need is inside one simple cli");
     blank();
 
-    text("\x1b[1mControls\x1b[0m");
-    text("  \x1b[90m↑/↓\x1b[0m   Navigate options");
-    text("  \x1b[90mEnter\x1b[0m Select option");
-    text("  \x1b[90mEsc\x1b[0m   Go back / Cancel");
-    text("  \x1b[90mSpace\x1b[0m Toggle checkbox");
+    text(bold("Controls"));
+    text(`  ${dim("↑/↓")}   Navigate options`);
+    text(`  ${dim("Enter")} Select option`);
+    text(`  ${dim("Esc")}   Go back / Cancel`);
+    text(`  ${dim("Space")} Toggle checkbox`);
     blank();
 
-    text("\x1b[1mCLI Usage\x1b[0m");
+    text(bold("CLI Usage"));
     text("  project-doctor          Interactive wizard");
     blank();
 

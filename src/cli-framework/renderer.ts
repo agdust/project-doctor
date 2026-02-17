@@ -2,26 +2,16 @@
  * Renderer - Console output utilities
  *
  * Minimal helpers for consistent CLI output.
- * Uses ANSI codes directly (no dependencies).
+ * Uses centralized color utilities.
  */
 
-// ANSI color codes
-const c = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[90m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  cyan: "\x1b[36m",
-} as const;
+import { bold, dim, red, green, yellow, cyan } from "../utils/colors.js";
 
 /**
  * Print a horizontal divider
  */
 export function divider(width = 45): void {
-  console.log(`${c.dim}  ${"─".repeat(width)}${c.reset}`);
+  console.log(`${dim(`  ${"─".repeat(width)}`)}`);
 }
 
 /**
@@ -44,7 +34,7 @@ export function text(content: string, indent = 2): void {
  */
 export function title(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${c.bold}${content}${c.reset}`);
+  console.log(`${prefix}${bold(content)}`);
 }
 
 /**
@@ -52,7 +42,7 @@ export function title(content: string, indent = 2): void {
  */
 export function muted(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${c.dim}${content}${c.reset}`);
+  console.log(`${prefix}${dim(content)}`);
 }
 
 /**
@@ -60,7 +50,7 @@ export function muted(content: string, indent = 2): void {
  */
 export function success(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${c.green}✓ ${content}${c.reset}`);
+  console.log(`${prefix}${green(`✓ ${content}`)}`);
 }
 
 /**
@@ -68,7 +58,7 @@ export function success(content: string, indent = 2): void {
  */
 export function error(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${c.red}✗ ${content}${c.reset}`);
+  console.log(`${prefix}${red(`✗ ${content}`)}`);
 }
 
 /**
@@ -76,7 +66,7 @@ export function error(content: string, indent = 2): void {
  */
 export function warn(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${c.yellow}⚠ ${content}${c.reset}`);
+  console.log(`${prefix}${yellow(`⚠ ${content}`)}`);
 }
 
 /**
@@ -84,7 +74,7 @@ export function warn(content: string, indent = 2): void {
  */
 export function info(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${c.cyan}→ ${content}${c.reset}`);
+  console.log(`${prefix}${cyan(`→ ${content}`)}`);
 }
 
 /**
@@ -92,7 +82,7 @@ export function info(content: string, indent = 2): void {
  */
 export function keyValue(key: string, value: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${c.dim}${key}:${c.reset} ${value}`);
+  console.log(`${prefix}${dim(`${key}:`)} ${value}`);
 }
 
 /**
@@ -121,9 +111,9 @@ export function bigTitle(appName: string): void {
   const visibleLength = stripAnsi(appName).length;
   const line = "─".repeat(visibleLength + 4);
   console.log();
-  console.log(`  ${c.dim}╭${line}╮${c.reset}`);
-  console.log(`  ${c.dim}│${c.reset}  ${c.bold}${appName}${c.reset}  ${c.dim}│${c.reset}`);
-  console.log(`  ${c.dim}╰${line}╯${c.reset}`);
+  console.log(`  ${dim(`╭${line}╮`)}`);
+  console.log(`  ${dim("│")}  ${bold(appName)}  ${dim("│")}`);
+  console.log(`  ${dim(`╰${line}╯`)}`);
 }
 
 /**
@@ -137,15 +127,15 @@ export function status(
 ): void {
   const prefix = " ".repeat(indent);
   const icons = {
-    pass: `${c.green}✓${c.reset}`,
-    fail: `${c.red}✗${c.reset}`,
-    warn: `${c.yellow}⚠${c.reset}`,
-    info: `${c.cyan}→${c.reset}`,
-    skip: `${c.dim}○${c.reset}`,
+    pass: green("✓"),
+    fail: red("✗"),
+    warn: yellow("⚠"),
+    info: cyan("→"),
+    skip: dim("○"),
   };
 
   const iconStr = icons[icon];
-  const messageStr = message ? `${c.dim} - ${message}${c.reset}` : "";
+  const messageStr = message ? dim(` - ${message}`) : "";
   console.log(`${prefix}${iconStr} ${label}${messageStr}`);
 }
 
@@ -157,6 +147,13 @@ export function clear(): void {
 }
 
 /**
- * Export colors for custom use
+ * Export color functions for custom use
  */
-export const colors = c;
+export const colors = {
+  bold,
+  dim,
+  red,
+  green,
+  yellow,
+  cyan,
+};

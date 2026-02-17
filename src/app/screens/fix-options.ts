@@ -4,6 +4,7 @@
  * Shows available fix options for an issue.
  */
 
+import { bold, dim } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action } from "../../cli-framework/index.js";
 import { blank, text, success, error } from "../../cli-framework/index.js";
@@ -17,8 +18,8 @@ export const fixOptionsScreen: Screen<AppContext> = {
     const issue = ctx.issues[ctx.currentIssueIndex];
     if (!issue) return;
 
-    text(`\x1b[1m${issue.name}\x1b[0m`);
-    text(`\x1b[90m${issue.result.message}\x1b[0m`);
+    text(bold(issue.name));
+    text(dim(issue.result.message));
     blank();
     text("Choose a fix option:");
     blank();

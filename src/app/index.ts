@@ -40,7 +40,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
 
   const config: AppConfig<AppContext> = {
     name: "project-doctor",
-    displayName: (ctx) => `Project Doctor: ${colors.cyan}${ctx.projectName}${colors.reset}`,
+    displayName: (ctx) => `Project Doctor: ${colors.cyan(ctx.projectName)}`,
     context,
     screens: [
       homeScreen,
@@ -67,10 +67,10 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
         blank();
         divider();
         blank();
-        if (fixed > 0) text(`${colors.green}✓${colors.reset} ${fixed} fixed`);
-        if (mutedCount > 0) text(`${colors.yellow}⏸${colors.reset} ${mutedCount} muted`);
-        if (disabled > 0) text(`${colors.yellow}⊘${colors.reset} ${disabled} disabled`);
-        if (skipped > 0) text(`${colors.dim}→${colors.reset} ${skipped} skipped`);
+        if (fixed > 0) text(`${colors.green("✓")} ${fixed} fixed`);
+        if (mutedCount > 0) text(`${colors.yellow("⏸")} ${mutedCount} muted`);
+        if (disabled > 0) text(`${colors.yellow("⊘")} ${disabled} disabled`);
+        if (skipped > 0) text(`${colors.dim("→")} ${skipped} skipped`);
       }
       blank();
     },

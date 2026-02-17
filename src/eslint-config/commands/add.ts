@@ -1,4 +1,5 @@
 import { writeFile } from "node:fs/promises";
+import { bold, dim, red, green, cyan } from "../../utils/colors.js";
 import { readExistingConfig } from "../reader/reader.js";
 import { buildConfig } from "../builder/builder.js";
 import { generateConfigFile } from "../generator/generator.js";
@@ -14,7 +15,7 @@ export async function runEslintAdd(projectPath: string, presetArg: string): Prom
   } catch (error) {
     if (error instanceof WizardCancelledError) {
       console.log();
-      console.log("  \x1b[90mCancelled\x1b[0m");
+      console.log(`  ${dim("Cancelled")}`);
       console.log();
       return;
     }
@@ -26,7 +27,7 @@ async function runEslintAddInner(projectPath: string, presetArg: string): Promis
   console.log();
 
   if (!presetArg) {
-    console.log("\x1b[31mError: Missing preset name\x1b[0m");
+    console.log(red("Error: Missing preset name"));
     console.log();
     console.log("Usage: project-doctor eslint add <preset>");
     console.log("Presets: base, typescript, strict, style, security, performance");
@@ -35,7 +36,7 @@ async function runEslintAddInner(projectPath: string, presetArg: string): Promis
   }
 
   if (!isValidPresetId(presetArg)) {
-    console.log(`\x1b[31mError: Invalid preset "${presetArg}"\x1b[0m`);
+    console.log(red(`Error: Invalid preset "${presetArg}"`));
     console.log();
     console.log("Valid presets: base, typescript, strict, style, security, performance");
     console.log();
@@ -47,14 +48,14 @@ async function runEslintAddInner(projectPath: string, presetArg: string): Promis
 
   const existing = await readExistingConfig(projectPath);
   if (!existing) {
-    console.log("\x1b[31mError: No existing ESLint config found\x1b[0m");
+    console.log(red("Error: No existing ESLint config found"));
     console.log();
-    console.log("Run \x1b[36mproject-doctor eslint init\x1b[0m first to create a config");
+    console.log(`Run ${cyan("project-doctor eslint init")} first to create a config`);
     console.log();
     return;
   }
 
-  console.log(`\x1b[1mAdding preset: ${preset.name}\x1b[0m`);
+  console.log(bold(`Adding preset: ${preset.name}`));
   console.log(`  ${preset.description}`);
   console.log();
 
@@ -68,14 +69,14 @@ async function runEslintAddInner(projectPath: string, presetArg: string): Promis
   console.log(formatDiff(diff));
 
   if (diff.entries.length === 0) {
-    console.log("  \x1b[32m✓\x1b[0m Preset rules already present");
+    console.log(`  ${green("✓")} Preset rules already present`);
     console.log();
     return;
   }
 
   const proceed = await confirmApply();
   if (!proceed) {
-    console.log("  \x1b[90mCancelled\x1b[0m");
+    console.log(`  ${dim("Cancelled")}`);
     console.log();
     return;
   }
@@ -84,6 +85,6 @@ async function runEslintAddInner(projectPath: string, presetArg: string): Promis
   const fileContent = generateConfigFile(newConfig);
   await writeFile(existing.filePath, fileContent, "utf-8");
 
-  console.log(`  \x1b[32m✓\x1b[0m Updated ${existing.filePath}`);
+  console.log(`  ${green("✓")} Updated ${existing.filePath}`);
   console.log();
 }

@@ -4,6 +4,7 @@
  * Shows single issue with fix options.
  */
 
+import { bold, dim, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, nav } from "../../cli-framework/index.js";
 import { blank, title, muted, text, success, error } from "../../cli-framework/index.js";
@@ -27,10 +28,10 @@ export const issueDetailScreen: Screen<AppContext> = {
     const total = ctx.issues.length;
     const current = ctx.currentIssueIndex + 1;
 
-    text(`\x1b[31m✗\x1b[0m  \x1b[1m${issue.name}\x1b[0m  \x1b[90m(${current}/${total})\x1b[0m`);
+    text(`${red("✗")}  ${bold(issue.name)}  ${dim(`(${current}/${total})`)}`);
     text(`   ${issue.result.message}`);
     blank();
-    text(`   \x1b[36mFix:\x1b[0m ${issue.fixDescription}`);
+    text(`   ${cyan("Fix:")} ${issue.fixDescription}`);
     blank();
   },
 

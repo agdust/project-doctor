@@ -26,7 +26,7 @@ export const categoriesScreen: Screen<AppContext> = {
   onEnter: async (ctx) => {
     // Clear and show header
     clear();
-    bigTitle(`Project Doctor: ${colors.cyan}${ctx.projectName}${colors.reset}`);
+    bigTitle(`Project Doctor: ${colors.cyan(ctx.projectName)}`);
     blank();
 
     // Build choices with current state

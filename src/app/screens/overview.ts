@@ -4,6 +4,7 @@
  * Shows all failed checks as a selectable menu.
  */
 
+import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, separator } from "../../cli-framework/index.js";
 import { blank, title, muted } from "../../cli-framework/index.js";
@@ -15,7 +16,7 @@ function formatCheckOption(
 ): { name: string; description: string } {
   const padding = " ".repeat(maxNameLen - check.name.length);
   return {
-    name: `\x1b[31m✗\x1b[0m ${check.name}${padding}`,
+    name: `${red("✗")} ${check.name}${padding}`,
     description: check.message,
   };
 }

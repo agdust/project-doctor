@@ -10,6 +10,7 @@ import {
   checkbox as inquirerCheckbox,
   confirm as inquirerConfirm,
 } from "@inquirer/prompts";
+import { bold, dim } from "../../utils/colors.js";
 import type { WizardSelections, PresetId } from "../types.js";
 import type { RuleStrictness, RuleConcern } from "../../eslint-db/types.js";
 
@@ -107,9 +108,9 @@ export function buildPresetsFromSelections(
 
 export async function runWizard(): Promise<WizardSelections> {
   console.log();
-  console.log("\x1b[1mESLint Configuration Wizard\x1b[0m");
-  console.log("\x1b[90mBuild a customized ESLint configuration\x1b[0m");
-  console.log("\x1b[90mPress Esc or Ctrl+C to cancel\x1b[0m");
+  console.log(bold("ESLint Configuration Wizard"));
+  console.log(dim("Build a customized ESLint configuration"));
+  console.log(dim("Press Esc or Ctrl+C to cancel"));
   console.log();
 
   // Project type

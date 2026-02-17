@@ -1,6 +1,7 @@
 import { createGlobalContext } from "../context/global.js";
 import { runAllChecksRaw } from "./runner.js";
 import { safeJsonParse } from "./safe-json.js";
+import { bold, dim, red, green } from "./colors.js";
 
 interface OverviewResult {
   projectName: string;
@@ -37,20 +38,20 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
 
 export function printOverview(result: OverviewResult): void {
   console.log();
-  console.log(`  \x1b[1m${result.projectName}\x1b[0m`);
+  console.log(`  ${bold(result.projectName)}`);
   console.log();
 
   // Health checks line
   const { checks } = result;
   if (checks.failed > 0) {
-    console.log(`  \x1b[31m✗\x1b[0m ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`);
+    console.log(`  ${red("✗")} ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`);
   } else {
-    console.log("  \x1b[32m✓\x1b[0m All checks passing");
+    console.log(`  ${green("✓")} All checks passing`);
   }
 
   console.log();
-  console.log("  \x1b[90mRun 'project-doctor check' for details\x1b[0m");
-  console.log("  \x1b[90mRun 'project-doctor fix' to fix issues\x1b[0m");
+  console.log(`  ${dim("Run 'project-doctor check' for details")}`);
+  console.log(`  ${dim("Run 'project-doctor fix' to fix issues")}`);
   console.log();
 }
 

@@ -1,3 +1,4 @@
+import { bold, red, cyan } from "../../utils/colors.js";
 import { readExistingConfig } from "../reader/reader.js";
 import { buildConfig } from "../builder/builder.js";
 import { computeDiff } from "../differ/differ.js";
@@ -13,9 +14,9 @@ export async function runEslintDiff(projectPath: string, options: DiffOptions = 
 
   const existing = await readExistingConfig(projectPath);
   if (!existing) {
-    console.log("\x1b[31mError: No existing ESLint config found\x1b[0m");
+    console.log(red("Error: No existing ESLint config found"));
     console.log();
-    console.log("Run \x1b[36mproject-doctor eslint init\x1b[0m to create one");
+    console.log(`Run ${cyan("project-doctor eslint init")} to create one`);
     console.log();
     return;
   }
@@ -26,7 +27,7 @@ export async function runEslintDiff(projectPath: string, options: DiffOptions = 
     presets = options.presets.split(",").map((p) => p.trim()) as PresetId[];
   }
 
-  console.log(`\x1b[1mComparing current config to: ${presets.join(", ")}\x1b[0m`);
+  console.log(bold(`Comparing current config to: ${presets.join(", ")}`));
   console.log();
 
   const proposedConfig = buildConfig({ presets });

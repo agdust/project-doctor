@@ -11,6 +11,7 @@ import {
   checkbox as inquirerCheckbox,
   input as inquirerInput,
 } from "@inquirer/prompts";
+import { dim } from "../../utils/colors.js";
 import { BACK, EXIT, type NavigationAction, type Choice } from "./types.js";
 
 // Check if error is a user cancellation (ESC or Ctrl+C)
@@ -63,7 +64,7 @@ export async function select<T>(config: SelectConfig<T>): Promise<T | Navigation
 
   if (config.includeBack) {
     choices.push({
-      name: `\x1b[90m${config.backLabel ?? "← Back"}\x1b[0m`,
+      name: dim(config.backLabel ?? "← Back"),
       value: BACK,
       description: "Return to previous menu",
     });
@@ -152,7 +153,7 @@ export async function input(config: InputConfig): Promise<string | typeof BACK> 
  */
 export async function pressAnyKey(message = "Press any key to continue..."): Promise<void> {
   console.log();
-  console.log(`  \x1b[90m${message}\x1b[0m`);
+  console.log(`  ${dim(message)}`);
 
   return new Promise((resolve) => {
     const onData = (data: Buffer): void => {
