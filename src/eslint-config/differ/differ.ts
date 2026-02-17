@@ -1,5 +1,20 @@
 import type { ConfigDiff, DiffEntry, RuleValue, ResolvedRule } from "../types.js";
 
+/**
+ * Compute the difference between current ESLint rules and proposed rules.
+ *
+ * TODO: Implement proper deep equality comparison for rule values.
+ * Requirements:
+ * - Compare rule values correctly regardless of property order
+ * - Handle nested objects and arrays
+ * - Handle edge cases (undefined vs missing, null values, etc.)
+ *
+ * Suggested approach:
+ * - Use a deep-equal utility (e.g., fast-deep-equal, lodash.isEqual)
+ * - Or implement recursive comparison with proper type handling
+ *
+ * @throws {Error} NotImplemented - Deep comparison not yet implemented
+ */
 export function computeDiff(
   current: Record<string, RuleValue>,
   proposed: ResolvedRule[],
@@ -58,11 +73,24 @@ export function computeDiff(
   };
 }
 
-// TODO: Replace JSON.stringify comparison with proper deep equality.
-// Current approach is fragile: property order matters, and circular refs would throw.
-// Consider using a deep-equal utility or structuredClone for comparison.
-function ruleValuesEqual(a: RuleValue, b: RuleValue): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
+/**
+ * Compare two ESLint rule values for equality.
+ *
+ * TODO: Implement proper deep equality comparison.
+ * The previous JSON.stringify approach was fragile:
+ * - Property order affected comparison results
+ * - Circular references would throw
+ * - undefined vs missing properties handled incorrectly
+ *
+ * @throws {Error} NotImplemented - Deep comparison not yet implemented
+ */
+function ruleValuesEqual(_a: RuleValue, _b: RuleValue): boolean {
+  // TODO: Implement proper deep equality
+  // Options:
+  // 1. Use fast-deep-equal package
+  // 2. Use Node.js util.isDeepStrictEqual
+  // 3. Implement custom recursive comparison
+  throw new Error("NotImplemented: Rule value comparison requires proper deep equality");
 }
 
 export function hasDifferences(diff: ConfigDiff): boolean {
