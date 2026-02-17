@@ -4,14 +4,12 @@
  * Common logic used by both CLI commands and interactive wizard.
  */
 
-import { readFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { CheckTag, Check, FixResult, GlobalContext } from "../types.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isTagOff, isGroupOff } from "../config/loader.js";
 import { isSkipUntil, parseSkipUntil, isSkipUntilActive } from "../config/types.js";
 import { checkGroups, listChecks } from "../registry.js";
+import { getWhyText as getWhyTextFromDocs } from "../docs/compiled-docs.js";
 
 // ============================================================================
 // Project Type Filtering
@@ -262,31 +260,11 @@ export function buildTagsMap(): Map<string, string[]> {
 // Why/Docs Loading
 // ============================================================================
 
-// Package paths for loading docs
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PACKAGE_ROOT = join(__dirname, "..", "..");
-const CHECKS_SRC = join(PACKAGE_ROOT, "src", "checks");
-
 /**
- * Load "Why" content from a check's docs.md file
+ * Load "Why" content from compiled docs manifest.
+ *
+ * Uses pre-compiled docs-manifest.json generated at build time.
  */
-export async function loadWhyFromDocs(group: string, checkName: string): Promise<string | null> {
-  const checkFolder = checkName.startsWith(`${group}-`)
-    ? checkName.slice(group.length + 1)
-    : checkName;
-
-  const docsPath = join(CHECKS_SRC, group, checkFolder, "docs.md");
-
-  try {
-    const content = await readFile(docsPath, "utf-8");
-    const whyMatch = /## Why\n\n([\s\S]*?)(?=\n## |$)/.exec(content);
-    if (whyMatch) {
-      return whyMatch[1].trim();
-    }
-  } catch {
-    // No docs file
-  }
-
-  return null;
+export async function loadWhyFromDocs(_group: string, checkName: string): Promise<string | null> {
+  return getWhyTextFromDocs(checkName);
 }

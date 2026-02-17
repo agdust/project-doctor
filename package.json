@@ -50,7 +50,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && npm run copy-assets && node scripts/make-executable.js",
+    "build": "tsc && node scripts/compile-docs.js && npm run copy-assets && node scripts/make-executable.js",
     "copy-assets": "node scripts/copy-assets.js",
     "clean": "node scripts/clean.js",
     "dev": "tsc --watch",
@@ -75,6 +75,7 @@
     "eslint": "^9.39.2",
     "ignore": "^7.0.5",
     "json5": "^2.2.3",
+    "marked": "^17.0.2",
     "picocolors": "^1.1.1",
     "typescript-eslint": "^8.50.0"
   },
