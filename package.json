@@ -50,8 +50,9 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && npm run copy-assets && chmod +x dist/cli.js",
-    "copy-assets": "cp -r src/checks/docs/license-exists/licenses dist/checks/docs/license-exists/",
+    "build": "tsc && npm run copy-assets && node scripts/make-executable.js",
+    "copy-assets": "node scripts/copy-assets.js",
+    "clean": "node scripts/clean.js",
     "dev": "tsc --watch",
     "check": "node --import tsx ./src/cli.ts",
     "lint": "eslint src",
@@ -59,8 +60,9 @@
     "jscpd": "jscpd src",
     "format": "prettier --write src",
     "test": "vitest",
+    "test:coverage": "vitest --coverage",
     "prepublishOnly": "npm run build && npm test -- --run",
-    "docs": "sx src/docs/generator.ts",
+    "docs": "tsx src/docs/generator.ts",
     "claude": "claude --dangerously-skip-permissions"
   },
   "engines": {
@@ -69,12 +71,14 @@
   "dependencies": {
     "@eslint/js": "^9.39.2",
     "@inquirer/prompts": "^8.1.0",
+    "@stylistic/eslint-plugin": "^5.8.0",
     "eslint": "^9.39.2",
     "json5": "^2.2.3",
     "typescript-eslint": "^8.50.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "jscpd": "^4.0.8",
     "knip": "^5.83.1",
     "prettier": "^3.8.1",
