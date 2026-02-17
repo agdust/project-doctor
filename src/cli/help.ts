@@ -22,7 +22,6 @@ Usage:
   project-doctor unmute <check-name> [path]
   project-doctor list [options] [path]
   project-doctor info <check-name> [options] [path]
-  project-doctor deps [options] [path]
   project-doctor overview [path]
   project-doctor snapshot [path]
   project-doctor history [path]
@@ -43,7 +42,6 @@ Commands:
   list         List all available checks
   info         Show detailed info about a check
   overview     Show project health summary
-  deps         Check dependencies for newer versions
   snapshot     Save current status to history
   history      View progress over time
   init         Create .project-doctor/config.json5
@@ -75,10 +73,6 @@ List Options:
 
 Info Options:
   --format <format>       Output format: text (default), json
-
-Deps Options:
-  --no-dev                Exclude devDependencies from check
-  --no-cache              Bypass cache, always fetch fresh data
 
 General Options:
   -h, --help              Show this help message

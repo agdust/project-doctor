@@ -178,4 +178,3 @@ Key concepts:
 
 **Future:**
 - Config screen (edit checks/tags/groups in app)
-- Deps screen (outdated dependencies)

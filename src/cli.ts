@@ -15,7 +15,6 @@ import type { CheckTag } from "./types.js";
 import { listChecks } from "./registry.js";
 import { runChecks } from "./utils/runner.js";
 import { printResults } from "./utils/reporter.js";
-import { runDepsChecker } from "./utils/deps-checker.js";
 import { runOverview } from "./utils/overview.js";
 import { runSnapshot, runHistory } from "./utils/snapshot.js";
 import { runInit } from "./utils/init.js";
@@ -71,7 +70,6 @@ async function main(): Promise<void> {
   const specialCommands = [
     "check",
     "fix",
-    "deps",
     "overview",
     "snapshot",
     "history",
@@ -148,8 +146,6 @@ async function main(): Promise<void> {
       tag: { type: "string", short: "t", multiple: true },
       "exclude-tag": { type: "string", short: "e", multiple: true },
       "no-config": { type: "boolean", default: false },
-      "no-dev": { type: "boolean", default: false },
-      "no-cache": { type: "boolean", default: false },
       format: { type: "string" },
     },
     allowPositionals: true,
@@ -174,15 +170,6 @@ async function main(): Promise<void> {
 
   if (command === "overview") {
     await runOverview(projectPath);
-    return;
-  }
-
-  if (command === "deps") {
-    await runDepsChecker({
-      projectPath,
-      includeDev: !values["no-dev"],
-      noCache: values["no-cache"],
-    });
     return;
   }
 
