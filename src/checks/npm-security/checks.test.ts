@@ -14,6 +14,7 @@ import type { GlobalContext } from "../../types.js";
 function createMockContext(overrides: Partial<NpmSecurityContext>): NpmSecurityContext {
   return {
     npmrc: null,
+    npmrcGitignored: false,
     gitignore: null,
     hasDevcontainer: false,
     devDependencies: {},
@@ -58,12 +59,22 @@ describe("npm-security checks", () => {
       expect(ctx.hasDevcontainer).toBe(false);
       expect(ctx.ciWorkflows).toEqual([]);
     });
+
+    it("should detect when .npmrc is gitignored", async () => {
+      const global = await createGlobalContext(fixtures.healthy);
+      const ctx = await loadContext(global);
+      // healthy fixture gitignores .npmrc (for security - auth tokens)
+      expect(ctx.npmrcGitignored).toBe(true);
+    });
   });
 
   describe("disabled-node-post-install-scripts", () => {
     it("should pass when ignore-scripts=true is in .npmrc", async () => {
       const global = await createGlobalContext(fixtures.healthy);
-      const ctx = await loadContext(global);
+      const ctx = createMockContext({
+        npmrc: "ignore-scripts=true",
+        npmrcGitignored: false,
+      });
       const result = await disabledNodePostInstallScripts.run(global, ctx);
 
       expect(result.status).toBe("pass");
@@ -106,6 +117,18 @@ describe("npm-security checks", () => {
       const result = await disabledNodePostInstallScripts.run(global, ctx);
 
       expect(result.status).toBe("pass");
+    });
+
+    it("should skip when .npmrc is gitignored", async () => {
+      const global = await createGlobalContext(fixtures.healthy);
+      const ctx = createMockContext({
+        npmrc: "some-config=value",
+        npmrcGitignored: true,
+      });
+      const result = await disabledNodePostInstallScripts.run(global, ctx);
+
+      expect(result.status).toBe("skip");
+      expect(result.message).toContain("gitignored");
     });
   });
 

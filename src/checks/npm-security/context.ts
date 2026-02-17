@@ -17,6 +17,8 @@ interface PackageJson {
 export interface NpmSecurityContext {
   /** Content of .npmrc file */
   npmrc: string | null;
+  /** Whether .npmrc is gitignored (user stores secrets there) */
+  npmrcGitignored: boolean;
   /** Content of .gitignore file */
   gitignore: string | null;
   /** Whether .devcontainer directory exists */
@@ -29,6 +31,26 @@ export interface NpmSecurityContext {
   ciWorkflows: string[];
   /** Content of pnpm-workspace.yaml or package.json for pnpm config */
   pnpmConfig: string | null;
+}
+
+/**
+ * Check if a file path matches any gitignore pattern
+ */
+function isGitignored(gitignore: string | null, filename: string): boolean {
+  if (!gitignore) return false;
+
+  const lines = gitignore.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Skip comments and empty lines
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    // Simple pattern matching (exact match or with leading slash)
+    if (trimmed === filename || trimmed === `/${filename}`) {
+      return true;
+    }
+  }
+  return false;
 }
 
 async function loadCIWorkflows(projectPath: string): Promise<string[]> {
@@ -71,6 +93,7 @@ export async function loadContext(global: GlobalContext): Promise<NpmSecurityCon
 
   return {
     npmrc,
+    npmrcGitignored: isGitignored(gitignore, ".npmrc"),
     gitignore,
     hasDevcontainer,
     devDependencies: packageJson?.devDependencies ?? {},

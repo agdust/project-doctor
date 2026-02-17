@@ -37,9 +37,6 @@ export {
   EXIT,
   isBack,
   isExit,
-  isNavigation,
-  backChoice,
-  exitChoice,
   type NavigationAction,
   type ScreenResult,
   type Screen,
@@ -51,18 +48,14 @@ export {
 export { runApp, createScreen } from "./app.js";
 
 // Wrapped prompts
-export { select, confirm, checkbox, input, pressAnyKey } from "./prompts.js";
+export { select, checkbox, input, pressAnyKey } from "./prompts.js";
 
 // UI utilities
 export {
   clearScreen,
   printHeader,
   printSection,
-  printHint,
   printSuccess,
-  printError,
-  printWarning,
-  printInfo,
   printCancelled,
   printGoodbye,
   progressBar,
@@ -71,4 +64,4 @@ export {
 } from "./ui.js";
 
 // Safety checks
-export { ensureSafeToModify, checkGitStatus, resetSessionConfirmation } from "./safety.js";
+export { ensureSafeToModify, checkGitStatus } from "./safety.js";

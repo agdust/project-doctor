@@ -6,7 +6,24 @@ import { pass, fail, skip } from "../../helpers.js";
 
 const name = "gitignore-no-secrets-committed";
 
-const SECRET_FILES = [".env", ".env.local", "credentials.json", "secrets.json", ".npmrc"];
+// Files that are always secret and should be gitignored
+const SECRET_FILES = [".env", ".env.local", "credentials.json", "secrets.json"];
+
+// Patterns that indicate .npmrc contains auth tokens
+// See: https://docs.npmjs.com/cli/v10/configuring-npm/npmrc#auth-related-configuration
+const NPMRC_AUTH_PATTERNS = [
+  /_authToken\s*=/i, // //registry.npmjs.org/:_authToken=xxx
+  /_auth\s*=/i, // _auth=base64string (legacy)
+  /_password\s*=/i, // //registry.npmjs.org/:_password=xxx
+  /\/\/[^:]+:_authToken/i, // Scoped auth token pattern
+];
+
+/**
+ * Check if .npmrc contains authentication tokens
+ */
+function npmrcHasAuthTokens(content: string): boolean {
+  return NPMRC_AUTH_PATTERNS.some((pattern) => pattern.test(content));
+}
 
 export const check: Check<GitignoreContext> = {
   name,
@@ -17,6 +34,7 @@ export const check: Check<GitignoreContext> = {
 
     const notIgnored: string[] = [];
 
+    // Check standard secret files
     for (const file of SECRET_FILES) {
       const exists = await global.files.exists(file);
       if (exists) {
@@ -24,6 +42,15 @@ export const check: Check<GitignoreContext> = {
         if (!isIgnored) {
           notIgnored.push(file);
         }
+      }
+    }
+
+    // Special handling for .npmrc - only flag if it contains auth tokens
+    const npmrcContent = await global.files.readText(".npmrc");
+    if (npmrcContent && npmrcHasAuthTokens(npmrcContent)) {
+      const isIgnored = patterns.some((p) => matchesPattern(p, ".npmrc"));
+      if (!isIgnored) {
+        notIgnored.push(".npmrc (contains auth tokens)");
       }
     }
 
@@ -47,6 +74,15 @@ export const check: Check<GitignoreContext> = {
           if (!isIgnored) {
             toAdd.push(file);
           }
+        }
+      }
+
+      // Special handling for .npmrc with auth tokens
+      const npmrcContent = await global.files.readText(".npmrc");
+      if (npmrcContent && npmrcHasAuthTokens(npmrcContent)) {
+        const isIgnored = patterns.some((p) => matchesPattern(p, ".npmrc"));
+        if (!isIgnored) {
+          toAdd.push(".npmrc");
         }
       }
 

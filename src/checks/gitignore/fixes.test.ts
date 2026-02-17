@@ -334,6 +334,52 @@ dist
         expect(checkResult.status).toBe("fail");
       }
     });
+
+    it("should pass when .npmrc exists without auth tokens", async () => {
+      tempFixture = await createEmptyTempDir("gitignore-npmrc-safe");
+      await tempFixture.writeJson("package.json", { name: "test" });
+      await tempFixture.writeFile(".gitignore", "node_modules\ndist\n");
+      // .npmrc with only safe configuration, no auth tokens
+      await tempFixture.writeFile(".npmrc", "ignore-scripts=true\nregistry=https://registry.npmjs.org/\n");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      // Check should pass since .npmrc doesn't contain auth tokens
+      const checkResult = await noSecretsCommitted.run(global, ctx);
+      expect(checkResult.status).toBe("pass");
+    });
+
+    it("should fail when .npmrc contains auth tokens", async () => {
+      tempFixture = await createEmptyTempDir("gitignore-npmrc-auth");
+      await tempFixture.writeJson("package.json", { name: "test" });
+      await tempFixture.writeFile(".gitignore", "node_modules\ndist\n");
+      // .npmrc with auth token - should be flagged
+      await tempFixture.writeFile(".npmrc", "//registry.npmjs.org/:_authToken=npm_xyz123\n");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      // Check should fail since .npmrc contains auth token
+      const checkResult = await noSecretsCommitted.run(global, ctx);
+      expect(checkResult.status).toBe("fail");
+      expect(checkResult.message).toContain(".npmrc");
+    });
+
+    it("should fail when .npmrc contains legacy _auth", async () => {
+      tempFixture = await createEmptyTempDir("gitignore-npmrc-legacy-auth");
+      await tempFixture.writeJson("package.json", { name: "test" });
+      await tempFixture.writeFile(".gitignore", "node_modules\ndist\n");
+      // .npmrc with legacy _auth format
+      await tempFixture.writeFile(".npmrc", "_auth=dXNlcm5hbWU6cGFzc3dvcmQ=\n");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      const checkResult = await noSecretsCommitted.run(global, ctx);
+      expect(checkResult.status).toBe("fail");
+      expect(checkResult.message).toContain(".npmrc");
+    });
   });
 
   describe("empty fixture tests", () => {

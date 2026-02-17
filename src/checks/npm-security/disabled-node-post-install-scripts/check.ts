@@ -11,7 +11,7 @@ import { writeFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { NpmSecurityContext } from "../context.js";
-import { pass, fail } from "../../helpers.js";
+import { pass, fail, skip } from "../../helpers.js";
 
 const name = "npm-security-disabled-node-post-install-scripts";
 
@@ -19,7 +19,12 @@ export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if npm is configured to ignore post-install scripts",
   tags: ["node", "recommended", "effort:low", "security", "source:lirantal-npm-security"],
-  run: async (_global, { npmrc }) => {
+  run: async (_global, { npmrc, npmrcGitignored }) => {
+    // Skip if .npmrc is gitignored (user likely stores secrets there and has local-only config)
+    if (npmrcGitignored) {
+      return skip(name, ".npmrc is gitignored - skipping (local config)");
+    }
+
     if (!npmrc) {
       return fail(name, ".npmrc not found - post-install scripts are enabled by default");
     }
