@@ -14,8 +14,8 @@ import { RESET, BOLD, DIM, YELLOW, RED, GREEN, CYAN } from "./colors.js";
 
 const CHALLENGE_PHRASE = "i understand the risks";
 
-// Create matcher with up to 2 typos allowed
-const matchesChallenge = createMatcher(CHALLENGE_PHRASE, { maxTypos: 2 });
+// Create matcher for exact phrase (case-insensitive, trimmed)
+const matchesChallenge = createMatcher(CHALLENGE_PHRASE);
 
 /**
  * Check if project has a git repository

@@ -22,8 +22,8 @@ import { hasGitRepo } from "../../utils/git-safety.js";
 
 const CHALLENGE_PHRASE = "i allow eslint overwriting";
 
-// Create matcher with up to 3 typos allowed
-const matchesChallenge = createMatcher(CHALLENGE_PHRASE, { maxTypos: 3 });
+// Create matcher for exact phrase (case-insensitive, trimmed)
+const matchesChallenge = createMatcher(CHALLENGE_PHRASE);
 
 // Eslint config file patterns to check for uncommitted changes
 const ESLINT_CONFIG_PATTERNS = [
