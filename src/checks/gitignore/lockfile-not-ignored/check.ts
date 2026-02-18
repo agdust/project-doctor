@@ -1,8 +1,8 @@
-import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
+import { atomicWriteFile, detectLineEnding } from "../../../utils/safe-fs.js";
 
 const name = "gitignore-lockfile-not-ignored";
 
@@ -38,7 +38,8 @@ export const check: Check<GitignoreContext> = {
       if (!raw) return { success: false, message: "No .gitignore found" };
 
       const gitignorePath = join(global.projectPath, ".gitignore");
-      const lines = raw.split("\n");
+      const lineEnding = detectLineEnding(raw);
+      const lines = raw.split(/\r?\n/);
 
       const filteredLines = lines.filter((line) => {
         const trimmed = line.trim();
@@ -46,7 +47,7 @@ export const check: Check<GitignoreContext> = {
         return !LOCKFILE_PATTERNS.some((lock) => trimmed === lock || trimmed === `/${lock}`);
       });
 
-      await writeFile(gitignorePath, filteredLines.join("\n"), "utf-8");
+      await atomicWriteFile(gitignorePath, filteredLines.join(lineEnding));
       return { success: true, message: "Removed lockfile patterns from .gitignore" };
     },
   },

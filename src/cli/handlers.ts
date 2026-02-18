@@ -22,6 +22,19 @@ import { printEslintHelp, printFixHelp } from "./help.js";
 
 type ConfigTargetType = "check" | "tag" | "group";
 
+/**
+ * Safely parse a string to an integer.
+ * Returns undefined if the string is undefined or not a valid positive integer.
+ */
+function parsePositiveInt(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed) || parsed <= 0) {
+    return undefined;
+  }
+  return parsed;
+}
+
 function parseConfigTargetArgs(args: string[]): {
   type: ConfigTargetType;
   name: string;
@@ -135,9 +148,23 @@ export async function handleMuteCommand(args: string[]): Promise<void> {
 
   const projectPath = getProjectPath(positionals);
 
+  // Validate numeric arguments
+  const weeks = parsePositiveInt(values.weeks);
+  const months = parsePositiveInt(values.months);
+
+  // Check if invalid values were provided
+  if (values.weeks && weeks === undefined) {
+    console.error(`${red("Error:")} Invalid weeks value "${values.weeks}". Must be a positive number.`);
+    process.exit(2);
+  }
+  if (values.months && months === undefined) {
+    console.error(`${red("Error:")} Invalid months value "${values.months}". Must be a positive number.`);
+    process.exit(2);
+  }
+
   await runMute(projectPath, checkName, {
-    weeks: values.weeks ? parseInt(values.weeks, 10) : undefined,
-    months: values.months ? parseInt(values.months, 10) : undefined,
+    weeks,
+    months,
     until: values.until,
   });
 }

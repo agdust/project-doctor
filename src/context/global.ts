@@ -14,7 +14,7 @@ export async function createGlobalContext(
   projectPath: string,
   options: CreateContextOptions = {},
 ): Promise<GlobalContext> {
-  const files = createFileCache(projectPath);
+  const files = await createFileCache(projectPath);
   const detected = await detectTools(files);
 
   let config: ResolvedConfig;

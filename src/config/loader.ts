@@ -1,10 +1,11 @@
-import { readFile, writeFile, access } from "node:fs/promises";
+import { readFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType } from "./types.js";
 import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "./constants.js";
 import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
+import { atomicWriteFile } from "../utils/safe-fs.js";
 
 interface PackageJson {
   doctor?: Config;
@@ -213,33 +214,65 @@ export function isGroupOff(config: ResolvedConfig, groupName: string): boolean {
   return isSeverityOff(config.groups[groupName]);
 }
 
+// Simple in-memory lock to prevent concurrent config updates
+const configLocks = new Map<string, Promise<void>>();
+
+/**
+ * Execute a function with an exclusive lock on the config file.
+ * This prevents race conditions when multiple fixes run concurrently.
+ */
+async function withConfigLock<T>(projectPath: string, fn: () => Promise<T>): Promise<T> {
+  const lockKey = join(projectPath, CONFIG_DIR, CONFIG_FILE);
+
+  // Wait for any existing operation to complete
+  while (configLocks.has(lockKey)) {
+    await configLocks.get(lockKey);
+  }
+
+  // Create a new lock
+  let releaseLock: () => void;
+  const lockPromise = new Promise<void>((resolve) => {
+    releaseLock = resolve;
+  });
+  configLocks.set(lockKey, lockPromise);
+
+  try {
+    return await fn();
+  } finally {
+    configLocks.delete(lockKey);
+    releaseLock!();
+  }
+}
+
 /** Update config with new values, merging with existing config */
 export async function updateConfig(projectPath: string, updates: Partial<Config>): Promise<void> {
-  const configDir = join(projectPath, CONFIG_DIR);
-  const configPath = join(configDir, CONFIG_FILE);
+  return withConfigLock(projectPath, async () => {
+    const configDir = join(projectPath, CONFIG_DIR);
+    const configPath = join(configDir, CONFIG_FILE);
 
-  // Load existing config (if any)
-  const existing = await loadConfig(projectPath);
+    // Load existing config (if any)
+    const existing = await loadConfig(projectPath);
 
-  // Deep merge objects using safe merge to prevent prototype pollution
-  const mergedChecks = safeMergeRecords(existing?.checks, updates.checks);
-  const mergedTags = safeMergeRecords(existing?.tags, updates.tags);
-  const mergedGroups = safeMergeRecords(existing?.groups, updates.groups);
+    // Deep merge objects using safe merge to prevent prototype pollution
+    const mergedChecks = safeMergeRecords(existing?.checks, updates.checks);
+    const mergedTags = safeMergeRecords(existing?.tags, updates.tags);
+    const mergedGroups = safeMergeRecords(existing?.groups, updates.groups);
 
-  const merged: Config = {
-    projectType: updates.projectType ?? existing?.projectType,
-    eslintOverwriteConfirmed:
-      updates.eslintOverwriteConfirmed ?? existing?.eslintOverwriteConfirmed,
-    checks: Object.keys(mergedChecks).length > 0 ? mergedChecks : undefined,
-    tags: Object.keys(mergedTags).length > 0 ? mergedTags : undefined,
-    groups: Object.keys(mergedGroups).length > 0 ? mergedGroups : undefined,
-  };
+    const merged: Config = {
+      projectType: updates.projectType ?? existing?.projectType,
+      eslintOverwriteConfirmed:
+        updates.eslintOverwriteConfirmed ?? existing?.eslintOverwriteConfirmed,
+      checks: Object.keys(mergedChecks).length > 0 ? mergedChecks : undefined,
+      tags: Object.keys(mergedTags).length > 0 ? mergedTags : undefined,
+      groups: Object.keys(mergedGroups).length > 0 ? mergedGroups : undefined,
+    };
 
-  // Ensure config directory exists with .gitignore
-  await ensureConfigDir(projectPath);
+    // Ensure config directory exists with .gitignore
+    await ensureConfigDir(projectPath);
 
-  // Write merged config as JSON5
-  await writeFile(configPath, JSON5.stringify(merged, null, 2) + "\n", "utf-8");
+    // Write merged config atomically as JSON5
+    await atomicWriteFile(configPath, JSON5.stringify(merged, null, 2) + "\n");
+  });
 }
 
 /** Set a check's severity in config */

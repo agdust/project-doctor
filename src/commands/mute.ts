@@ -36,14 +36,15 @@ function parseDate(dateStr: string): Date | null {
 
   // Parse and validate the date components
   const [year, month, day] = dateStr.split("-").map(Number);
-  const date = new Date(year, month - 1, day, 23, 59, 59);
+  // Use UTC to ensure consistent behavior across timezones
+  const date = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
 
   // Check if the date is valid (e.g., reject "2025-02-30")
   if (
     isNaN(date.getTime()) ||
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
   ) {
     return null;
   }
@@ -97,7 +98,7 @@ export async function runMute(
 
     muteUntil = parsed;
   } else if (options.months) {
-    if (options.months <= 0) {
+    if (!Number.isFinite(options.months) || options.months <= 0) {
       console.error(red("Error: Months must be a positive number."));
       process.exit(2);
     }
@@ -105,7 +106,7 @@ export async function runMute(
   } else {
     // Default: 2 weeks
     const weeks = options.weeks ?? 2;
-    if (weeks <= 0) {
+    if (!Number.isFinite(weeks) || weeks <= 0) {
       console.error(red("Error: Weeks must be a positive number."));
       process.exit(2);
     }

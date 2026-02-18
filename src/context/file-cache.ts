@@ -1,46 +1,91 @@
-import { readFile, stat } from "node:fs/promises";
-import { resolve, relative } from "node:path";
+import { readFile, stat, realpath } from "node:fs/promises";
+import { resolve, relative, isAbsolute } from "node:path";
 import type { FileCache } from "../types.js";
 import { safeJsonParse } from "../utils/safe-json.js";
 
 /**
  * Validate that a relative path doesn't escape the project directory.
  * Prevents path traversal attacks (e.g., "../../../etc/passwd").
+ *
+ * Security considerations:
+ * - Checks for ".." path components
+ * - Uses path.isAbsolute() for reliable absolute path detection
+ * - Resolves symlinks in the project path to prevent symlink-based traversal
  */
-function validateRelativePath(projectPath: string, relativePath: string): string {
+async function validateRelativePath(
+  projectPath: string,
+  relativePath: string,
+  resolvedProjectPath?: string,
+): Promise<string> {
   const fullPath = resolve(projectPath, relativePath);
   const resolvedRelative = relative(projectPath, fullPath);
 
-  // Path escapes project directory if it starts with ".." or is absolute
-  if (resolvedRelative.startsWith("..") || resolve(resolvedRelative) === resolvedRelative) {
+  // Path escapes project directory if:
+  // 1. It starts with ".." (goes up from project root)
+  // 2. It's an absolute path (e.g., /etc/passwd on Unix, C:\... on Windows)
+  if (resolvedRelative.startsWith("..") || isAbsolute(resolvedRelative)) {
     throw new Error(`Path traversal not allowed: ${relativePath}`);
+  }
+
+  // If we have the resolved (real) project path, also verify the full path
+  // stays within it after symlink resolution
+  if (resolvedProjectPath) {
+    try {
+      const realFullPath = await realpath(fullPath);
+      if (!realFullPath.startsWith(resolvedProjectPath)) {
+        throw new Error(`Path traversal via symlink not allowed: ${relativePath}`);
+      }
+    } catch (error) {
+      // File doesn't exist yet - that's fine, we just can't verify symlinks
+      // The basic path check above is still valid
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        throw error;
+      }
+    }
   }
 
   return fullPath;
 }
 
-export function createFileCache(projectPath: string): FileCache {
+export async function createFileCache(projectPath: string): Promise<FileCache> {
   const textCache = new Map<string, string | null>();
   const jsonCache = new Map<string, unknown>();
   const existsCache = new Map<string, boolean>();
 
-  return {
-    async readText(relativePath: string): Promise<string | null> {
-      if (textCache.has(relativePath)) {
-        return textCache.get(relativePath) ?? null;
-      }
+  // Resolve the real project path once to check symlinks consistently
+  let resolvedProjectPath: string | undefined;
+  try {
+    resolvedProjectPath = await realpath(projectPath);
+  } catch {
+    // Project path doesn't exist or can't be resolved - proceed without symlink checks
+  }
 
-      try {
-        const fullPath = validateRelativePath(projectPath, relativePath);
-        const content = await readFile(fullPath, "utf-8");
-        textCache.set(relativePath, content);
-        return content;
-      } catch {
-        // File doesn't exist, path invalid, or read error
-        textCache.set(relativePath, null);
-        return null;
+  // Define readText as a standalone function so it can be referenced by readJson
+  async function readText(relativePath: string): Promise<string | null> {
+    if (textCache.has(relativePath)) {
+      return textCache.get(relativePath) ?? null;
+    }
+
+    try {
+      const fullPath = await validateRelativePath(projectPath, relativePath, resolvedProjectPath);
+      const content = await readFile(fullPath, "utf-8");
+      textCache.set(relativePath, content);
+      return content;
+    } catch (error) {
+      // Log specific errors for debugging (if DEBUG env var is set)
+      if (process.env.DEBUG && error instanceof Error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        if (code !== "ENOENT") {
+          console.error(`[DEBUG] Error reading ${relativePath}: ${error.message}`);
+        }
       }
-    },
+      textCache.set(relativePath, null);
+      return null;
+    }
+  }
+
+  return {
+    readText,
 
     async readJson<T>(relativePath: string): Promise<T | null> {
       const cacheKey = relativePath;
@@ -48,7 +93,7 @@ export function createFileCache(projectPath: string): FileCache {
         return jsonCache.get(cacheKey) as T | null;
       }
 
-      const text = await this.readText(relativePath);
+      const text = await readText(relativePath);
       if (!text) {
         jsonCache.set(cacheKey, null);
         return null;
@@ -65,12 +110,18 @@ export function createFileCache(projectPath: string): FileCache {
       }
 
       try {
-        const fullPath = validateRelativePath(projectPath, relativePath);
+        const fullPath = await validateRelativePath(projectPath, relativePath, resolvedProjectPath);
         await stat(fullPath);
         existsCache.set(relativePath, true);
         return true;
-      } catch {
-        // File doesn't exist, path invalid, or stat error
+      } catch (error) {
+        // Log specific errors for debugging (if DEBUG env var is set)
+        if (process.env.DEBUG && error instanceof Error) {
+          const code = (error as NodeJS.ErrnoException).code;
+          if (code !== "ENOENT") {
+            console.error(`[DEBUG] Error checking ${relativePath}: ${error.message}`);
+          }
+        }
         existsCache.set(relativePath, false);
         return false;
       }

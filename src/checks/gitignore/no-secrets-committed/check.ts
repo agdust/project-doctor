@@ -1,8 +1,11 @@
-import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
+import {
+  readFileWithLineEnding,
+  atomicWriteFile,
+} from "../../../utils/safe-fs.js";
 
 const name = "gitignore-no-secrets-committed";
 
@@ -59,7 +62,7 @@ export const check: Check<GitignoreContext> = {
     description: "Add secret files to .gitignore",
     run: async (global, { gitignore }) => {
       const gitignorePath = join(global.projectPath, ".gitignore");
-      const content = await readFile(gitignorePath, "utf-8");
+      const { content, lineEnding } = await readFileWithLineEnding(gitignorePath);
 
       // Find which secret files exist but aren't ignored
       const toAdd: string[] = [];
@@ -82,10 +85,12 @@ export const check: Check<GitignoreContext> = {
         return { success: true, message: "No secret files to add" };
       }
 
-      // Append to .gitignore with a comment
-      const addition = `\n# Secret files\n${toAdd.join("\n")}\n`;
-      const newContent = content.endsWith("\n") ? content + addition : content + "\n" + addition;
-      await writeFile(gitignorePath, newContent, "utf-8");
+      // Append to .gitignore with a comment, preserving line endings
+      const addition = `${lineEnding}# Secret files${lineEnding}${toAdd.join(lineEnding)}${lineEnding}`;
+      const newContent = content.endsWith("\n") || content.endsWith("\r\n")
+        ? content + addition
+        : content + lineEnding + addition;
+      await atomicWriteFile(gitignorePath, newContent);
 
       return { success: true, message: `Added: ${toAdd.join(", ")}` };
     },

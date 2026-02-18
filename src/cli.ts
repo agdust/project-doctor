@@ -20,7 +20,8 @@ import { runSnapshot, runHistory } from "./utils/snapshot.js";
 import { runInit } from "./utils/init.js";
 import { runProjectDoctorApp } from "./app/index.js";
 import { printCheckResultsAsJson } from "./commands/check.js";
-import { bold, dim, red } from "./utils/colors.js";
+import { bold, dim, red, yellow } from "./utils/colors.js";
+import { safeJsonParse } from "./utils/safe-json.js";
 import {
   printHelp,
   handleConfigCommand,
@@ -39,10 +40,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJsonPath = join(__dirname, "..", "package.json");
 let VERSION = "0.0.0";
 try {
-  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8")) as { version?: string };
-  VERSION = packageJson.version ?? VERSION;
+  const content = readFileSync(packageJsonPath, "utf-8");
+  const packageJson = safeJsonParse<{ version?: string }>(content);
+  if (packageJson?.version) {
+    VERSION = packageJson.version;
+  } else {
+    console.error(yellow("Warning: Could not read version from package.json"));
+  }
 } catch {
-  // Fallback version if package.json is missing or malformed
+  // Fallback version if package.json is missing (expected during development with tsx)
+  if (process.env.NODE_ENV === "production") {
+    console.error(yellow("Warning: package.json not found, using fallback version"));
+  }
 }
 
 function printVersion(): void {

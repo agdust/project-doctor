@@ -13,6 +13,7 @@ import { execFile } from "node:child_process";
 export function openBrowser(url: string): Promise<void> {
   return new Promise((resolve) => {
     // Validate URL format to prevent injection
+    let validatedUrl: string;
     try {
       const parsed = new URL(url);
       if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
@@ -20,6 +21,8 @@ export function openBrowser(url: string): Promise<void> {
         resolve();
         return;
       }
+      // Use the parsed URL's href to ensure it's properly formatted
+      validatedUrl = parsed.href;
     } catch {
       // Invalid URL, don't open
       resolve();
@@ -30,17 +33,23 @@ export function openBrowser(url: string): Promise<void> {
 
     if (platform === "darwin") {
       // macOS: use 'open' command
-      execFile("open", [url], () => {
+      execFile("open", [validatedUrl], () => {
         resolve();
       });
     } else if (platform === "win32") {
-      // Windows: use 'cmd /c start' with empty title
-      execFile("cmd", ["/c", "start", "", url], () => {
-        resolve();
-      });
+      // Windows: use PowerShell's Start-Process for reliable URL handling
+      // This avoids issues with special characters (&, spaces, etc.) that
+      // affect cmd.exe's 'start' command
+      execFile(
+        "powershell.exe",
+        ["-NoProfile", "-Command", `Start-Process "${validatedUrl}"`],
+        () => {
+          resolve();
+        },
+      );
     } else {
       // Linux/other: use xdg-open
-      execFile("xdg-open", [url], () => {
+      execFile("xdg-open", [validatedUrl], () => {
         resolve();
       });
     }
