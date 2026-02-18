@@ -212,7 +212,7 @@ async function main(): Promise<void> {
   }
 
   if (command === "check") {
-    const results = await runChecks({
+    const { results, config } = await runChecks({
       projectPath,
       skipConfig: values["no-config"],
       groups: values.group,
@@ -221,7 +221,7 @@ async function main(): Promise<void> {
     });
 
     if (values.format === "json") {
-      printCheckResultsAsJson(results);
+      printCheckResultsAsJson(results, config);
     } else {
       console.log(`\nRunning checks on: ${projectPath}\n`);
       printResults(results, { fullReport: values["full-report"] });

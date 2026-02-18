@@ -32,7 +32,7 @@ export type {
 export { listChecks, listGroups, checkGroups, getAllChecks, getChecksByGroup } from "./registry.js";
 
 // Runner - execute checks programmatically
-export { runChecks, runAllChecks, type RunnerOptions } from "./utils/runner.js";
+export { runChecks, runAllChecks, type RunnerOptions, type RunnerResult } from "./utils/runner.js";
 
 // Context creation
 export { createGlobalContext } from "./context/global.js";

@@ -39,6 +39,11 @@ export interface RunnerOptions {
   excludeTags?: CheckTag[];
 }
 
+export interface RunnerResult {
+  results: CheckResult[];
+  config: ResolvedConfig;
+}
+
 function shouldRunCheck(
   checkName: string,
   checkTags: CheckTag[],
@@ -66,7 +71,7 @@ function shouldRunCheck(
   return true;
 }
 
-export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> {
+export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
   // Build config overrides from CLI options
   const configOverrides: Partial<ResolvedConfig> = {};
 
@@ -147,11 +152,12 @@ export async function runChecks(options: RunnerOptions): Promise<CheckResult[]> 
     }
   }
 
-  return allResults;
+  return { results: allResults, config };
 }
 
 export async function runAllChecks(projectPath: string): Promise<CheckResult[]> {
-  return runChecks({ projectPath });
+  const { results } = await runChecks({ projectPath });
+  return results;
 }
 
 /**

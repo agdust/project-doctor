@@ -268,3 +268,25 @@ export function buildTagsMap(): Map<string, string[]> {
 export async function loadWhyFromDocs(_group: string, checkName: string): Promise<string | null> {
   return getWhyTextFromDocs(checkName);
 }
+
+// ============================================================================
+// Muted Checks Counter
+// ============================================================================
+
+/**
+ * Count the number of currently muted checks in config.
+ *
+ * A check is considered muted if it has an active "skip-until-YYYY-MM-DD" value.
+ *
+ * @param config - Resolved project configuration
+ * @returns Number of muted checks
+ */
+export function countMutedChecks(config: ResolvedConfig): number {
+  let count = 0;
+  for (const severity of Object.values(config.checks)) {
+    if (isSkipUntil(severity) && isSkipUntilActive(severity)) {
+      count++;
+    }
+  }
+  return count;
+}

@@ -5,7 +5,7 @@ import { runChecks } from "./runner.js";
 describe("runner", () => {
   describe("shell-only project (generic type)", () => {
     it("should not run any JS-specific checks for generic projects", async () => {
-      const results = await runChecks({
+      const { results } = await runChecks({
         projectPath: fixtures.shellOnly,
         skipConfig: true,
       });
@@ -30,7 +30,7 @@ describe("runner", () => {
     });
 
     it("should only run generic checks for shell-only projects", async () => {
-      const results = await runChecks({
+      const { results } = await runChecks({
         projectPath: fixtures.shellOnly,
         skipConfig: true,
       });
@@ -49,7 +49,7 @@ describe("runner", () => {
     });
 
     it("should detect project type as generic when no JS files present", async () => {
-      const results = await runChecks({
+      const { results } = await runChecks({
         projectPath: fixtures.shellOnly,
         skipConfig: true,
       });
@@ -63,7 +63,7 @@ describe("runner", () => {
 
   describe("JS project", () => {
     it("should run JS-specific checks for JS projects", async () => {
-      const results = await runChecks({
+      const { results } = await runChecks({
         projectPath: fixtures.healthy,
         skipConfig: true,
       });

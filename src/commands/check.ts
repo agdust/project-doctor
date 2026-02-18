@@ -9,7 +9,8 @@
  */
 
 import type { CheckResult } from "../types.js";
-import { buildFixableMap, buildTagsMap } from "../utils/checks.js";
+import type { ResolvedConfig } from "../config/types.js";
+import { buildFixableMap, buildTagsMap, countMutedChecks } from "../utils/checks.js";
 
 export interface CheckJsonOutput {
   summary: {
@@ -17,6 +18,7 @@ export interface CheckJsonOutput {
     passed: number;
     failed: number;
     skipped: number;
+    muted: number;
   };
   results: {
     name: string;
@@ -28,7 +30,10 @@ export interface CheckJsonOutput {
   }[];
 }
 
-export function formatCheckResultsAsJson(results: CheckResult[]): CheckJsonOutput {
+export function formatCheckResultsAsJson(
+  results: CheckResult[],
+  config?: ResolvedConfig,
+): CheckJsonOutput {
   const fixableMap = buildFixableMap();
   const tagsMap = buildTagsMap();
 
@@ -38,6 +43,7 @@ export function formatCheckResultsAsJson(results: CheckResult[]): CheckJsonOutpu
       passed: results.filter((r) => r.status === "pass").length,
       failed: results.filter((r) => r.status === "fail").length,
       skipped: results.filter((r) => r.status === "skip").length,
+      muted: config ? countMutedChecks(config) : 0,
     },
     results: results.map((r) => ({
       name: r.name,
@@ -50,7 +56,7 @@ export function formatCheckResultsAsJson(results: CheckResult[]): CheckJsonOutpu
   };
 }
 
-export function printCheckResultsAsJson(results: CheckResult[]): void {
-  const output = formatCheckResultsAsJson(results);
+export function printCheckResultsAsJson(results: CheckResult[], config?: ResolvedConfig): void {
+  const output = formatCheckResultsAsJson(results, config);
   console.log(JSON.stringify(output, null, 2));
 }
