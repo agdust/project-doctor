@@ -38,8 +38,7 @@
   "mounts": [
     "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
     "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume",
-    "source=${localEnv:HOME}/projects/llm,target=/projects/llm,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/projects/nemesis,target=/projects/nemesis,type=bind,consistency=cached"
+    "source=${localEnv:HOME}/projects/llm,target=/projects/llm,type=bind,consistency=cached"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
