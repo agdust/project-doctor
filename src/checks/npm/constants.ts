@@ -9,6 +9,20 @@ export const LTS_VERSIONS = [
   { major: 22, codename: "jod", eol: "2027-04-30" },
 ] as const;
 
+// All historical LTS codenames (for validation of lts/<codename> format)
+export const ALL_LTS_CODENAMES = [
+  "argon", // v4
+  "boron", // v6
+  "carbon", // v8
+  "dubnium", // v10
+  "erbium", // v12
+  "fermium", // v14
+  "gallium", // v16
+  "hydrogen", // v18
+  "iron", // v20
+  "jod", // v22
+] as const;
+
 export const CURRENT_LTS_MAJOR = 22;
 export const MIN_SUPPORTED_MAJOR = 18;
 

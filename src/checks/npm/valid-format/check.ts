@@ -12,6 +12,17 @@ export const check: Check<NpmContext> = {
     if (!nvmrc.raw) return skip(name, "No .nvmrc");
     if (!nvmrc.version) return fail(name, "Empty .nvmrc");
 
+    const version = nvmrc.version;
+
+    // Reject deprecated nvm aliases
+    const deprecatedAliases = ["stable", "unstable"];
+    if (deprecatedAliases.includes(version)) {
+      return fail(
+        name,
+        `Deprecated alias "${version}". Use "lts/*" or "node" instead`
+      );
+    }
+
     const validPatterns = [
       /^\d+$/, // 20
       /^\d+\.\d+$/, // 20.10
@@ -20,9 +31,10 @@ export const check: Check<NpmContext> = {
       /^v\d+\.\d+$/, // v20.10
       /^v\d+\.\d+\.\d+$/, // v20.10.0
       /^lts\/\w+$/, // lts/iron
+      /^lts\/\*$/, // lts/* - latest LTS
+      /^node$/, // node - latest version
     ];
 
-    const version = nvmrc.version;
     const isValid = validPatterns.some((p) => p.test(version));
     if (!isValid) return fail(name, `Invalid format: ${version}`);
     return pass(name, `Version: ${nvmrc.version}`);

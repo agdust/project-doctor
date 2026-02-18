@@ -1,6 +1,7 @@
 // .nvmrc checks
 import { check as nvmrcExists } from "./exists/check.js";
 import { check as nvmrcValidFormat } from "./valid-format/check.js";
+import { check as nvmrcValidAlias } from "./valid-alias/check.js";
 import { check as nvmrcModernVersion } from "./modern-version/check.js";
 
 // engines checks
@@ -18,5 +19,6 @@ export const checks = [
   // .nvmrc checks
   nvmrcExists,
   nvmrcValidFormat,
+  nvmrcValidAlias,
   nvmrcModernVersion,
 ];
