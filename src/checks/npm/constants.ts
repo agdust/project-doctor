@@ -4,9 +4,9 @@
 // TODO: These values are hardcoded and need manual updates when Node.js releases new LTS versions.
 // Consider fetching from https://nodejs.org/dist/index.json or using a package like `node-releases`.
 export const LTS_VERSIONS = [
-  { major: 18, codename: "hydrogen", eol: "2025-04-30" },
   { major: 20, codename: "iron", eol: "2026-04-30" },
   { major: 22, codename: "jod", eol: "2027-04-30" },
+  { major: 24, codename: "krypton", eol: "2028-04-30" },
 ] as const;
 
 // All historical LTS codenames (for validation of lts/<codename> format)
@@ -21,10 +21,11 @@ export const ALL_LTS_CODENAMES = [
   "hydrogen", // v18
   "iron", // v20
   "jod", // v22
+  "krypton", // v24
 ] as const;
 
-export const CURRENT_LTS_MAJOR = 22;
-export const MIN_SUPPORTED_MAJOR = 18;
+export const CURRENT_LTS_MAJOR = 24;
+export const MIN_SUPPORTED_MAJOR = 20;
 
 export function parseMajorVersion(version: string): number | null {
   // Handle lts/codename format
