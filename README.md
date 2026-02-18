@@ -78,7 +78,6 @@ project-doctor info <check> [--format json]   # Show check details
 project-doctor init [path]       # Create config file
 project-doctor snapshot [path]   # Save current status
 project-doctor history [path]    # View progress over time
-project-doctor eslint [path]     # ESLint config builder
 ```
 
 ## Configuration

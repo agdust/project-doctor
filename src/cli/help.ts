@@ -26,7 +26,6 @@ Usage:
   project-doctor snapshot [path]
   project-doctor history [path]
   project-doctor init [path]
-  project-doctor eslint <subcommand> [options] [path]
 
 Commands:
   (default)    Interactive wizard to fix issues
@@ -45,7 +44,6 @@ Commands:
   snapshot     Save current status to history
   history      View progress over time
   init         Create .project-doctor/config.json5
-  eslint       ESLint configuration builder
 
 Check Options:
   -f, --full-report       Show all checks (default: only failures)

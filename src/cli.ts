@@ -38,6 +38,8 @@ import {
 // Read version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJsonPath = join(__dirname, "..", "package.json");
+
+const IS_DEV = process.env.NODE_ENV !== "production" && !__dirname.includes("node_modules");
 let VERSION = "0.0.0";
 try {
   const content = readFileSync(packageJsonPath, "utf-8");
@@ -88,7 +90,7 @@ async function main(): Promise<void> {
     "snapshot",
     "history",
     "init",
-    "eslint",
+    ...(IS_DEV ? ["eslint"] : []), // eslint is dev-only
     "config",
     "disable",
     "enable",
@@ -103,7 +105,14 @@ async function main(): Promise<void> {
   }
 
   // Handle special commands
+
+  // eslint command is dev-only (not exposed in production)
   if (command === "eslint") {
+    if (!IS_DEV) {
+      console.error(red("Error: Unknown command 'eslint'"));
+      console.error("Run 'project-doctor --help' for usage.");
+      process.exit(2);
+    }
     await handleEslintCommand(args);
     return;
   }
