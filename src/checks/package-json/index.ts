@@ -12,6 +12,7 @@ import { check as scriptsDev } from "./scripts-dev/check.js";
 import { check as scriptsTest } from "./scripts-test/check.js";
 import { check as scriptsLint } from "./scripts-lint/check.js";
 import { check as scriptsFormat } from "./scripts-format/check.js";
+import { check as hasPackageManager } from "./has-package-manager/check.js";
 import { check as depsNoDuplicates } from "./deps-no-duplicates/check.js";
 import { check as depsSorted } from "./deps-sorted/check.js";
 
@@ -25,6 +26,7 @@ export const checks = [
   hasDescription,
   hasLicense,
   hasEngines,
+  hasPackageManager,
   typeModule,
   hasMainOrExports,
   scriptsBuild,

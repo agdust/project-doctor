@@ -15,6 +15,7 @@ export interface PackageJson {
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
   workspaces?: string[] | { packages: string[] };
+  packageManager?: string;
 }
 
 export interface PackageJsonContext {
