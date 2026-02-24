@@ -6,7 +6,6 @@ import { check as disabledNodePostInstallScripts } from "./disabled-node-post-in
 import { check as lockfileLint } from "./lockfile-lint/check.js";
 import { check as envGitignored } from "./env-gitignored/check.js";
 import { check as devcontainer } from "./devcontainer/check.js";
-import { check as publishProvenance } from "./publish-provenance/check.js";
 import { check as ciLockfile } from "./ci-lockfile/check.js";
 import { parseGitignore } from "../../utils/gitignore.js";
 
@@ -255,91 +254,6 @@ describe("npm-security checks", () => {
       const result = await devcontainer.run(global, ctx);
 
       expect(result.status).toBe("fail");
-    });
-  });
-
-  describe("publish-provenance", () => {
-    it("should skip when no publish script exists", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        scripts: { build: "tsc", test: "vitest" },
-        ciWorkflows: [],
-      });
-      const result = await publishProvenance.run(global, ctx);
-
-      expect(result.status).toBe("skip");
-    });
-
-    it("should pass when publish script has --provenance", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        scripts: { publish: "npm publish --provenance" },
-        ciWorkflows: [],
-      });
-      const result = await publishProvenance.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-
-    it("should fail when publish script lacks --provenance", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        scripts: { publish: "npm publish" },
-        ciWorkflows: [],
-      });
-      const result = await publishProvenance.run(global, ctx);
-
-      expect(result.status).toBe("fail");
-      expect(result.message).toContain("does not use --provenance");
-    });
-
-    it("should pass when CI has provenance with id-token permission", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        scripts: {},
-        ciWorkflows: [
-          `name: Publish
-permissions:
-  id-token: write
-jobs:
-  publish:
-    steps:
-      - run: npm publish --provenance`,
-        ],
-      });
-      const result = await publishProvenance.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-
-    it("should fail when CI publishes but lacks id-token permission", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        scripts: {},
-        ciWorkflows: [
-          `name: Publish
-jobs:
-  publish:
-    steps:
-      - run: npm publish`,
-        ],
-      });
-      const result = await publishProvenance.run(global, ctx);
-
-      expect(result.status).toBe("fail");
-      expect(result.message).toContain("lacks id-token");
-    });
-
-    it("should detect prepublishOnly script", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        scripts: { prepublishOnly: "npm run build" },
-        ciWorkflows: [],
-      });
-      const result = await publishProvenance.run(global, ctx);
-
-      expect(result.status).toBe("fail");
-      expect(result.message).toContain("does not use --provenance");
     });
   });
 

@@ -97,3 +97,17 @@ export interface CheckGroup<GroupCtx = unknown> {
   loadContext: GroupContextLoader<GroupCtx>;
   checks: Check<GroupCtx>[];
 }
+
+// ============================================================================
+// Manual Checks - require human verification, no auto-detection
+// ============================================================================
+
+export type ManualCheckState = "done" | "not-done";
+
+export interface ManualCheck {
+  name: string;
+  description: string;
+  details: string;
+  tags: CheckTag[];
+  why?: string;
+}

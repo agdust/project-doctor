@@ -4,7 +4,7 @@
  * Shared state across all screens in the project-doctor app.
  */
 
-import type { CheckResult, CheckTag, FixResult, GlobalContext } from "../types.js";
+import type { CheckResult, CheckTag, FixResult, GlobalContext, ManualCheck, ManualCheckState } from "../types.js";
 
 /** An option for fixing an issue */
 export interface FixOptionRunnable {
@@ -42,6 +42,12 @@ export interface FailedCheck {
   fixOptions?: FixOptionRunnable[];
 }
 
+/** A manual check with its current state */
+export interface ManualCheckItem {
+  check: ManualCheck;
+  state: ManualCheckState;
+}
+
 /** Failed checks count by category */
 export interface FailedByCategory {
   required: number;
@@ -77,6 +83,12 @@ export interface AppContext {
 
   /** Selected check index in overview (for overview-detail screen) */
   selectedOverviewIndex: number;
+
+  /** Manual check items with their states */
+  manualCheckItems: ManualCheckItem[];
+
+  /** Selected manual check index (for checklist screen) */
+  selectedManualCheckIndex: number;
 
   /** Session stats */
   stats: {

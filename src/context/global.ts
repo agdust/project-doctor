@@ -56,5 +56,8 @@ function mergeConfigs(base: ResolvedConfig, overrides: Partial<ResolvedConfig>):
     groups: overrides.groups ? safeMergeRecords(base.groups, overrides.groups) : base.groups,
     eslintOverwriteConfirmed: overrides.eslintOverwriteConfirmed ?? base.eslintOverwriteConfirmed,
     noGitConfirmed: overrides.noGitConfirmed ?? base.noGitConfirmed,
+    manualChecks: overrides.manualChecks
+      ? safeMergeRecords(base.manualChecks, overrides.manualChecks)
+      : base.manualChecks,
   };
 }

@@ -65,12 +65,25 @@ export const homeScreen: Screen<AppContext> = {
     const failedCount = ctx.failedChecks.length;
     const fixableCount = ctx.issues.length;
 
-    // Current issues (if any failed checks)
+    // Current issues
     if (failedCount > 0) {
       const badge =
         fixableCount > 0 ? `${fixableCount} auto-fixable` : `${failedCount} failed`;
       opts.push(nav("issues", "Current issues", "issues", { badge }));
+    } else {
+      opts.push(nav("issues", "Current issues", "issues", { badge: "all passing" }));
     }
+
+    // Manual checklist
+    const doneCount = ctx.manualCheckItems.filter((i) => i.state === "done").length;
+    const manualTotal = ctx.manualCheckItems.length;
+    const manualBadge =
+      manualTotal === 0
+        ? "all done"
+        : doneCount === manualTotal
+          ? "all done"
+          : `${manualTotal - doneCount} unchecked`;
+    opts.push(nav("manual-checklist", "Manual checklist", "manual-checklist", { badge: manualBadge }));
 
     // Config
     opts.push(

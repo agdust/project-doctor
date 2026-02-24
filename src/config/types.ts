@@ -15,6 +15,8 @@
  * ```
  */
 
+import type { ManualCheckState } from "../types.js";
+
 /**
  * Severity level:
  * - "off" - permanently disabled
@@ -104,6 +106,8 @@ export interface Config {
   eslintOverwriteConfirmed?: boolean;
   /** User confirmed running without git protection */
   noGitConfirmed?: boolean;
+  /** Manual check states (done/not-done) */
+  manualChecks?: Record<string, ManualCheckState>;
 }
 
 /** How project type was determined */
@@ -122,6 +126,7 @@ export interface ResolvedConfig {
   groups: Record<string, Severity>;
   eslintOverwriteConfirmed: boolean;
   noGitConfirmed: boolean;
+  manualChecks: Record<string, ManualCheckState>;
 }
 
 export const DEFAULT_CONFIG: ResolvedConfig = {
@@ -133,4 +138,5 @@ export const DEFAULT_CONFIG: ResolvedConfig = {
   groups: {},
   eslintOverwriteConfirmed: false,
   noGitConfirmed: false,
+  manualChecks: {},
 };

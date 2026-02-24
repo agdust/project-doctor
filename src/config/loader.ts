@@ -2,6 +2,7 @@ import { readFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType } from "./types.js";
+import type { ManualCheckState } from "../types.js";
 import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "./constants.js";
 import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
@@ -116,6 +117,7 @@ export function resolveConfig(
     eslintOverwriteConfirmed:
       config.eslintOverwriteConfirmed ?? DEFAULT_CONFIG.eslintOverwriteConfirmed,
     noGitConfirmed: config.noGitConfirmed ?? DEFAULT_CONFIG.noGitConfirmed,
+    manualChecks: config.manualChecks ?? DEFAULT_CONFIG.manualChecks,
   };
 }
 
@@ -257,6 +259,7 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
     const mergedChecks = safeMergeRecords(existing?.checks, updates.checks);
     const mergedTags = safeMergeRecords(existing?.tags, updates.tags);
     const mergedGroups = safeMergeRecords(existing?.groups, updates.groups);
+    const mergedManualChecks = safeMergeRecords(existing?.manualChecks, updates.manualChecks);
 
     const merged: Config = {
       projectType: updates.projectType ?? existing?.projectType,
@@ -265,6 +268,7 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
       checks: Object.keys(mergedChecks).length > 0 ? mergedChecks : undefined,
       tags: Object.keys(mergedTags).length > 0 ? mergedTags : undefined,
       groups: Object.keys(mergedGroups).length > 0 ? mergedGroups : undefined,
+      manualChecks: Object.keys(mergedManualChecks).length > 0 ? mergedManualChecks : undefined,
     };
 
     // Ensure config directory exists with .gitignore
@@ -312,5 +316,16 @@ export async function setGroupSeverity(
 export async function setProjectType(projectPath: string, projectType: ProjectType): Promise<void> {
   await updateConfig(projectPath, {
     projectType,
+  });
+}
+
+/** Set a manual check's state in config */
+export async function setManualCheckState(
+  projectPath: string,
+  checkName: string,
+  state: ManualCheckState,
+): Promise<void> {
+  await updateConfig(projectPath, {
+    manualChecks: { [checkName]: state },
   });
 }

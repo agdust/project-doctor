@@ -23,6 +23,8 @@ import { projectTypeScreen } from "./screens/project-type.js";
 import { aboutConfigScreen } from "./screens/about-config.js";
 import { categoriesScreen } from "./screens/categories.js";
 import { aboutScreen } from "./screens/about.js";
+import { manualChecklistScreen } from "./screens/manual-checklist.js";
+import { manualCheckDetailScreen } from "./screens/manual-check-detail.js";
 
 export async function runProjectDoctorApp(projectPath: string): Promise<void> {
   // Check git safety before proceeding
@@ -57,6 +59,8 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       aboutConfigScreen,
       categoriesScreen,
       aboutScreen,
+      manualChecklistScreen,
+      manualCheckDetailScreen,
     ],
     initialScreen: "home",
 

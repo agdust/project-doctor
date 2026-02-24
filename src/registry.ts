@@ -1,4 +1,4 @@
-import type { Check, CheckGroup, GroupContextLoader } from "./types.js";
+import type { Check, CheckGroup, GroupContextLoader, ManualCheck } from "./types.js";
 
 import {
   loadContext as loadPackageJsonContext,
@@ -40,6 +40,7 @@ import {
   loadContext as loadNpmSecurityContext,
   checks as npmSecurityChecks,
 } from "./checks/npm-security/index.js";
+import { manualChecks as manualChecksList } from "./checks/manual/index.js";
 
 function createGroup<T>(
   name: string,
@@ -67,6 +68,8 @@ export const checkGroups = [
   createGroup("docker", loadDockerContext, dockerChecks),
   createGroup("npm-security", loadNpmSecurityContext, npmSecurityChecks),
 ];
+
+export const manualChecks: ManualCheck[] = manualChecksList;
 
 export function getAllChecks(): Check[] {
   return checkGroups.flatMap((group) => group.checks as Check[]);

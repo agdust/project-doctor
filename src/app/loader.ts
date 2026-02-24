@@ -6,11 +6,12 @@
 
 import { basename } from "node:path";
 import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult } from "../types.js";
-import { checkGroups } from "../registry.js";
+import { checkGroups, manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
-import type { AppContext, FixableIssue, FailedCheck, FailedByCategory } from "./types.js";
+import { isCheckOff, isTagOff } from "../config/loader.js";
+import type { AppContext, FixableIssue, FailedCheck, FailedByCategory, ManualCheckItem } from "./types.js";
 import { safeJsonParse } from "../utils/safe-json.js";
 
 /**
@@ -170,6 +171,20 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     return getFixPriority(issue.tags, rootTags);
   });
 
+  // Load manual check states from config (filter out disabled/muted)
+  const manualCheckItems: ManualCheckItem[] = manualChecks
+    .filter((check) => {
+      if (isCheckOff(global.config, check.name)) return false;
+      for (const tag of check.tags) {
+        if (isTagOff(global.config, tag)) return false;
+      }
+      return true;
+    })
+    .map((check) => ({
+      check,
+      state: global.config.manualChecks[check.name] ?? "not-done",
+    }));
+
   return {
     projectPath,
     projectName,
@@ -180,6 +195,8 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     issues: sortedIssues,
     currentIssueIndex: 0,
     selectedOverviewIndex: 0,
+    manualCheckItems,
+    selectedManualCheckIndex: 0,
     stats: {
       fixed: 0,
       skipped: 0,
@@ -201,4 +218,5 @@ export async function rescanProject(ctx: AppContext): Promise<void> {
   ctx.failedByCategory = newCtx.failedByCategory;
   ctx.issues = newCtx.issues;
   ctx.currentIssueIndex = 0;
+  ctx.manualCheckItems = newCtx.manualCheckItems;
 }
