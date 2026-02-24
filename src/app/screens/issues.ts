@@ -59,18 +59,20 @@ export const issuesScreen: Screen<AppContext> = {
       }),
     );
 
-    // Fix issues - walk through queue
-    opts.push(
-      action(
-        "fix",
-        "Fix issues",
-        async (c) => {
-          c.currentIssueIndex = 0;
-          return "issue-detail";
-        },
-        `Walk through ${ctx.issues.length} issue${ctx.issues.length > 1 ? "s" : ""} one by one`,
-      ),
-    );
+    // Fix issues - walk through queue (only if there are fixable issues)
+    if (ctx.issues.length > 0) {
+      opts.push(
+        action(
+          "fix",
+          "Fix issues",
+          async (c) => {
+            c.currentIssueIndex = 0;
+            return "issue-detail";
+          },
+          `Walk through ${ctx.issues.length} issue${ctx.issues.length > 1 ? "s" : ""} one by one`,
+        ),
+      );
+    }
 
     return opts;
   },
