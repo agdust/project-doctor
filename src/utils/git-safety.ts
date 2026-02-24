@@ -27,17 +27,35 @@ export function hasGitRepo(projectPath: string): boolean {
 
 /**
  * Prompt user for input (simple readline-based, no inquirer)
+ * Returns null if ESC is pressed.
  */
-async function promptInput(message: string): Promise<string> {
+async function promptInput(message: string): Promise<string | null> {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
   return new Promise((resolve) => {
+    let resolved = false;
+
+    const onKeypress = (_ch: string, key: { name?: string }) => {
+      if (key?.name === "escape" && !resolved) {
+        resolved = true;
+        process.stdin.removeListener("keypress", onKeypress);
+        rl.close();
+        resolve(null);
+      }
+    };
+
+    process.stdin.on("keypress", onKeypress);
+
     rl.question(`  ${message}: `, (answer) => {
-      rl.close();
-      resolve(answer);
+      if (!resolved) {
+        resolved = true;
+        process.stdin.removeListener("keypress", onKeypress);
+        rl.close();
+        resolve(answer);
+      }
     });
   });
 }
@@ -77,9 +95,9 @@ export async function ensureGitSafety(projectPath: string): Promise<boolean> {
   console.log(`  ${dim("To continue anyway, type:")} ${cyan(CHALLENGE_PHRASE)}`);
   console.log();
 
-  const answer = await promptInput("Type to confirm (or press Enter to cancel)");
+  const answer = await promptInput("Type to confirm (or press ESC/Enter to cancel)");
 
-  if (!answer.trim()) {
+  if (answer === null || !answer.trim()) {
     console.log();
     console.log(`  ${red("Cancelled.")} Initialize git with: ${cyan("git init")}`);
     console.log();
