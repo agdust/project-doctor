@@ -5,13 +5,28 @@
  */
 
 import path from "node:path";
-import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult, ManualCheck  } from "../types.js";
+import type {
+  CheckResult,
+  CheckResultBase,
+  GlobalContext,
+  CheckTag,
+  FixResult,
+  ManualCheck,
+  ManualCheckState,
+} from "../types.js";
 import { checkGroups, manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
 import { isSkipUntilActive } from "../config/types.js";
-import type { ManualCheckDisplayState, AppContext, FixableIssue, FailedCheck, FailedByCategory, ManualCheckItem  } from "./types.js";
+import type {
+  ManualCheckDisplayState,
+  AppContext,
+  FixableIssue,
+  FailedCheck,
+  FailedByCategory,
+  ManualCheckItem,
+} from "./types.js";
 import { safeJsonParse } from "../utils/safe-json.js";
 
 /**
@@ -33,7 +48,7 @@ async function getProjectName(global: GlobalContext, projectPath: string): Promi
 function getManualCheckDisplayState(
   check: ManualCheck,
   config: GlobalContext["config"],
-  state: import("../types.js").ManualCheckState,
+  state: ManualCheckState,
 ): ManualCheckDisplayState {
   // Check-level severity
   const checkSeverity = config.checks[check.name];

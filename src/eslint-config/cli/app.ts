@@ -7,7 +7,7 @@
  * - Ctrl+C exits immediately from anywhere
  */
 
-import { BACK, EXIT, isBack, isExit, type Screen, type AppController } from "./types.js";
+import type { BACK, EXIT, isBack, isExit, type Screen, type AppController } from "./types.js";
 import { clearScreen, printHeader, printGoodbye } from "./ui.js";
 import { pressAnyKey } from "./prompts.js";
 

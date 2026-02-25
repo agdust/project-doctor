@@ -1,5 +1,5 @@
 import type { GlobalContext } from "../types.js";
-import type { ResolvedConfig } from "../config/types.js";
+import { DEFAULT_CONFIG, type ResolvedConfig } from "../config/types.js";
 import { createFileCache } from "./file-cache.js";
 import { detectTools } from "./detect.js";
 import { loadAndResolveConfig, detectProjectTypeWithCause } from "../config/loader.js";
@@ -19,7 +19,6 @@ export async function createGlobalContext(
 
   let config: ResolvedConfig;
   if (options.skipConfig) {
-    const { DEFAULT_CONFIG } = await import("../config/types.js");
     // Still detect project type even when skipping config
     const detection = await detectProjectTypeWithCause(projectPath);
     config = {

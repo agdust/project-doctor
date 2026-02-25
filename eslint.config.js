@@ -83,6 +83,9 @@ export default defineConfig(
       // Console is expected in CLI
       "no-console": "off",
 
+      // Enforce consistent type imports
+      "@typescript-eslint/consistent-type-imports": "error",
+
       // Relax unnecessary condition checks (false positives with type guards)
       "@typescript-eslint/no-unnecessary-condition": "off",
 

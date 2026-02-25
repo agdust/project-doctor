@@ -24,6 +24,7 @@ import {
   formatRuleValue,
   color,
   ensureSafeToModify,
+  checkbox,
 } from "../cli/cli.js";
 
 import { readExistingConfig } from "../reader/reader.js";
@@ -316,8 +317,6 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
   }
   const strictness = strictnessResult as RuleStrictness;
 
-  // Concerns - using checkbox import from framework
-  const { checkbox } = await import("../cli/cli.js");
   const concerns = await checkbox<RuleConcern>({
     message: "Which concerns should be covered?",
     choices: [
