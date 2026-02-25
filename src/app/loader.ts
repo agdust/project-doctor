@@ -11,6 +11,9 @@ import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
 import { isCheckOff, isTagOff } from "../config/loader.js";
+import { isSkipUntilActive } from "../config/types.js";
+import type { ManualCheckDisplayState } from "./types.js";
+import type { ManualCheck } from "../types.js";
 import type { AppContext, FixableIssue, FailedCheck, FailedByCategory, ManualCheckItem } from "./types.js";
 import { safeJsonParse } from "../utils/safe-json.js";
 
@@ -24,6 +27,30 @@ async function getProjectName(global: GlobalContext, projectPath: string): Promi
     if (pkg && typeof pkg.name === "string") return pkg.name;
   }
   return basename(projectPath) || "project";
+}
+
+/**
+ * Determine display state for a manual check based on config severity.
+ * Disabled ("off") and muted ("skip-until-*") override the persisted state.
+ */
+function getManualCheckDisplayState(
+  check: ManualCheck,
+  config: GlobalContext["config"],
+  state: import("../types.js").ManualCheckState,
+): ManualCheckDisplayState {
+  // Check-level severity
+  const checkSeverity = config.checks[check.name];
+  if (checkSeverity === "off") return "disabled";
+  if (checkSeverity && isSkipUntilActive(checkSeverity)) return "muted";
+
+  // Tag-level severity
+  for (const tag of check.tags) {
+    const tagSeverity = config.tags[tag];
+    if (tagSeverity === "off") return "disabled";
+    if (tagSeverity && isSkipUntilActive(tagSeverity)) return "muted";
+  }
+
+  return state === "done" ? "done" : "not-done";
 }
 
 /**
@@ -171,19 +198,12 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     return getFixPriority(issue.tags, rootTags);
   });
 
-  // Load manual check states from config (filter out disabled/muted)
-  const manualCheckItems: ManualCheckItem[] = manualChecks
-    .filter((check) => {
-      if (isCheckOff(global.config, check.name)) return false;
-      for (const tag of check.tags) {
-        if (isTagOff(global.config, tag)) return false;
-      }
-      return true;
-    })
-    .map((check) => ({
-      check,
-      state: global.config.manualChecks[check.name] ?? "not-done",
-    }));
+  // Load manual check states from config
+  const manualCheckItems: ManualCheckItem[] = manualChecks.map((check) => {
+    const state = global.config.manualChecks[check.name] ?? "not-done";
+    const displayState = getManualCheckDisplayState(check, global.config, state);
+    return { check, state, displayState };
+  });
 
   return {
     projectPath,

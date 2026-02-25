@@ -75,14 +75,8 @@ export const homeScreen: Screen<AppContext> = {
     }
 
     // Manual checklist
-    const doneCount = ctx.manualCheckItems.filter((i) => i.state === "done").length;
-    const manualTotal = ctx.manualCheckItems.length;
-    const manualBadge =
-      manualTotal === 0
-        ? "all done"
-        : doneCount === manualTotal
-          ? "all done"
-          : `${manualTotal - doneCount} unchecked`;
+    const uncheckedCount = ctx.manualCheckItems.filter((i) => i.displayState === "not-done").length;
+    const manualBadge = uncheckedCount === 0 ? "all done" : `${uncheckedCount} unchecked`;
     opts.push(nav("manual-checklist", "Manual checklist", "manual-checklist", { badge: manualBadge }));
 
     // Config

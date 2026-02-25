@@ -42,10 +42,14 @@ export interface FailedCheck {
   fixOptions?: FixOptionRunnable[];
 }
 
+/** Display state for manual checks (accounts for config severity) */
+export type ManualCheckDisplayState = "done" | "not-done" | "muted" | "disabled";
+
 /** A manual check with its current state */
 export interface ManualCheckItem {
   check: ManualCheck;
   state: ManualCheckState;
+  displayState: ManualCheckDisplayState;
 }
 
 /** Failed checks count by category */
