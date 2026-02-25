@@ -10,15 +10,21 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json has type: module for ESM",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (parsed.type !== "module") return fail(name, "Not using ESM (type: module)");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.type !== "module") {
+      return fail(name, "Not using ESM (type: module)");
+    }
     return pass(name, "Using ESM");
   },
   fix: {
     description: "Set type: module for ESM",
     run: async (global) => {
       const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-      if (!pkg) return { success: false, message: "Could not read package.json" };
+      if (!pkg) {
+        return { success: false, message: "Could not read package.json" };
+      }
 
       pkg.type = "module";
       await writeJson(global.projectPath, "package.json", pkg);

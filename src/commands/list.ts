@@ -42,7 +42,7 @@ function formatStatus(status: CheckStatus, mutedUntil?: string): string {
       return dim("disabled");
     }
     case "muted": {
-      return yellow(`muted${mutedUntil ? ` (until ${mutedUntil})` : ""}`);
+      return yellow(`muted${mutedUntil === undefined ? "" : ` (until ${mutedUntil})`}`);
     }
   }
 }

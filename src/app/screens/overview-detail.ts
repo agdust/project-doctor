@@ -6,7 +6,15 @@
 
 import { bold, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, text, muted, success, error  } from "../../cli-framework/index.js";
+import {
+  action,
+  separator,
+  blank,
+  text,
+  muted,
+  success,
+  error,
+} from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { openBrowser } from "../../utils/open-browser.js";
 
@@ -39,7 +47,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
 
   render: (ctx) => {
     const check = ctx.failedChecks[ctx.selectedOverviewIndex];
-    if (!check) {
+    if (check === undefined) {
       muted("Check not found");
       blank();
       return;
@@ -51,7 +59,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
     blank();
 
     // Why section
-    if (check.why) {
+    if (check.why !== null) {
       text(bold("Why this matters"));
       blank();
       // Indent and wrap the why text
@@ -63,7 +71,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
     }
 
     // Fix available
-    if (check.fixDescription) {
+    if (check.fixDescription !== null) {
       text(`${cyan("Fix available:")} ${check.fixDescription}`);
       blank();
     }
@@ -78,14 +86,18 @@ export const overviewDetailScreen: Screen<AppContext> = {
 
   options: (ctx): Option<AppContext>[] => {
     const check = ctx.failedChecks[ctx.selectedOverviewIndex];
-    if (!check) return [];
+    if (check === undefined) {
+      return [];
+    }
 
     const opts: Option<AppContext>[] = [];
 
     // Helper to remove fixed check from lists
     const removeFixedCheck = (c: AppContext) => {
       const checkToRemove = c.failedChecks[c.selectedOverviewIndex];
-      if (!checkToRemove) return;
+      if (checkToRemove === undefined) {
+        return;
+      }
 
       // Update category counts
       if (checkToRemove.tags.includes("required")) {

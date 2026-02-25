@@ -11,7 +11,9 @@ export const check: Check<GitignoreContext> = {
   description: "Check if node_modules is ignored",
   tags: ["node", "required", "effort:low"],
   run: (_global, { raw, gitignore }) => {
-    if (!raw || !gitignore) return skip(name, "No .gitignore");
+    if (raw === null || gitignore === null) {
+      return skip(name, "No .gitignore");
+    }
     if (!gitignore.ignores("node_modules/package.json")) {
       return fail(name, "node_modules not ignored");
     }

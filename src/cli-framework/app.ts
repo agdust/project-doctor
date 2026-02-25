@@ -14,9 +14,9 @@ import { clear, bigTitle, blank } from "./renderer.js";
 const BACK_VALUE = "__back__";
 
 export class App<TCtx> {
-  private config: AppConfig<TCtx>;
-  private state: AppState<TCtx>;
-  private screenMap: Map<string, Screen<TCtx>>;
+  private readonly config: AppConfig<TCtx>;
+  private readonly state: AppState<TCtx>;
+  private readonly screenMap: Map<string, Screen<TCtx>>;
 
   constructor(config: AppConfig<TCtx>) {
     this.config = config;
@@ -58,7 +58,7 @@ export class App<TCtx> {
   private async runScreen(screen: Screen<TCtx>): Promise<void> {
     // Lifecycle: onEnter - can return next screen to navigate immediately
     const nextScreen = await screen.onEnter?.(this.state.context);
-    if (nextScreen) {
+    if (nextScreen !== undefined) {
       this.state.current = nextScreen;
       return;
     }
@@ -91,9 +91,11 @@ export class App<TCtx> {
     let ctrlCPressed = false;
 
     const onData = (data: Buffer) => {
-      if (data.length === 0) return;
+      if (data.length === 0) {
+        return;
+      }
       // ESC key is 0x1b (27)
-      if (data[0] === 0x1B && data.length === 1) {
+      if (data[0] === 0x1b && data.length === 1) {
         escPressed = true;
         ac.abort();
       }
@@ -160,7 +162,7 @@ export class App<TCtx> {
    * Add back option if appropriate
    */
   private addBackOption(screen: Screen<TCtx>, options: Option<TCtx>[]): Option<TCtx>[] {
-    if (screen.noBack || !screen.parent) {
+    if (screen.noBack === true || screen.parent === undefined) {
       return options;
     }
     return [...options, back()];
@@ -176,7 +178,7 @@ export class App<TCtx> {
       }
 
       let name = opt.label;
-      if (opt.type === "nav" && opt.badge) {
+      if (opt.type === "nav" && opt.badge !== undefined) {
         name = `${opt.label} (${opt.badge})`;
       }
 
@@ -204,7 +206,9 @@ export class App<TCtx> {
 
     // Find the selected option
     const option = options.find((o) => o.type !== "separator" && o.value === selected);
-    if (!option || option.type === "separator") return;
+    if (!option || option.type === "separator") {
+      return;
+    }
 
     if (option.type === "nav") {
       await this.navigate(screen, option.to);
@@ -212,7 +216,7 @@ export class App<TCtx> {
       const nextScreen = await option.run(this.state.context);
       if (nextScreen === "__exit__") {
         this.state.shouldExit = true;
-      } else if (nextScreen) {
+      } else if (nextScreen !== undefined) {
         await this.navigate(screen, nextScreen);
       }
       // If no nextScreen returned, stay on current screen (will re-render)
@@ -255,7 +259,7 @@ export class App<TCtx> {
    * Go back to parent screen, or exit if at root
    */
   private async goBack(currentScreen: Screen<TCtx>): Promise<void> {
-    if (!currentScreen.parent) {
+    if (currentScreen.parent === undefined) {
       // At root - ESC exits the app
       this.state.shouldExit = true;
       return;

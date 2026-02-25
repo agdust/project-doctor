@@ -8,7 +8,7 @@ export interface EditorconfigContext {
 
 export async function loadContext(global: GlobalContext): Promise<EditorconfigContext> {
   const raw = await global.files.readText(".editorconfig");
-  if (!raw) {
+  if (raw === null) {
     return { raw: null, hasRoot: false, hasIndent: false };
   }
 

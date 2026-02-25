@@ -12,7 +12,9 @@ export const check: Check<DocsContext> = {
   description: "Check if README.md exists",
   tags: ["universal", "required", "effort:low"],
   run: (_global, { readme }) => {
-    if (!readme) return fail(name, "README.md not found");
+    if (readme === null) {
+      return fail(name, "README.md not found");
+    }
     return pass(name, "README.md exists");
   },
   fix: {
@@ -23,7 +25,9 @@ export const check: Check<DocsContext> = {
         const pkgPath = path.join(global.projectPath, "package.json");
         const pkgContent = await readFile(pkgPath, "utf8");
         const pkg = safeJsonParse<{ name?: string }>(pkgContent);
-        if (pkg && typeof pkg.name === "string") projectName = pkg.name;
+        if (pkg && typeof pkg.name === "string") {
+          projectName = pkg.name;
+        }
       } catch {
         // package.json doesn't exist, use default name
       }

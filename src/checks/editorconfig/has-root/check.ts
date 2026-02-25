@@ -11,8 +11,12 @@ export const check: Check<EditorconfigContext> = {
   description: "Check if .editorconfig has root = true",
   tags: ["universal", "recommended", "effort:low"],
   run: (_global, { raw, hasRoot }) => {
-    if (!raw) return skip(name, "No .editorconfig");
-    if (!hasRoot) return fail(name, "Missing root = true");
+    if (raw === null) {
+      return skip(name, "No .editorconfig");
+    }
+    if (!hasRoot) {
+      return fail(name, "Missing root = true");
+    }
     return pass(name, "root = true present");
   },
   fix: {

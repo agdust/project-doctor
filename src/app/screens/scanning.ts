@@ -6,7 +6,7 @@
  */
 
 import type { Screen } from "../../cli-framework/index.js";
-import { action, blank, muted, success  } from "../../cli-framework/index.js";
+import { action, blank, muted, success } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { rescanProject } from "../loader.js";
 

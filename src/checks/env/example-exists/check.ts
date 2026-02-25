@@ -33,9 +33,13 @@ export const check: Check<EnvContext> = {
         .split("\n")
         .map((line) => {
           const trimmed = line.trim();
-          if (!trimmed || trimmed.startsWith("#")) return line;
+          if (!trimmed || trimmed.startsWith("#")) {
+            return line;
+          }
           const eqIndex = line.indexOf("=");
-          if (eqIndex === -1) return line;
+          if (eqIndex === -1) {
+            return line;
+          }
           return line.slice(0, eqIndex + 1);
         })
         .join("\n");

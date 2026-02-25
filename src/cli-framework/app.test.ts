@@ -189,7 +189,9 @@ describe("cli-framework/App", () => {
       const screens: Screen<TestContext>[] = [{ id: "home", render: () => {}, options: [] }];
 
       // Should not throw
-      const app = new App(createTestConfig(screens, { displayName: (ctx) => `App (${ctx.counter})` }));
+      const app = new App(
+        createTestConfig(screens, { displayName: (ctx) => `App (${ctx.counter})` }),
+      );
       expect(app.getCurrentScreen()).toBe("home");
     });
   });

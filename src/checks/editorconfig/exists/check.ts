@@ -22,7 +22,9 @@ export const check: Check<EditorconfigContext> = {
   description: "Check if .editorconfig exists",
   tags: ["universal", "recommended", "effort:low"],
   run: (_global, { raw }) => {
-    if (!raw) return fail(name, ".editorconfig not found");
+    if (raw === null) {
+      return fail(name, ".editorconfig not found");
+    }
     return pass(name, ".editorconfig exists");
   },
   fix: {

@@ -66,9 +66,15 @@ export function printSummary(results: CheckResult[]): void {
   const summary = getSummary(results);
   const parts: string[] = [];
 
-  if (summary.passed > 0) parts.push(green(`${summary.passed} passed`));
-  if (summary.failed > 0) parts.push(red(`${summary.failed} failed`));
-  if (summary.skipped > 0) parts.push(dim(`${summary.skipped} skipped`));
+  if (summary.passed > 0) {
+    parts.push(green(`${summary.passed} passed`));
+  }
+  if (summary.failed > 0) {
+    parts.push(red(`${summary.failed} failed`));
+  }
+  if (summary.skipped > 0) {
+    parts.push(dim(`${summary.skipped} skipped`));
+  }
 
   console.log(`Summary: ${parts.join(", ")} (${summary.total} total)`);
 }

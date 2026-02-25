@@ -9,8 +9,12 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if dev script exists",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.scripts?.dev) return fail(name, "No dev script");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.scripts?.dev === undefined) {
+      return fail(name, "No dev script");
+    }
     return pass(name, "Dev script present");
   },
 };

@@ -52,8 +52,12 @@ export const check: Check<DockerContext> = {
   description: "Check if Dockerfile uses a small base image",
   tags: ["universal", "recommended", "effort:medium"],
   run: (_global, { dockerfile, baseImage, baseImageTag }) => {
-    if (!dockerfile) return skip(name, "No Dockerfile");
-    if (!baseImage) return skip(name, "Could not parse base image");
+    if (dockerfile === null) {
+      return skip(name, "No Dockerfile");
+    }
+    if (baseImage === null) {
+      return skip(name, "Could not parse base image");
+    }
 
     const imageName = baseImage.toLowerCase();
     const tag = baseImageTag?.toLowerCase() ?? "latest";

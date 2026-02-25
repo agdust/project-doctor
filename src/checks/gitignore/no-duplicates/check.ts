@@ -2,10 +2,7 @@ import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
-import {
-  readFileWithLineEnding,
-  atomicWriteFile,
-} from "../../../utils/safe-fs.js";
+import { readFileWithLineEnding, atomicWriteFile } from "../../../utils/safe-fs.js";
 
 const name = "gitignore-no-duplicates";
 
@@ -14,7 +11,9 @@ export const check: Check<GitignoreContext> = {
   description: "Check for duplicate patterns in .gitignore",
   tags: ["universal", "recommended", "effort:low"],
   run: (_global, { raw, patterns }) => {
-    if (!raw) return skip(name, "No .gitignore");
+    if (raw === null) {
+      return skip(name, "No .gitignore");
+    }
     const seen = new Set<string>();
     const duplicates: string[] = [];
     for (const p of patterns) {

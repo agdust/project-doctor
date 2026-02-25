@@ -94,11 +94,15 @@ export function getDependencies(checkName: string): string[] {
 export function compareByChain(checkA: string, checkB: string): number {
   // Check if B depends on A (A must come first)
   const bDeps = getDependencies(checkB);
-  if (bDeps.includes(checkA)) return -1;
+  if (bDeps.includes(checkA)) {
+    return -1;
+  }
 
   // Check if A depends on B (B must come first)
   const aDeps = getDependencies(checkA);
-  if (aDeps.includes(checkB)) return 1;
+  if (aDeps.includes(checkB)) {
+    return 1;
+  }
 
   // No dependency relationship
   return 0;

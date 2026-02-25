@@ -9,18 +9,19 @@ export const check: Check<NpmContext> = {
   description: "Check if .nvmrc has valid Node version format",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { nvmrc }) => {
-    if (!nvmrc.raw) return skip(name, "No .nvmrc");
-    if (!nvmrc.version) return fail(name, "Empty .nvmrc");
+    if (nvmrc.raw === null) {
+      return skip(name, "No .nvmrc");
+    }
+    if (nvmrc.version === null) {
+      return fail(name, "Empty .nvmrc");
+    }
 
     const version = nvmrc.version;
 
     // Reject deprecated nvm aliases
     const deprecatedAliases = ["stable", "unstable"];
     if (deprecatedAliases.includes(version)) {
-      return fail(
-        name,
-        `Deprecated alias "${version}". Use "lts/*" or "node" instead`
-      );
+      return fail(name, `Deprecated alias "${version}". Use "lts/*" or "node" instead`);
     }
 
     const validPatterns = [
@@ -36,7 +37,9 @@ export const check: Check<NpmContext> = {
     ];
 
     const isValid = validPatterns.some((p) => p.test(version));
-    if (!isValid) return fail(name, `Invalid format: ${version}`);
+    if (!isValid) {
+      return fail(name, `Invalid format: ${version}`);
+    }
     return pass(name, `Version: ${nvmrc.version}`);
   },
 };

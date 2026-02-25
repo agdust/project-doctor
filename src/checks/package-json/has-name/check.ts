@@ -11,15 +11,21 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json has name field",
   tags: ["node", "required", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.name) return fail(name, "Missing name field");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.name === undefined) {
+      return fail(name, "Missing name field");
+    }
     return pass(name, `Name: ${parsed.name}`);
   },
   fix: {
     description: "Add name field from directory name",
     run: async (global) => {
       const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-      if (!pkg) return { success: false, message: "Could not read package.json" };
+      if (!pkg) {
+        return { success: false, message: "Could not read package.json" };
+      }
 
       const dirName = path.basename(global.projectPath);
       // Sanitize: lowercase, replace spaces with hyphens, remove invalid chars

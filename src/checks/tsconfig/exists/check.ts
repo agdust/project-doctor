@@ -26,7 +26,9 @@ export const check: Check<TsConfigContext> = {
   description: "Check if tsconfig.json exists",
   tags: ["typescript", "required", "effort:medium"],
   run: (_global, { raw }) => {
-    if (!raw) return fail(name, "tsconfig.json not found");
+    if (raw === null) {
+      return fail(name, "tsconfig.json not found");
+    }
     return pass(name, "tsconfig.json exists");
   },
   fix: {

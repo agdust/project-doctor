@@ -30,7 +30,7 @@ export const check: Check<NpmContext> = {
   description: "Check if engines.node specifies a modern, supported Node version",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { engines }) => {
-    if (!engines.node) {
+    if (engines.node === null) {
       return skip(name, "No engines.node defined");
     }
 

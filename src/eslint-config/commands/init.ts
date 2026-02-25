@@ -38,10 +38,13 @@ async function runEslintInitInner(projectPath: string, options: InitOptions): Pr
 
   // Get presets from wizard or CLI args
   let presets: PresetId[];
-  if (options.wizard) {
+  if (options.wizard === true) {
     const selections = await runWizard();
     presets = selections.presets;
-  } else if (options.presets) {
+  } else if (options.presets === undefined) {
+    // Default presets
+    presets = ["base", "typescript"];
+  } else {
     const parsed = options.presets.split(",").map((p) => p.trim());
     const invalid = parsed.filter((p) => !isValidPresetId(p));
     if (invalid.length > 0) {
@@ -50,9 +53,6 @@ async function runEslintInitInner(projectPath: string, options: InitOptions): Pr
       return;
     }
     presets = parsed as PresetId[];
-  } else {
-    // Default presets
-    presets = ["base", "typescript"];
   }
 
   console.log(`  Using presets: ${cyan(presets.join(", "))}`);
@@ -65,7 +65,7 @@ async function runEslintInitInner(projectPath: string, options: InitOptions): Pr
   // Check for existing config
   const existing = await readExistingConfig(projectPath);
 
-  if (existing && !options.force) {
+  if (existing && options.force !== true) {
     console.log(`  ${yellow("!")} Found existing config at ${existing.filePath}`);
     console.log();
 
@@ -73,7 +73,7 @@ async function runEslintInitInner(projectPath: string, options: InitOptions): Pr
     const diff = computeDiff(existing.rules, generatedConfig.rules);
     console.log(formatDiff(diff));
 
-    if (options.dryRun) {
+    if (options.dryRun === true) {
       console.log(`  ${dim("(dry run - no changes made)")}`);
       console.log();
       return;
@@ -93,7 +93,7 @@ async function runEslintInitInner(projectPath: string, options: InitOptions): Pr
     }
   }
 
-  if (options.dryRun) {
+  if (options.dryRun === true) {
     console.log(`  ${dim("Generated config (dry run):")}`);
     console.log();
     console.log(fileContent);

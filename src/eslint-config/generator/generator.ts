@@ -44,7 +44,13 @@ export function generateConfigFile(config: GeneratedConfig): string {
 
   // Language options for type-checked linting
   if (config.requiresTypeChecking) {
-    lines.push("    languageOptions: {", "      parserOptions: {", "        projectService: true,", "      },", "    },");
+    lines.push(
+      "    languageOptions: {",
+      "      parserOptions: {",
+      "        projectService: true,",
+      "      },",
+      "    },",
+    );
   }
 
   lines.push("    rules: {");
@@ -102,13 +108,20 @@ function formatRuleValue(value: RuleValue): string {
 }
 
 export function generateMinimalConfig(hasTypescript: boolean): string {
-  const lines: string[] = [ "// ESLint Configuration", ""];
-
+  const lines: string[] = ["// ESLint Configuration", ""];
 
   if (hasTypescript) {
-    lines.push("import tseslint from 'typescript-eslint';", "", "export default tseslint.configs.recommended;");
+    lines.push(
+      "import tseslint from 'typescript-eslint';",
+      "",
+      "export default tseslint.configs.recommended;",
+    );
   } else {
-    lines.push("import eslint from '@eslint/js';", "", "export default [eslint.configs.recommended];");
+    lines.push(
+      "import eslint from '@eslint/js';",
+      "",
+      "export default [eslint.configs.recommended];",
+    );
   }
 
   lines.push("");

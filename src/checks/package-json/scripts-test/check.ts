@@ -10,8 +10,12 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if test script exists",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.scripts?.test) return fail(name, "No test script");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.scripts?.test === undefined) {
+      return fail(name, "No test script");
+    }
     return pass(name, "Test script present");
   },
   fix: {
@@ -23,7 +27,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Fast, Vite-native testing framework",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.test", "vitest");
           await writeJson(global.projectPath, "package.json", pkg);
@@ -36,7 +42,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Popular testing framework by Facebook",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.test", "jest");
           await writeJson(global.projectPath, "package.json", pkg);
@@ -49,7 +57,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Built-in Node.js test runner (no dependencies)",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.test", "node --test");
           await writeJson(global.projectPath, "package.json", pkg);

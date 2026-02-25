@@ -19,7 +19,7 @@ export async function readJson<T>(projectPath: string, filename: string): Promis
     return safeJsonParse<T>(content);
   } catch (error) {
     // Log in debug mode to help diagnose issues (permissions, etc.)
-    if (process.env.DEBUG) {
+    if (process.env.DEBUG !== undefined) {
       const msg = error instanceof Error ? error.message : "Unknown error";
       console.error(`[DEBUG] readJson(${filename}): ${msg}`);
     }

@@ -6,7 +6,7 @@
 
 import { bold, dim } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, blank, text, success, error  } from "../../cli-framework/index.js";
+import { action, blank, text, success, error } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const fixOptionsScreen: Screen<AppContext> = {
@@ -15,7 +15,9 @@ export const fixOptionsScreen: Screen<AppContext> = {
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
-    if (!issue) return;
+    if (issue === undefined) {
+      return;
+    }
 
     text(bold(issue.name));
     text(dim(issue.result.message));
@@ -26,7 +28,9 @@ export const fixOptionsScreen: Screen<AppContext> = {
 
   options: (ctx): Option<AppContext>[] => {
     const issue = ctx.issues[ctx.currentIssueIndex];
-    if (!issue?.fixOptions) return [];
+    if (!issue?.fixOptions) {
+      return [];
+    }
 
     const opts: Option<AppContext>[] = [];
 

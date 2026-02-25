@@ -66,16 +66,20 @@ export async function runInfo(
   console.log(`${bold("Tags:")} ${output.tags.join(", ")}`);
   console.log();
 
-  const statusColor =
-    output.status === "enabled" ? green : (output.status === "muted" ? yellow : dim);
+  let statusColor = dim;
+  if (output.status === "enabled") {
+    statusColor = green;
+  } else if (output.status === "muted") {
+    statusColor = yellow;
+  }
   let statusStr = statusColor(output.status);
-  if (output.mutedUntil) {
+  if (output.mutedUntil !== undefined) {
     statusStr += ` (until ${output.mutedUntil})`;
   }
   console.log(`${bold("Status:")} ${statusStr}`);
   console.log(`${bold("Has Fix:")} ${output.fixable ? green("yes") : "no"}`);
 
-  if (output.fixDescription) {
+  if (output.fixDescription !== undefined) {
     console.log();
     console.log(bold("Fix Description:"));
     console.log(`  ${output.fixDescription}`);
@@ -86,13 +90,13 @@ export async function runInfo(
     console.log(bold("Fix Options:"));
     for (const opt of output.fixOptions) {
       console.log(`  ${dim(`[${opt.id}]`)} ${opt.label}`);
-      if (opt.description) {
+      if (opt.description !== undefined) {
         console.log(`    ${dim(opt.description)}`);
       }
     }
   }
 
-  if (output.why) {
+  if (output.why !== undefined) {
     console.log();
     console.log(bold("Why This Matters:"));
     console.log("─".repeat(60));

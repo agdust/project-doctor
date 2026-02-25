@@ -10,8 +10,10 @@ export const check: Check<TsConfigContext> = {
   description: "Check if TypeScript strict mode is enabled",
   tags: ["typescript", "recommended", "effort:high"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No tsconfig.json");
-    if (!parsed.compilerOptions?.strict) {
+    if (!parsed) {
+      return skip(name, "No tsconfig.json");
+    }
+    if (parsed.compilerOptions?.strict !== true) {
       return fail(name, "strict mode not enabled");
     }
     return pass(name, "strict mode enabled");
@@ -20,7 +22,9 @@ export const check: Check<TsConfigContext> = {
     description: "Enable strict mode",
     run: async (global) => {
       const tsconfig = await readJson<Record<string, unknown>>(global.projectPath, "tsconfig.json");
-      if (!tsconfig) return { success: false, message: "Could not read tsconfig.json" };
+      if (!tsconfig) {
+        return { success: false, message: "Could not read tsconfig.json" };
+      }
 
       setNestedField(tsconfig, "compilerOptions.strict", true);
       await writeJson(global.projectPath, "tsconfig.json", tsconfig);

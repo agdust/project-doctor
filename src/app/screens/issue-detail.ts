@@ -6,7 +6,16 @@
 
 import { bold, dim, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, nav, blank, title, muted, text, success, error  } from "../../cli-framework/index.js";
+import {
+  action,
+  nav,
+  blank,
+  title,
+  muted,
+  text,
+  success,
+  error,
+} from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
 import { createSkipUntil } from "../../config/types.js";
 import type { AppContext } from "../types.js";
@@ -17,7 +26,7 @@ export const issueDetailScreen: Screen<AppContext> = {
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
-    if (!issue) {
+    if (issue === undefined) {
       title("No more issues");
       muted("All issues have been addressed.");
       blank();
@@ -38,7 +47,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     const issue = ctx.issues[ctx.currentIssueIndex];
 
     // No issue - show done
-    if (!issue) {
+    if (issue === undefined) {
       return [
         action("done", "Done", () => {
           return "home";
@@ -81,7 +90,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     }
 
     // Why? (if available)
-    if (issue.why) {
+    if (issue.why !== null) {
       opts.push(
         action(
           "why",

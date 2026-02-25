@@ -5,7 +5,7 @@
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, blank, title, text  } from "../../cli-framework/index.js";
+import { action, blank, title, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const summaryScreen: Screen<AppContext> = {

@@ -26,7 +26,7 @@ export interface PackageJsonContext {
 
 export async function loadContext(global: GlobalContext): Promise<PackageJsonContext> {
   const raw = await global.files.readText("package.json");
-  if (!raw) {
+  if (raw === null) {
     return { raw: null, parsed: null, parseError: null };
   }
 

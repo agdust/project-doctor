@@ -10,8 +10,12 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if build script exists",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.scripts?.build) return fail(name, "No build script");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.scripts?.build === undefined) {
+      return fail(name, "No build script");
+    }
     return pass(name, "Build script present");
   },
   fix: {
@@ -23,7 +27,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Compile TypeScript with tsc",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.build", "tsc");
           await writeJson(global.projectPath, "package.json", pkg);
@@ -36,7 +42,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Bundle with tsup (fast, esbuild-based)",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.build", "tsup");
           await writeJson(global.projectPath, "package.json", pkg);
@@ -49,7 +57,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Build with Vite",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.build", "vite build");
           await writeJson(global.projectPath, "package.json", pkg);

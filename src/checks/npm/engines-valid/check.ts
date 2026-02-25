@@ -43,7 +43,7 @@ export const check: Check<NpmContext> = {
   description: "Check if engines.node has valid semver range format",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { engines }) => {
-    if (!engines.node) {
+    if (engines.node === null) {
       return skip(name, "No engines.node defined");
     }
 

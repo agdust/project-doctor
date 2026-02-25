@@ -20,7 +20,9 @@ export const check: Check<GitignoreContext> = {
   description: "Check that lockfiles are not ignored by git",
   tags: ["node", "required", "effort:low"],
   run: (_global, { raw, patterns }) => {
-    if (!raw) return skip(name, "No .gitignore");
+    if (raw === null) {
+      return skip(name, "No .gitignore");
+    }
 
     const ignoredLockfiles = patterns.filter((p) =>
       LOCKFILE_PATTERNS.some((lock) => p === lock || p === `/${lock}`),
@@ -35,7 +37,9 @@ export const check: Check<GitignoreContext> = {
   fix: {
     description: "Remove lockfile patterns from .gitignore",
     run: async (global, { raw }) => {
-      if (!raw) return { success: false, message: "No .gitignore found" };
+      if (raw === null) {
+        return { success: false, message: "No .gitignore found" };
+      }
 
       const gitignorePath = path.join(global.projectPath, ".gitignore");
       const lineEnding = detectLineEnding(raw);
@@ -43,7 +47,9 @@ export const check: Check<GitignoreContext> = {
 
       const filteredLines = lines.filter((line) => {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) return true;
+        if (!trimmed || trimmed.startsWith("#")) {
+          return true;
+        }
         return !LOCKFILE_PATTERNS.some((lock) => trimmed === lock || trimmed === `/${lock}`);
       });
 

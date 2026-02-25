@@ -1,4 +1,3 @@
-
 /**
  * CLI Entry Point
  *
@@ -43,10 +42,10 @@ let VERSION = "0.0.0";
 try {
   const content = readFileSync(packageJsonPath, "utf8");
   const packageJson = safeJsonParse<{ version?: string }>(content);
-  if (packageJson?.version) {
-    VERSION = packageJson.version;
-  } else {
+  if (packageJson?.version === undefined) {
     console.error(yellow("Warning: Could not read version from package.json"));
+  } else {
+    VERSION = packageJson.version;
   }
 } catch {
   // Fallback version if package.json is missing (expected during development with tsx)

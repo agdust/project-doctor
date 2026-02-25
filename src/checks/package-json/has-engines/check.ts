@@ -10,15 +10,21 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json specifies Node engine version",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.engines?.node) return fail(name, "Missing engines.node");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.engines?.node === undefined) {
+      return fail(name, "Missing engines.node");
+    }
     return pass(name, `Node: ${parsed.engines.node}`);
   },
   fix: {
     description: "Add engines.node >= 20",
     run: async (global) => {
       const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-      if (!pkg) return { success: false, message: "Could not read package.json" };
+      if (!pkg) {
+        return { success: false, message: "Could not read package.json" };
+      }
 
       setNestedField(pkg, "engines.node", ">=20");
       await writeJson(global.projectPath, "package.json", pkg);

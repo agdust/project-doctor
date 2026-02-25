@@ -6,7 +6,7 @@
 
 import { green } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, text, success, error  } from "../../cli-framework/index.js";
+import { action, separator, blank, text, success, error } from "../../cli-framework/index.js";
 import { setManualCheckState } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
 
@@ -24,7 +24,9 @@ export const manualDoneScreen: Screen<AppContext> = {
     const opts: Option<AppContext>[] = [];
 
     for (const [index, item] of ctx.manualCheckItems.entries()) {
-      if (item.displayState !== "done") continue;
+      if (item.displayState !== "done") {
+        continue;
+      }
       const label = `${green("✓")}  ${item.check.description}`;
       opts.push(
         action(`manual-${index}`, label, (c) => {
@@ -40,7 +42,9 @@ export const manualDoneScreen: Screen<AppContext> = {
         action("uncheck-all", "Uncheck all", async (c) => {
           let count = 0;
           for (const item of c.manualCheckItems) {
-            if (item.displayState !== "done") continue;
+            if (item.displayState !== "done") {
+              continue;
+            }
             try {
               await setManualCheckState(c.projectPath, item.check.name, "not-done");
               item.state = "not-done";

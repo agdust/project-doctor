@@ -23,7 +23,7 @@ export async function loadContext(global: GlobalContext): Promise<NpmContext> {
   const nvmrcRaw = await global.files.readText(".nvmrc");
   const nvmrc = {
     raw: nvmrcRaw,
-    version: nvmrcRaw ? nvmrcRaw.trim() : null,
+    version: nvmrcRaw === null ? null : nvmrcRaw.trim(),
   };
 
   // Load engines from package.json

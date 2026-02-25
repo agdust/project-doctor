@@ -6,7 +6,7 @@
 
 import { dim, red, green } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, action, separator, blank, text  } from "../../cli-framework/index.js";
+import { nav, action, separator, blank, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const homeScreen: Screen<AppContext> = {
@@ -66,8 +66,7 @@ export const homeScreen: Screen<AppContext> = {
 
     // Current issues
     if (failedCount > 0) {
-      const badge =
-        fixableCount > 0 ? `${fixableCount} auto-fixable` : `${failedCount} failed`;
+      const badge = fixableCount > 0 ? `${fixableCount} auto-fixable` : `${failedCount} failed`;
       opts.push(nav("issues", "Current issues", "issues", { badge }));
     } else {
       opts.push(nav("issues", "Current issues", "issues", { badge: "all passing" }));

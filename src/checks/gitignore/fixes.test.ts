@@ -340,7 +340,10 @@ dist
       await tempFixture.writeJson("package.json", { name: "test" });
       await tempFixture.writeFile(".gitignore", "node_modules\ndist\n");
       // .npmrc with only safe configuration, no auth tokens
-      await tempFixture.writeFile(".npmrc", "ignore-scripts=true\nregistry=https://registry.npmjs.org/\n");
+      await tempFixture.writeFile(
+        ".npmrc",
+        "ignore-scripts=true\nregistry=https://registry.npmjs.org/\n",
+      );
 
       const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);

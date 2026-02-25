@@ -51,18 +51,24 @@ export function formatDiff(diff: ConfigDiff): string {
   }
 
   lines.push(
-    dim("  ─────────────────────────────────────────"), "",
+    dim("  ─────────────────────────────────────────"),
+    "",
     `  ${bold("Summary")}`,
     `    ${green(`+${diff.summary.added}`)} added`,
     `    ${yellow(`~${diff.summary.changed}`)} changed`,
-    `    ${red(`-${diff.summary.removed}`)} removed`, "",
+    `    ${red(`-${diff.summary.removed}`)} removed`,
+    "",
   );
 
   return lines.join("\n");
 }
 
 function formatValue(value: RuleValue | undefined): string {
-  if (value === undefined) return "(not set)";
-  if (typeof value === "string") return `"${value}"`;
+  if (value === undefined) {
+    return "(not set)";
+  }
+  if (typeof value === "string") {
+    return `"${value}"`;
+  }
   return JSON.stringify(value);
 }

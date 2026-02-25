@@ -22,7 +22,7 @@ export interface TsConfigContext {
 
 export async function loadContext(global: GlobalContext): Promise<TsConfigContext> {
   const raw = await global.files.readText("tsconfig.json");
-  if (!raw) {
+  if (raw === null) {
     return { raw: null, parsed: null, parseError: null };
   }
 

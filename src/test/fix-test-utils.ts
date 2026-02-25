@@ -45,7 +45,11 @@ export async function copyFixtureToTemp(fixtureName: FixtureName): Promise<TempF
       return JSON.parse(content) as T;
     },
     writeJson: async (relativePath: string, data: unknown) => {
-      await writeFile(path.join(tempDir, relativePath), JSON.stringify(data, null, 2) + "\n", "utf-8");
+      await writeFile(
+        path.join(tempDir, relativePath),
+        JSON.stringify(data, null, 2) + "\n",
+        "utf-8",
+      );
     },
   };
 }
@@ -72,7 +76,11 @@ export async function createEmptyTempDir(prefix = "fix-test"): Promise<TempFixtu
       return JSON.parse(content) as T;
     },
     writeJson: async (relativePath: string, data: unknown) => {
-      await writeFile(path.join(tempDir, relativePath), JSON.stringify(data, null, 2) + "\n", "utf-8");
+      await writeFile(
+        path.join(tempDir, relativePath),
+        JSON.stringify(data, null, 2) + "\n",
+        "utf-8",
+      );
     },
   };
 }

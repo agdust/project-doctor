@@ -29,7 +29,7 @@ async function validateRelativePath(
 
   // If we have the resolved (real) project path, also verify the full path
   // stays within it after symlink resolution
-  if (resolvedProjectPath) {
+  if (resolvedProjectPath !== undefined) {
     try {
       const realFullPath = await realpath(fullPath);
       if (!realFullPath.startsWith(resolvedProjectPath)) {
@@ -73,7 +73,7 @@ export async function createFileCache(projectPath: string): Promise<FileCache> {
       return content;
     } catch (error) {
       // Log specific errors for debugging (if DEBUG env var is set)
-      if (process.env.DEBUG && error instanceof Error) {
+      if (process.env.DEBUG !== undefined && error instanceof Error) {
         const code = (error as NodeJS.ErrnoException).code;
         if (code !== "ENOENT") {
           console.error(`[DEBUG] Error reading ${relativePath}: ${error.message}`);
@@ -94,7 +94,7 @@ export async function createFileCache(projectPath: string): Promise<FileCache> {
       }
 
       const text = await readText(relativePath);
-      if (!text) {
+      if (text === null) {
         jsonCache.set(cacheKey, null);
         return null;
       }
@@ -116,7 +116,7 @@ export async function createFileCache(projectPath: string): Promise<FileCache> {
         return true;
       } catch (error) {
         // Log specific errors for debugging (if DEBUG env var is set)
-        if (process.env.DEBUG && error instanceof Error) {
+        if (process.env.DEBUG !== undefined && error instanceof Error) {
           const code = (error as NodeJS.ErrnoException).code;
           if (code !== "ENOENT") {
             console.error(`[DEBUG] Error checking ${relativePath}: ${error.message}`);

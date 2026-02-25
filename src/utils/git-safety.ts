@@ -83,7 +83,9 @@ export async function ensureGitSafety(projectPath: string): Promise<boolean> {
   console.log();
   console.log();
   console.log(`  ${yellow(`┌${"─".repeat(58)}┐`)}`);
-  console.log(`  ${yellow("│")}  ${bold(yellow("WARNING: No Git Repository Detected"))}${" ".repeat(21)}${yellow("│")}`);
+  console.log(
+    `  ${yellow("│")}  ${bold(yellow("WARNING: No Git Repository Detected"))}${" ".repeat(21)}${yellow("│")}`,
+  );
   console.log(`  ${yellow(`└${"─".repeat(58)}┘`)}`);
   console.log();
   console.log(`  ${dim("This project is not under version control.")}`);
@@ -115,7 +117,9 @@ export async function ensureGitSafety(projectPath: string): Promise<boolean> {
   await updateConfig(projectPath, { noGitConfirmed: true });
 
   console.log();
-  console.log(`  ${green("Confirmed.")} ${dim("This warning won't appear again for this project.")}`);
+  console.log(
+    `  ${green("Confirmed.")} ${dim("This warning won't appear again for this project.")}`,
+  );
   console.log();
 
   return true;

@@ -6,7 +6,7 @@
 
 import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, title, muted  } from "../../cli-framework/index.js";
+import { action, separator, blank, title, muted } from "../../cli-framework/index.js";
 import type { AppContext, FailedCheck } from "../types.js";
 
 function formatCheckOption(
@@ -36,7 +36,9 @@ export const overviewScreen: Screen<AppContext> = {
 
   options: (ctx): Option<AppContext>[] => {
     const checks = ctx.failedChecks;
-    if (checks.length === 0) return [];
+    if (checks.length === 0) {
+      return [];
+    }
 
     const opts: Option<AppContext>[] = [];
 

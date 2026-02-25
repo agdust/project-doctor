@@ -43,7 +43,7 @@ async function readFileWithParser<T>(
       return { data: null, exists: false, parseError: false };
     }
     // Other read errors (permissions, etc.)
-    if (process.env.DEBUG) {
+    if (process.env.DEBUG !== undefined) {
       const msg = error instanceof Error ? error.message : "Unknown error";
       console.error(`[DEBUG] Error reading ${path}: ${msg}`);
     }
@@ -194,9 +194,15 @@ export async function loadAndResolveConfig(projectPath: string): Promise<Resolve
  * - "error" or anything else -> false
  */
 function isSeverityOff(value: Severity | undefined): boolean {
-  if (!value) return false;
-  if (value === "off") return true;
-  if (value === "error") return false;
+  if (value === undefined) {
+    return false;
+  }
+  if (value === "off") {
+    return true;
+  }
+  if (value === "error") {
+    return false;
+  }
   // Check skip-until pattern
   return isSkipUntilActive(value);
 }

@@ -65,7 +65,7 @@ export async function loadContext(global: GlobalContext): Promise<NpmSecurityCon
   const packageJson = await global.files.readJson<PackageJson>("package.json");
 
   // Parse gitignore for path checking
-  const gitignoreInstance = gitignore ? parseGitignore(gitignore) : null;
+  const gitignoreInstance = gitignore === null ? null : parseGitignore(gitignore);
 
   // Check for devcontainer
   const devcontainerJson = await global.files.readText(".devcontainer/devcontainer.json");

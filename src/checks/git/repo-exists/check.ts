@@ -9,7 +9,9 @@ export const check: Check<GitContext> = {
   description: "Check if project is a git repository",
   tags: ["universal", "required", "effort:low"],
   run: (_global, { isRepo }) => {
-    if (!isRepo) return fail(name, "Not a git repository");
+    if (!isRepo) {
+      return fail(name, "Not a git repository");
+    }
     return pass(name, "Git repository found");
   },
 };

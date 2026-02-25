@@ -43,7 +43,7 @@ export async function findConfigFile(projectPath: string): Promise<string | null
  */
 export async function readExistingConfig(projectPath: string): Promise<ParsedConfig | null> {
   const filePath = await findConfigFile(projectPath);
-  if (!filePath) {
+  if (filePath === null) {
     return null;
   }
 

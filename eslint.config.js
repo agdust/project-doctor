@@ -86,6 +86,26 @@ export default defineConfig(
       // Enforce consistent type imports
       "@typescript-eslint/consistent-type-imports": "error",
 
+      // Require exhaustive switch statements on union types
+      "@typescript-eslint/switch-exhaustiveness-check": "error",
+
+      // Mark class members that are never reassigned as readonly
+      "@typescript-eslint/prefer-readonly": "error",
+
+      // Require explicit boolean expressions in conditionals
+      "@typescript-eslint/strict-boolean-expressions": [
+        "error"
+      ],
+
+      // Require braces on all control flow statements
+      curly: ["error", "all"],
+
+      // Ban nested ternary expressions
+      "no-nested-ternary": "error",
+
+      // Flag TODO/FIXME/HACK comments as warnings
+      "no-warning-comments": "warn",
+
       // Relax unnecessary condition checks (false positives with type guards)
       "@typescript-eslint/no-unnecessary-condition": "off",
 
@@ -99,6 +119,9 @@ export default defineConfig(
       // unicorn overrides
       // =========================================================================
 
+      // Use core no-nested-ternary (ban) instead of unicorn (parenthesize)
+      "unicorn/no-nested-ternary": "off",
+
       // Allow abbreviations (ctx, args, opts, pkg, etc. are idiomatic)
       "unicorn/prevent-abbreviations": "off",
 
@@ -110,6 +133,9 @@ export default defineConfig(
 
       // Allow process.exit in CLI tool
       "unicorn/no-process-exit": "off",
+
+      // conflicts with prettier
+      "unicorn/number-literal-case": "off",
 
       // =========================================================================
       // eslint-plugin-n overrides

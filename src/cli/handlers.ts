@@ -27,7 +27,9 @@ type ConfigTargetType = "check" | "tag" | "group";
  * Returns undefined if the string is undefined or not a valid positive integer.
  */
 function parsePositiveInt(value: string | undefined): number | undefined {
-  if (!value) return undefined;
+  if (value === undefined) {
+    return undefined;
+  }
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed) || parsed <= 0) {
     return undefined;
@@ -73,9 +75,7 @@ export async function handleConfigCommand(args: string[]): Promise<void> {
       return;
     }
 
-    console.error(
-      `${red("Error:")} Unknown config setting "${settingName}". Use 'project-type'.`,
-    );
+    console.error(`${red("Error:")} Unknown config setting "${settingName}". Use 'project-type'.`);
     process.exit(2);
   }
 
@@ -155,12 +155,16 @@ export async function handleMuteCommand(args: string[]): Promise<void> {
   const months = parsePositiveInt(values.months);
 
   // Check if invalid values were provided
-  if (values.weeks && weeks === undefined) {
-    console.error(`${red("Error:")} Invalid weeks value "${values.weeks}". Must be a positive number.`);
+  if (values.weeks !== undefined && weeks === undefined) {
+    console.error(
+      `${red("Error:")} Invalid weeks value "${values.weeks}". Must be a positive number.`,
+    );
     process.exit(2);
   }
-  if (values.months && months === undefined) {
-    console.error(`${red("Error:")} Invalid months value "${values.months}". Must be a positive number.`);
+  if (values.months !== undefined && months === undefined) {
+    console.error(
+      `${red("Error:")} Invalid months value "${values.months}". Must be a positive number.`,
+    );
     process.exit(2);
   }
 

@@ -34,9 +34,11 @@ import { safeJsonParse } from "../utils/safe-json.js";
  */
 async function getProjectName(global: GlobalContext, projectPath: string): Promise<string> {
   const pkgContent = await global.files.readText("package.json");
-  if (pkgContent) {
+  if (pkgContent !== null) {
     const pkg = safeJsonParse<{ name?: string }>(pkgContent);
-    if (pkg && typeof pkg.name === "string") return pkg.name;
+    if (pkg && typeof pkg.name === "string") {
+      return pkg.name;
+    }
   }
   return path.basename(projectPath) || "project";
 }
@@ -52,14 +54,22 @@ function getManualCheckDisplayState(
 ): ManualCheckDisplayState {
   // Check-level severity
   const checkSeverity = config.checks[check.name];
-  if (checkSeverity === "off") return "disabled";
-  if (checkSeverity && isSkipUntilActive(checkSeverity)) return "muted";
+  if (checkSeverity === "off") {
+    return "disabled";
+  }
+  if (checkSeverity && isSkipUntilActive(checkSeverity)) {
+    return "muted";
+  }
 
   // Tag-level severity
   for (const tag of check.tags) {
     const tagSeverity = config.tags[tag];
-    if (tagSeverity === "off") return "disabled";
-    if (tagSeverity && isSkipUntilActive(tagSeverity)) return "muted";
+    if (tagSeverity === "off") {
+      return "disabled";
+    }
+    if (tagSeverity && isSkipUntilActive(tagSeverity)) {
+      return "muted";
+    }
   }
 
   return state === "done" ? "done" : "not-done";

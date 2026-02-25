@@ -7,7 +7,7 @@
  * - Ctrl+C exits immediately from anywhere
  */
 
-import type { BACK, EXIT, isBack, isExit, type Screen, type AppController } from "./types.js";
+import { isBack, isExit, type BACK, type EXIT, type Screen, type AppController } from "./types.js";
 import { clearScreen, printHeader, printGoodbye } from "./ui.js";
 import { pressAnyKey } from "./prompts.js";
 
@@ -93,7 +93,7 @@ export async function runApp<T>(
         }
 
         // Handle screen push
-        if (pendingPush) {
+        if (pendingPush !== null) {
           stack.push(pendingPush);
           clearScreen();
           printHeader();

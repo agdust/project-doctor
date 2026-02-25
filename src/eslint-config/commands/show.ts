@@ -9,12 +9,12 @@ export interface ShowOptions {
 }
 
 export async function runEslintShow(projectPath: string, options: ShowOptions): Promise<void> {
-  if (options.presets) {
+  if (options.presets === true) {
     showPresets();
     return;
   }
 
-  if (options.rules) {
+  if (options.rules === true) {
     showRuleStats();
     return;
   }
@@ -31,7 +31,7 @@ function showPresets(): void {
   for (const preset of getAllPresets()) {
     console.log(`  ${cyan(preset.id)}`);
     console.log(`    ${preset.description}`);
-    if (preset.extends?.length) {
+    if (preset.extends !== undefined && preset.extends.length > 0) {
       console.log(`    ${dim(`Extends: ${preset.extends.join(", ")}`)}`);
     }
     const ruleCount = Object.keys(preset.rules).length;
@@ -83,8 +83,6 @@ async function showCurrentConfig(projectPath: string): Promise<void> {
   console.log();
   console.log(`  File: ${dim(existing.filePath)}`);
   console.log(`  Rules: ${bold(String(Object.keys(existing.rules).length))}`);
-  console.log(
-    `  Type-checking: ${existing.hasTypeChecking ? green("yes") : dim("no")}`,
-  );
+  console.log(`  Type-checking: ${existing.hasTypeChecking ? green("yes") : dim("no")}`);
   console.log();
 }

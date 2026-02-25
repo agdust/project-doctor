@@ -45,7 +45,7 @@ export const check: Check<EnvContext> = {
         exampleContent
           .split("\n")
           .map((line) => line.trim())
-          .filter((line) => line && !line.startsWith("#"))
+          .filter((line) => line !== "" && !line.startsWith("#"))
           .map((line) => {
             // Handle both VAR=value and VAR (without value)
             const eqIndex = line.indexOf("=");
@@ -58,7 +58,9 @@ export const check: Check<EnvContext> = {
       const linesToAdd: string[] = [];
       for (const line of envContent.split("\n")) {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) continue;
+        if (!trimmed || trimmed.startsWith("#")) {
+          continue;
+        }
         // Handle both VAR=value and VAR (without value)
         const eqIndex = trimmed.indexOf("=");
         const varName = eqIndex === -1 ? trimmed : trimmed.slice(0, eqIndex);

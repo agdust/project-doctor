@@ -17,8 +17,12 @@ export const check: Check<EditorconfigContext> = {
   description: "Check if .editorconfig has indent settings",
   tags: ["universal", "recommended", "effort:low"],
   run: (_global, { raw, hasIndent }) => {
-    if (!raw) return skip(name, "No .editorconfig");
-    if (!hasIndent) return fail(name, "No indent settings");
+    if (raw === null) {
+      return skip(name, "No .editorconfig");
+    }
+    if (!hasIndent) {
+      return fail(name, "No indent settings");
+    }
     return pass(name, "Indent settings present");
   },
   fix: {

@@ -6,7 +6,7 @@
 
 import { bold, dim, green, yellow, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, blank, text, success, error, muted  } from "../../cli-framework/index.js";
+import { action, blank, text, success, error, muted } from "../../cli-framework/index.js";
 import { setManualCheckState, setCheckSeverity } from "../../config/loader.js";
 import { createSkipUntil } from "../../config/types.js";
 import type { AppContext, ManualCheckItem } from "../types.js";
@@ -35,7 +35,9 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
 
   render: (ctx) => {
     const item = ctx.manualCheckItems[ctx.selectedManualCheckIndex];
-    if (!item) return;
+    if (item === undefined) {
+      return;
+    }
 
     const { icon, label } = statusDisplay(item);
 
@@ -52,7 +54,7 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
     blank();
 
     // Show why (if available)
-    if (item.check.why) {
+    if (item.check.why !== undefined) {
       text(cyan("Why:"));
       text(`   ${item.check.why}`);
       blank();
@@ -61,7 +63,9 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
 
   options: (ctx): Option<AppContext>[] => {
     const item = ctx.manualCheckItems[ctx.selectedManualCheckIndex];
-    if (!item) return [];
+    if (item === undefined) {
+      return [];
+    }
 
     const opts: Option<AppContext>[] = [];
 

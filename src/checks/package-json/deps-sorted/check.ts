@@ -4,14 +4,15 @@ import { pass, fail, skip } from "../../helpers.js";
 
 const name = "package-json-deps-sorted";
 
-const checkSorted = (
-  deps: Record<string, string> | undefined,
-  depsName: string,
-): string | null => {
-  if (!deps) return null;
+const checkSorted = (deps: Record<string, string> | undefined, depsName: string): string | null => {
+  if (!deps) {
+    return null;
+  }
   const keys = Object.keys(deps);
   const sorted = [...keys].toSorted((a, b) => a.localeCompare(b));
-  if (keys.join(",") !== sorted.join(",")) return depsName;
+  if (keys.join(",") !== sorted.join(",")) {
+    return depsName;
+  }
   return null;
 };
 
@@ -20,7 +21,9 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if dependencies are sorted alphabetically",
   tags: ["node", "opinionated", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
 
     const unsorted = [
       checkSorted(parsed.dependencies, "dependencies"),

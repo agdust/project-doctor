@@ -22,7 +22,9 @@ function parseFromInstruction(dockerfile: string): { image: string; tag: string 
   for (const line of lines) {
     const trimmed = line.trim();
     // Skip comments
-    if (trimmed.startsWith("#")) continue;
+    if (trimmed.startsWith("#")) {
+      continue;
+    }
 
     if (trimmed.toUpperCase().startsWith("FROM ")) {
       let fromPart = trimmed.slice(5).trim();
@@ -30,13 +32,17 @@ function parseFromInstruction(dockerfile: string): { image: string; tag: string 
       // Skip --platform and other flags (e.g., --platform=linux/amd64)
       while (fromPart.startsWith("--")) {
         const spaceIndex = fromPart.indexOf(" ");
-        if (spaceIndex === -1) return null;
+        if (spaceIndex === -1) {
+          return null;
+        }
         fromPart = fromPart.slice(spaceIndex + 1).trim();
       }
 
       // Get the image reference (before any AS alias or whitespace)
       const imageRef = fromPart.split(/\s+/)[0];
-      if (!imageRef) return null;
+      if (!imageRef) {
+        return null;
+      }
 
       // Handle digest references (image@sha256:...)
       if (imageRef.includes("@")) {
@@ -65,7 +71,7 @@ export async function loadContext(global: GlobalContext): Promise<DockerContext>
   let baseImage: string | null = null;
   let baseImageTag: string | null = null;
 
-  if (dockerfile) {
+  if (dockerfile !== null) {
     const parsed = parseFromInstruction(dockerfile);
     if (parsed) {
       baseImage = parsed.image;

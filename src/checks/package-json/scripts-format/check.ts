@@ -10,8 +10,12 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if format script exists",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.scripts?.format) return fail(name, "No format script");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.scripts?.format === undefined) {
+      return fail(name, "No format script");
+    }
     return pass(name, "Format script present");
   },
   fix: {
@@ -23,7 +27,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Format with Prettier",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.format", "prettier --write .");
           await writeJson(global.projectPath, "package.json", pkg);
@@ -36,7 +42,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Format with Biome (fast, all-in-one)",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.format", "biome format --write .");
           await writeJson(global.projectPath, "package.json", pkg);
@@ -49,7 +57,9 @@ export const check: Check<PackageJsonContext> = {
         description: "Format with dprint (fast, pluggable)",
         run: async (global) => {
           const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-          if (!pkg) return { success: false, message: "Could not read package.json" };
+          if (!pkg) {
+            return { success: false, message: "Could not read package.json" };
+          }
 
           setNestedField(pkg, "scripts.format", "dprint fmt");
           await writeJson(global.projectPath, "package.json", pkg);

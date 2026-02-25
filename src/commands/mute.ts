@@ -84,7 +84,7 @@ export async function runMute(
   let muteUntil: Date;
   const now = new Date();
 
-  if (options.until) {
+  if (options.until !== undefined) {
     const parsed = parseDate(options.until);
     if (!parsed) {
       console.error(red(`Error: Invalid date format "${options.until}". Use YYYY-MM-DD.`));
@@ -97,13 +97,7 @@ export async function runMute(
     }
 
     muteUntil = parsed;
-  } else if (options.months) {
-    if (!Number.isFinite(options.months) || options.months <= 0) {
-      console.error(red("Error: Months must be a positive number."));
-      process.exit(2);
-    }
-    muteUntil = addMonths(now, options.months);
-  } else {
+  } else if (options.months === undefined) {
     // Default: 2 weeks
     const weeks = options.weeks ?? 2;
     if (!Number.isFinite(weeks) || weeks <= 0) {
@@ -111,6 +105,12 @@ export async function runMute(
       process.exit(2);
     }
     muteUntil = addWeeks(now, weeks);
+  } else {
+    if (!Number.isFinite(options.months) || options.months <= 0) {
+      console.error(red("Error: Months must be a positive number."));
+      process.exit(2);
+    }
+    muteUntil = addMonths(now, options.months);
   }
 
   const severity = createSkipUntil(muteUntil);

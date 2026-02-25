@@ -6,7 +6,7 @@
 
 import { dim, green, yellow } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, nav, separator, blank, text  } from "../../cli-framework/index.js";
+import { action, nav, separator, blank, text } from "../../cli-framework/index.js";
 import type { AppContext, ManualCheckItem } from "../types.js";
 
 /** Icon for each display state */
@@ -53,7 +53,9 @@ export const manualChecklistScreen: Screen<AppContext> = {
 
     // Show unchecked items
     for (const [index, item] of ctx.manualCheckItems.entries()) {
-      if (item.displayState !== "not-done") continue;
+      if (item.displayState !== "not-done") {
+        continue;
+      }
       const label = `${checkIcon(item)}  ${item.check.description}`;
       opts.push(
         action(`manual-${index}`, label, (c) => {
@@ -66,9 +68,7 @@ export const manualChecklistScreen: Screen<AppContext> = {
     // Sub-lists for resolved states
     const doneCount = ctx.manualCheckItems.filter((i) => i.displayState === "done").length;
     const mutedCount = ctx.manualCheckItems.filter((i) => i.displayState === "muted").length;
-    const disabledCount = ctx.manualCheckItems.filter(
-      (i) => i.displayState === "disabled",
-    ).length;
+    const disabledCount = ctx.manualCheckItems.filter((i) => i.displayState === "disabled").length;
 
     if (doneCount > 0 || mutedCount > 0 || disabledCount > 0) {
       opts.push(separator());

@@ -9,8 +9,12 @@ export const check: Check<TsConfigContext> = {
   description: "Check if tsconfig.json is valid JSON",
   tags: ["typescript", "required", "effort:low"],
   run: (_global, { raw, parseError }) => {
-    if (!raw) return skip(name, "No tsconfig.json");
-    if (parseError) return fail(name, `Invalid JSON: ${parseError}`);
+    if (raw === null) {
+      return skip(name, "No tsconfig.json");
+    }
+    if (parseError !== null) {
+      return fail(name, `Invalid JSON: ${parseError}`);
+    }
     return pass(name, "Valid JSON");
   },
 };

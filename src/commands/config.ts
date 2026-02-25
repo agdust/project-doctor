@@ -29,7 +29,7 @@ function formatProjectTypeSource(source: "config" | "detected", detectedFrom?: s
   if (source === "config") {
     return dim("(from config)");
   }
-  if (detectedFrom && detectedFrom !== "fallback") {
+  if (detectedFrom !== undefined && detectedFrom !== "fallback") {
     return dim(`(auto-detected from ${detectedFrom})`);
   }
   return dim("(auto-detected)");

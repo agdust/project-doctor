@@ -12,7 +12,9 @@ export const check: Check<NpmContext> = {
   description: "Check if .nvmrc file exists",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { nvmrc }) => {
-    if (!nvmrc.raw) return fail(name, ".nvmrc not found");
+    if (nvmrc.raw === null) {
+      return fail(name, ".nvmrc not found");
+    }
     return pass(name, ".nvmrc exists");
   },
   fix: {

@@ -65,7 +65,9 @@ export function checkGitStatus(projectPath: string): SafetyStatus {
     const pendingFiles: string[] = [];
 
     for (const line of statusOutput.split("\n")) {
-      if (!line.trim()) continue;
+      if (!line.trim()) {
+        continue;
+      }
 
       // Status is first 2 chars, filename starts at position 3
       const filename = line.slice(3).trim();
@@ -152,7 +154,9 @@ export async function ensureSafeToModify(projectPath: string): Promise<boolean> 
     console.log();
 
     const confirmed = await promptChallenge("To proceed and overwrite these changes");
-    if (!confirmed) return false;
+    if (!confirmed) {
+      return false;
+    }
 
     await saveConfirmationToConfig(projectPath);
     sessionConfirmed = true;

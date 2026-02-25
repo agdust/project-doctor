@@ -10,13 +10,19 @@ export const check: Check<NpmContext> = {
   description: "Check if .nvmrc uses valid LTS codename",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { nvmrc }) => {
-    if (!nvmrc.version) return skip(name, "No .nvmrc");
+    if (nvmrc.version === null) {
+      return skip(name, "No .nvmrc");
+    }
 
     const match = /^lts\/(\w+)$/i.exec(nvmrc.version);
-    if (!match) return skip(name, "Not an LTS alias");
+    if (!match) {
+      return skip(name, "Not an LTS alias");
+    }
 
     const codename = match[1].toLowerCase();
-    if (codename === "*") return pass(name, "Using lts/*");
+    if (codename === "*") {
+      return pass(name, "Using lts/*");
+    }
 
     if (!ALL_LTS_CODENAMES.includes(codename as (typeof ALL_LTS_CODENAMES)[number])) {
       return fail(name, `Unknown LTS codename: ${codename}`);

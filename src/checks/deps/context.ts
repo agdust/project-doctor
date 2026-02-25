@@ -15,9 +15,13 @@ export async function loadContext(global: GlobalContext): Promise<DepsContext> {
   ]);
 
   let lockfileType: "npm" | "yarn" | "pnpm" | null = null;
-  if (hasPnpmLock) lockfileType = "pnpm";
-  else if (hasYarnLock) lockfileType = "yarn";
-  else if (hasPackageLock) lockfileType = "npm";
+  if (hasPnpmLock) {
+    lockfileType = "pnpm";
+  } else if (hasYarnLock) {
+    lockfileType = "yarn";
+  } else if (hasPackageLock) {
+    lockfileType = "npm";
+  }
 
   return { hasPackageLock, hasYarnLock, hasPnpmLock, lockfileType };
 }

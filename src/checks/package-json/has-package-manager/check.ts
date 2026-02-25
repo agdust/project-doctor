@@ -10,8 +10,12 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json specifies packageManager field",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.packageManager) return fail(name, "Missing packageManager field");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.packageManager === undefined) {
+      return fail(name, "Missing packageManager field");
+    }
     return pass(name, `Package manager: ${parsed.packageManager}`);
   },
   fix: {
@@ -23,7 +27,9 @@ export const check: Check<PackageJsonContext> = {
       }
 
       const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-      if (!pkg) return { success: false, message: "Could not read package.json" };
+      if (!pkg) {
+        return { success: false, message: "Could not read package.json" };
+      }
 
       pkg.packageManager = pm;
       await writeJson(global.projectPath, "package.json", pkg);

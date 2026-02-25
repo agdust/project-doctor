@@ -5,7 +5,7 @@
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, blank, title, muted  } from "../../cli-framework/index.js";
+import { nav, blank, title, muted } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const configScreen: Screen<AppContext> = {

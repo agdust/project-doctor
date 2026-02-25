@@ -135,7 +135,9 @@ export function getRulesByStrictness(maxStrictness: RuleStrictness): RuleDefinit
   const maxOrder = STRICTNESS_ORDER[maxStrictness];
   return allRules.filter((rule) => {
     const ruleStrictness = rule.tags.find((t): t is RuleStrictness => t in STRICTNESS_ORDER);
-    if (!ruleStrictness) return false; // Exclude rules without strictness tag
+    if (!ruleStrictness) {
+      return false;
+    } // Exclude rules without strictness tag
     return STRICTNESS_ORDER[ruleStrictness] <= maxOrder;
   });
 }
@@ -152,7 +154,7 @@ export function queryRules(query: RuleQuery): RuleDefinition[] {
   let rules = allRules;
 
   // Filter by plugin
-  if (query.plugins?.length) {
+  if (query.plugins !== undefined && query.plugins.length > 0) {
     const pluginPrefixes = query.plugins.map((name) => {
       const plugin = getPluginByName(name);
       return plugin?.prefix ?? name;
@@ -168,13 +170,17 @@ export function queryRules(query: RuleQuery): RuleDefinition[] {
   }
 
   // Filter by include tags
-  if (query.includeTags?.length) {
-    rules = rules.filter((rule) => query.includeTags?.some((tag) => rule.tags.includes(tag)));
+  if (query.includeTags !== undefined && query.includeTags.length > 0) {
+    rules = rules.filter(
+      (rule) => query.includeTags?.some((tag) => rule.tags.includes(tag)) === true,
+    );
   }
 
   // Filter by exclude tags
-  if (query.excludeTags?.length) {
-    rules = rules.filter((rule) => !query.excludeTags?.some((tag) => rule.tags.includes(tag)));
+  if (query.excludeTags !== undefined && query.excludeTags.length > 0) {
+    rules = rules.filter(
+      (rule) => query.excludeTags?.some((tag) => rule.tags.includes(tag)) !== true,
+    );
   }
 
   // Filter by max strictness
@@ -182,23 +188,25 @@ export function queryRules(query: RuleQuery): RuleDefinition[] {
     const maxOrder = STRICTNESS_ORDER[query.maxStrictness];
     rules = rules.filter((rule) => {
       const ruleStrictness = rule.tags.find((t): t is RuleStrictness => t in STRICTNESS_ORDER);
-      if (!ruleStrictness) return false;
+      if (!ruleStrictness) {
+        return false;
+      }
       return STRICTNESS_ORDER[ruleStrictness] <= maxOrder;
     });
   }
 
   // Filter deprecated
-  if (!query.includeDeprecated) {
+  if (query.includeDeprecated !== true) {
     rules = rules.filter((r) => !r.deprecated);
   }
 
   // Filter fixable only
-  if (query.fixableOnly) {
+  if (query.fixableOnly === true) {
     rules = rules.filter((r) => r.fixable);
   }
 
   // Filter tagged only
-  if (query.taggedOnly) {
+  if (query.taggedOnly === true) {
     rules = rules.filter((r) => r.tags.length > 0);
   }
 
@@ -268,7 +276,7 @@ export function getStats(): {
     rulesByStrictness,
     fixableRules: allRules.filter((r) => r.fixable).length,
     deprecatedRules: allRules.filter((r) => r.deprecated).length,
-    typeCheckingRules: allRules.filter((r) => r.requiresTypeChecking).length,
+    typeCheckingRules: allRules.filter((r) => r.requiresTypeChecking === true).length,
   };
 }
 

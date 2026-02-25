@@ -17,8 +17,12 @@ export const check: Check<NpmContext> = {
   description: "Check if .nvmrc specifies a modern, supported Node version",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { nvmrc }) => {
-    if (!nvmrc.raw) return skip(name, "No .nvmrc");
-    if (!nvmrc.version) return skip(name, "Empty .nvmrc");
+    if (nvmrc.raw === null) {
+      return skip(name, "No .nvmrc");
+    }
+    if (nvmrc.version === null) {
+      return skip(name, "Empty .nvmrc");
+    }
 
     const major = parseMajorVersion(nvmrc.version);
     if (major === null) {

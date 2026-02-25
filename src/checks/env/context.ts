@@ -11,7 +11,7 @@ function parseEnvVars(content: string): string[] {
   return content
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"))
+    .filter((line) => line !== "" && !line.startsWith("#"))
     .map((line) => line.split("=")[0])
     .filter(Boolean);
 }
@@ -22,8 +22,8 @@ export async function loadContext(global: GlobalContext): Promise<EnvContext> {
 
   return {
     envExists: envRaw !== null,
-    envVars: envRaw ? parseEnvVars(envRaw) : [],
+    envVars: envRaw === null ? [] : parseEnvVars(envRaw),
     exampleExists: exampleRaw !== null,
-    exampleVars: exampleRaw ? parseEnvVars(exampleRaw) : [],
+    exampleVars: exampleRaw === null ? [] : parseEnvVars(exampleRaw),
   };
 }

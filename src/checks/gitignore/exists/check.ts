@@ -19,7 +19,9 @@ export const check: Check<GitignoreContext> = {
   description: "Check if .gitignore exists",
   tags: ["universal", "required", "effort:low"],
   run: (_global, { raw }) => {
-    if (!raw) return fail(name, ".gitignore not found");
+    if (raw === null) {
+      return fail(name, ".gitignore not found");
+    }
     return pass(name, ".gitignore exists");
   },
   fix: {

@@ -23,7 +23,7 @@ export async function runEslintDiff(projectPath: string, options: DiffOptions = 
 
   // Parse presets or use defaults
   let presets: PresetId[] = ["base", "typescript"];
-  if (options.presets) {
+  if (options.presets !== undefined) {
     presets = options.presets.split(",").map((p) => p.trim()) as PresetId[];
   }
 

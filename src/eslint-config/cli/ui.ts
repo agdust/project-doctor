@@ -12,18 +12,14 @@ export function clearScreen(): void {
 // App header
 export function printHeader(): void {
   console.log();
-  console.log(
-    bold(cyan("╔═══════════════════════════════════════════════════════════╗")),
-  );
+  console.log(bold(cyan("╔═══════════════════════════════════════════════════════════╗")));
   console.log(
     `${bold(cyan("║"))}  ${bold("ESLint Configuration Builder")}                              ${bold(cyan("║"))}`,
   );
   console.log(
     `${bold(cyan("║"))}  ${dim("Build and manage your ESLint config interactively")}         ${bold(cyan("║"))}`,
   );
-  console.log(
-    bold(cyan("╚═══════════════════════════════════════════════════════════╝")),
-  );
+  console.log(bold(cyan("╚═══════════════════════════════════════════════════════════╝")));
   console.log();
 }
 

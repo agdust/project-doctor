@@ -9,7 +9,9 @@ export const check: Check<EnvContext> = {
   description: "Check if .env.example has content",
   tags: ["universal", "recommended", "effort:medium"],
   run: (_global, ctx) => {
-    if (!ctx.exampleExists) return skip(name, "No .env.example");
+    if (!ctx.exampleExists) {
+      return skip(name, "No .env.example");
+    }
     if (ctx.exampleVars.length === 0) {
       return fail(name, ".env.example is empty");
     }

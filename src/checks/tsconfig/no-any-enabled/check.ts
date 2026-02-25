@@ -10,9 +10,11 @@ export const check: Check<TsConfigContext> = {
   description: "Check if noImplicitAny is enabled",
   tags: ["typescript", "opinionated", "effort:high"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No tsconfig.json");
+    if (!parsed) {
+      return skip(name, "No tsconfig.json");
+    }
     const opts = parsed.compilerOptions;
-    if (!opts?.strict && !opts?.noImplicitAny) {
+    if (opts?.strict !== true && opts?.noImplicitAny !== true) {
       return fail(name, "noImplicitAny not enabled");
     }
     return pass(name, "noImplicitAny enabled");
@@ -21,7 +23,9 @@ export const check: Check<TsConfigContext> = {
     description: "Enable noImplicitAny",
     run: async (global) => {
       const tsconfig = await readJson<Record<string, unknown>>(global.projectPath, "tsconfig.json");
-      if (!tsconfig) return { success: false, message: "Could not read tsconfig.json" };
+      if (!tsconfig) {
+        return { success: false, message: "Could not read tsconfig.json" };
+      }
 
       setNestedField(tsconfig, "compilerOptions.noImplicitAny", true);
       await writeJson(global.projectPath, "tsconfig.json", tsconfig);

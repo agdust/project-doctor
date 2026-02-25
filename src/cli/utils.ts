@@ -13,7 +13,7 @@ export function getProjectPath(args: string[]): string {
 /** Check if first non-flag arg looks like a path */
 export function isPath(arg: string | undefined): boolean {
   return (
-    !!arg &&
+    arg !== undefined &&
     !arg.startsWith("-") &&
     (arg.startsWith("/") ||
       arg.startsWith("./") ||

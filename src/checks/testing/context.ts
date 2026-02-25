@@ -8,7 +8,7 @@ export interface TestingContext {
 
 export async function loadContext(global: GlobalContext): Promise<TestingContext> {
   const pkgRaw = await global.files.readText("package.json");
-  if (!pkgRaw) {
+  if (pkgRaw === null) {
     return { hasTestScript: false, testScriptValue: null };
   }
 

@@ -11,7 +11,9 @@ export const check: Check<GitignoreContext> = {
   description: "Check if .env files are ignored",
   tags: ["universal", "required", "effort:low"],
   run: (_global, { raw, gitignore }) => {
-    if (!raw || !gitignore) return skip(name, "No .gitignore");
+    if (raw === null || gitignore === null) {
+      return skip(name, "No .gitignore");
+    }
     // Check if .env or .env.local would be ignored
     if (!gitignore.ignoresAny([".env", ".env.local"])) {
       return fail(name, ".env files not ignored");

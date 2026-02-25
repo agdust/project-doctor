@@ -14,7 +14,9 @@ const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
 
 function isToolDetected(groupName: string, detected: DetectedTools): boolean {
   const requirement = GROUP_TOOL_REQUIREMENTS[groupName];
-  if (!requirement) return true;
+  if (!requirement) {
+    return true;
+  }
   return Boolean(detected[requirement]);
 }
 
@@ -65,7 +67,9 @@ function shouldRunCheck(
   // CLI include tags filter (only run checks with these tags)
   if (cliIncludeTags && cliIncludeTags.length > 0) {
     const hasIncluded = checkTags.some((t) => cliIncludeTags.includes(t));
-    if (!hasIncluded) return false;
+    if (!hasIncluded) {
+      return false;
+    }
   }
 
   return true;
@@ -76,7 +80,7 @@ export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
   const configOverrides: Partial<ResolvedConfig> = {};
 
   // Convert CLI exclude tags to tags config format
-  if (options.excludeTags?.length) {
+  if (options.excludeTags !== undefined && options.excludeTags.length > 0) {
     configOverrides.tags = {};
     for (const tag of options.excludeTags) {
       configOverrides.tags[tag] = "off";
@@ -96,7 +100,7 @@ export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
   // Otherwise run all groups except those turned off in config
   let groupsToRun = checkGroups;
 
-  if (options.groups?.length) {
+  if (options.groups !== undefined && options.groups.length > 0) {
     // CLI filter: only run specified groups
     const groupsFilter = options.groups;
     groupsToRun = checkGroups.filter((g) => groupsFilter.includes(g.name));

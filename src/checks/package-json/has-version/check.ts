@@ -10,15 +10,21 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json has version field",
   tags: ["node", "required", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.version) return fail(name, "Missing version field");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.version === undefined) {
+      return fail(name, "Missing version field");
+    }
     return pass(name, `Version: ${parsed.version}`);
   },
   fix: {
     description: "Add version 0.0.1",
     run: async (global) => {
       const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-      if (!pkg) return { success: false, message: "Could not read package.json" };
+      if (!pkg) {
+        return { success: false, message: "Could not read package.json" };
+      }
 
       pkg.version = "0.0.1";
       await writeJson(global.projectPath, "package.json", pkg);

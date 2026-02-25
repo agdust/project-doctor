@@ -58,8 +58,8 @@ function shouldIncludeCheck(
 
   // CLI filters
   if (options.groups && options.groups.length > 0 && !options.groups.includes(groupName)) {
-      return false;
-    }
+    return false;
+  }
 
   if (options.tags && options.tags.length > 0) {
     const tagsToMatch = options.tags;
@@ -93,7 +93,9 @@ async function collectFixableChecks(
     const groupContext = await group.loadContext(global);
 
     for (const check of group.checks) {
-      if (!check.fix) continue;
+      if (!check.fix) {
+        continue;
+      }
 
       if (!shouldIncludeCheck(check.name, check.tags, group.name, config, options)) {
         continue;
@@ -125,10 +127,9 @@ async function collectFixableChecks(
               }
               return option.run(global, groupContext);
             } else {
-              return (fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult }).run(
-                global,
-                groupContext,
-              );
+              return (
+                fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult }
+              ).run(global, groupContext);
             }
           },
         });
@@ -297,9 +298,7 @@ export async function runFixOne(
       return 1;
     }
   } catch (error) {
-    console.log(
-      `  ${red(`✗ Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`,
-    );
+    console.log(`  ${red(`✗ Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`);
     console.log();
     return 1;
   }

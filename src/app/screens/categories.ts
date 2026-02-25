@@ -42,7 +42,7 @@ export const categoriesScreen: Screen<AppContext> = {
     let escPressed = false;
 
     const onData = (data: Buffer) => {
-      if (data[0] === 0x1B && data.length === 1) {
+      if (data[0] === 0x1b && data.length === 1) {
         escPressed = true;
         ac.abort();
       }

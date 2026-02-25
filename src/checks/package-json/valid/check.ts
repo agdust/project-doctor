@@ -9,8 +9,12 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json is valid JSON",
   tags: ["node", "required", "effort:low"],
   run: (_global, { raw, parseError }) => {
-    if (!raw) return skip(name, "No package.json");
-    if (parseError) return fail(name, `Invalid JSON: ${parseError}`);
+    if (raw === null) {
+      return skip(name, "No package.json");
+    }
+    if (parseError !== null) {
+      return fail(name, `Invalid JSON: ${parseError}`);
+    }
     return pass(name, "Valid JSON");
   },
 };

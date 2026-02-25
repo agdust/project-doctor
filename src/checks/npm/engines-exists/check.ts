@@ -9,7 +9,7 @@ export const check: Check<NpmContext> = {
   description: "Check if engines.node is defined in package.json",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { engines }) => {
-    if (!engines.node) {
+    if (engines.node === null) {
       return fail(name, "engines.node not defined in package.json");
     }
     return pass(name, `engines.node: ${engines.node}`);

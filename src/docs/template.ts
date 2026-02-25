@@ -128,8 +128,8 @@ export function htmlPage(title: string, content: string, nav: string): string {
  */
 export function escapeHtml(str: string): string {
   return str
-    .replaceAll('&', "&amp;") // Must be first to avoid double-escaping
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
+    .replaceAll("&", "&amp;") // Must be first to avoid double-escaping
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 }

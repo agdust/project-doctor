@@ -9,7 +9,9 @@ export const check: Check<DepsContext> = {
   description: "Check if a lockfile exists",
   tags: ["node", "required", "effort:low"],
   run: (_global, { lockfileType }) => {
-    if (!lockfileType) return fail(name, "No lockfile found");
+    if (!lockfileType) {
+      return fail(name, "No lockfile found");
+    }
     return pass(name, `Lockfile: ${lockfileType}`);
   },
 };

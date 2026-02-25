@@ -2,10 +2,7 @@ import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
-import {
-  readFileWithLineEnding,
-  atomicWriteFile,
-} from "../../../utils/safe-fs.js";
+import { readFileWithLineEnding, atomicWriteFile } from "../../../utils/safe-fs.js";
 
 const name = "gitignore-no-secrets-committed";
 
@@ -33,7 +30,9 @@ export const check: Check<GitignoreContext> = {
   description: "Check that common secret files are ignored",
   tags: ["universal", "required", "effort:medium"],
   run: async (global, { raw, gitignore }) => {
-    if (!raw || !gitignore) return skip(name, "No .gitignore");
+    if (raw === null || gitignore === null) {
+      return skip(name, "No .gitignore");
+    }
 
     const notIgnored: string[] = [];
 
@@ -47,9 +46,9 @@ export const check: Check<GitignoreContext> = {
 
     // Special handling for .npmrc - only flag if it contains auth tokens
     const npmrcContent = await global.files.readText(".npmrc");
-    if (npmrcContent && npmrcHasAuthTokens(npmrcContent) && !gitignore.ignores(".npmrc")) {
-        notIgnored.push(".npmrc (contains auth tokens)");
-      }
+    if (npmrcContent !== null && npmrcHasAuthTokens(npmrcContent) && !gitignore.ignores(".npmrc")) {
+      notIgnored.push(".npmrc (contains auth tokens)");
+    }
 
     if (notIgnored.length > 0) {
       return fail(name, `Secret files not ignored: ${notIgnored.join(", ")}`);
@@ -73,9 +72,14 @@ export const check: Check<GitignoreContext> = {
 
       // Special handling for .npmrc with auth tokens
       const npmrcContent = await global.files.readText(".npmrc");
-      if (npmrcContent && npmrcHasAuthTokens(npmrcContent) && gitignore && !gitignore.ignores(".npmrc")) {
-          toAdd.push(".npmrc");
-        }
+      if (
+        npmrcContent !== null &&
+        npmrcHasAuthTokens(npmrcContent) &&
+        gitignore !== null &&
+        !gitignore.ignores(".npmrc")
+      ) {
+        toAdd.push(".npmrc");
+      }
 
       if (toAdd.length === 0) {
         return { success: true, message: "No secret files to add" };
@@ -83,9 +87,10 @@ export const check: Check<GitignoreContext> = {
 
       // Append to .gitignore with a comment, preserving line endings
       const addition = `${lineEnding}# Secret files${lineEnding}${toAdd.join(lineEnding)}${lineEnding}`;
-      const newContent = content.endsWith("\n") || content.endsWith("\r\n")
-        ? content + addition
-        : content + lineEnding + addition;
+      const newContent =
+        content.endsWith("\n") || content.endsWith("\r\n")
+          ? content + addition
+          : content + lineEnding + addition;
       await atomicWriteFile(gitignorePath, newContent);
 
       return { success: true, message: `Added: ${toAdd.join(", ")}` };

@@ -7,7 +7,9 @@ const name = "package-json-has-license";
 
 async function setLicense(projectPath: string, license: string) {
   const pkg = await readJson<Record<string, unknown>>(projectPath, "package.json");
-  if (!pkg) return { success: false, message: "Could not read package.json" };
+  if (!pkg) {
+    return { success: false, message: "Could not read package.json" };
+  }
 
   pkg.license = license;
   await writeJson(projectPath, "package.json", pkg);
@@ -19,8 +21,12 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json has license field",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.license) return fail(name, "Missing license field");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.license === undefined) {
+      return fail(name, "Missing license field");
+    }
     return pass(name, `License: ${parsed.license}`);
   },
   fix: {

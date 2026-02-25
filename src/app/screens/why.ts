@@ -14,7 +14,7 @@ export const whyScreen: Screen<AppContext> = {
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
-    if (!issue) {
+    if (issue === undefined) {
       title("No issue selected");
       blank();
       return;
@@ -23,14 +23,14 @@ export const whyScreen: Screen<AppContext> = {
     title(`Why: ${issue.name}`);
     blank();
 
-    if (issue.why) {
+    if (issue.why === null) {
+      muted("No detailed explanation available.");
+    } else {
       // Render each line with proper indentation
       const lines = issue.why.split("\n");
       for (const line of lines) {
         text(line);
       }
-    } else {
-      muted("No detailed explanation available.");
     }
 
     blank();

@@ -9,7 +9,9 @@ export const check: Check<PackageJsonContext> = {
   description: "Check that no package is in both dependencies and devDependencies",
   tags: ["node", "recommended", "effort:medium"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
     const deps = Object.keys(parsed.dependencies ?? {});
     const devDeps = Object.keys(parsed.devDependencies ?? {});
     const duplicates = deps.filter((d) => devDeps.includes(d));

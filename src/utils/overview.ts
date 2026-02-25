@@ -19,9 +19,11 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
   // Get project name
   let projectName = path.basename(projectPath) || "project";
   const pkgContent = await global.files.readText("package.json");
-  if (pkgContent) {
+  if (pkgContent !== null) {
     const pkg = safeJsonParse<{ name?: string }>(pkgContent);
-    if (pkg && typeof pkg.name === "string") projectName = pkg.name;
+    if (pkg && typeof pkg.name === "string") {
+      projectName = pkg.name;
+    }
   }
 
   // Run all checks

@@ -87,9 +87,7 @@ export async function getWhyHtml(checkName: string): Promise<string | null> {
  */
 export async function getAllCompiledDocs(): Promise<CompiledCheckDoc[]> {
   const manifest = await loadDocsManifest();
-  return Object.values(manifest.checks).toSorted((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  return Object.values(manifest.checks).toSorted((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -98,9 +96,7 @@ export async function getAllCompiledDocs(): Promise<CompiledCheckDoc[]> {
  * @param checkName - Name of the check
  * @returns The compiled doc, or null if not found
  */
-export async function getCompiledDoc(
-  checkName: string
-): Promise<CompiledCheckDoc | null> {
+export async function getCompiledDoc(checkName: string): Promise<CompiledCheckDoc | null> {
   const manifest = await loadDocsManifest();
   return manifest.checks[checkName] ?? null;
 }

@@ -19,9 +19,9 @@ const LICENSES_DIR = path.join(__dirname, "licenses");
 async function loadLicense(filename: string, copyrightHolder?: string): Promise<string> {
   const content = await readFile(path.join(LICENSES_DIR, filename), "utf8");
   const year = new Date().getFullYear();
-  let result = content.replaceAll('{{YEAR}}', String(year));
-  if (copyrightHolder) {
-    result = result.replaceAll('{{COPYRIGHT_HOLDER}}', copyrightHolder);
+  let result = content.replaceAll("{{YEAR}}", String(year));
+  if (copyrightHolder !== undefined) {
+    result = result.replaceAll("{{COPYRIGHT_HOLDER}}", copyrightHolder);
   }
   return result;
 }
@@ -31,7 +31,9 @@ export const check: Check<DocsContext> = {
   description: "Check if LICENSE file exists",
   tags: ["universal", "required", "effort:low"],
   run: (_global, { license }) => {
-    if (!license) return fail(name, "LICENSE file not found");
+    if (license === null) {
+      return fail(name, "LICENSE file not found");
+    }
     return pass(name, "LICENSE file exists");
   },
   fix: {

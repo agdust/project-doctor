@@ -33,7 +33,7 @@ export function buildConfig(config: BuildConfig): GeneratedConfig {
     }
 
     // Track type-checking requirement
-    if (preset.requiresTypeChecking) {
+    if (preset.requiresTypeChecking === true) {
       requiresTypeChecking = true;
     }
 
@@ -72,7 +72,9 @@ function expandPresets(presets: PresetId[]): PresetId[] {
   const seen = new Set<PresetId>();
 
   function visit(id: PresetId): void {
-    if (seen.has(id)) return;
+    if (seen.has(id)) {
+      return;
+    }
     seen.add(id);
 
     const preset = getPreset(id);
@@ -98,7 +100,9 @@ function getPluginForPreset(presetId: PresetId): string {
     case "style": {
       return "@stylistic";
     }
-    default: {
+    case "base":
+    case "security":
+    case "performance": {
       return "";
     }
   }
@@ -116,14 +120,24 @@ function sortRules(rules: ResolvedRule[]): ResolvedRule[] {
 }
 
 function getPrefix(name: string): string {
-  if (name.startsWith("@typescript-eslint/")) return "@typescript-eslint";
-  if (name.startsWith("@stylistic/")) return "@stylistic";
+  if (name.startsWith("@typescript-eslint/")) {
+    return "@typescript-eslint";
+  }
+  if (name.startsWith("@stylistic/")) {
+    return "@stylistic";
+  }
   return "";
 }
 
 function prefixOrder(prefix: string): number {
-  if (prefix === "") return 0;
-  if (prefix === "@typescript-eslint") return 1;
-  if (prefix === "@stylistic") return 2;
+  if (prefix === "") {
+    return 0;
+  }
+  if (prefix === "@typescript-eslint") {
+    return 1;
+  }
+  if (prefix === "@stylistic") {
+    return 2;
+  }
   return 3;
 }

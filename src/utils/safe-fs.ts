@@ -23,14 +23,11 @@ export function detectLineEnding(content: string): "\r\n" | "\n" {
 /**
  * Normalize line endings to the specified style.
  */
-export function normalizeLineEndings(
-  content: string,
-  lineEnding: "\r\n" | "\n",
-): string {
+export function normalizeLineEndings(content: string, lineEnding: "\r\n" | "\n"): string {
   // First normalize all to LF, then convert to target
-  const normalized = content.replaceAll('\r\n', "\n");
+  const normalized = content.replaceAll("\r\n", "\n");
   if (lineEnding === "\r\n") {
-    return normalized.replaceAll('\n', "\r\n");
+    return normalized.replaceAll("\n", "\r\n");
   }
   return normalized;
 }

@@ -24,12 +24,12 @@ function extractPatterns(raw: string): string[] {
   return raw
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"));
+    .filter((line) => line !== "" && !line.startsWith("#"));
 }
 
 export async function loadContext(global: GlobalContext): Promise<GitignoreContext> {
   const raw = await global.files.readText(".gitignore");
-  if (!raw) {
+  if (raw === null) {
     return { raw: null, gitignore: null, patterns: [] };
   }
 

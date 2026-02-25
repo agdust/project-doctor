@@ -55,6 +55,8 @@ export function emptyGitignore(): GitignoreInstance {
  * Convenience function for simple one-off checks.
  */
 export function isIgnored(gitignoreContent: string | null, path: string): boolean {
-  if (!gitignoreContent) return false;
+  if (gitignoreContent === null) {
+    return false;
+  }
   return parseGitignore(gitignoreContent).ignores(path);
 }

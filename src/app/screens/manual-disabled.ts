@@ -6,7 +6,7 @@
 
 import { dim } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, text, success, error  } from "../../cli-framework/index.js";
+import { action, separator, blank, text, success, error } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
 
@@ -24,7 +24,9 @@ export const manualDisabledScreen: Screen<AppContext> = {
     const opts: Option<AppContext>[] = [];
 
     for (const [index, item] of ctx.manualCheckItems.entries()) {
-      if (item.displayState !== "disabled") continue;
+      if (item.displayState !== "disabled") {
+        continue;
+      }
       const label = `${dim("–")}  ${item.check.description}`;
       opts.push(
         action(`manual-${index}`, label, (c) => {
@@ -40,7 +42,9 @@ export const manualDisabledScreen: Screen<AppContext> = {
         action("enable-all", "Enable all", async (c) => {
           let count = 0;
           for (const item of c.manualCheckItems) {
-            if (item.displayState !== "disabled") continue;
+            if (item.displayState !== "disabled") {
+              continue;
+            }
             try {
               await setCheckSeverity(c.projectPath, item.check.name, "error");
               item.displayState = item.state === "done" ? "done" : "not-done";

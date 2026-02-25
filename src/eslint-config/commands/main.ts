@@ -138,11 +138,15 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
   // Navigate to appropriate screen
   switch (action) {
     case "analyze": {
-      if (existing) app.push(analyzeScreen, { ...ctx, existing });
+      if (existing) {
+        app.push(analyzeScreen, { ...ctx, existing });
+      }
       break;
     }
     case "add": {
-      if (existing) app.push(addPresetScreen, { ...ctx, existing });
+      if (existing) {
+        app.push(addPresetScreen, { ...ctx, existing });
+      }
       break;
     }
     case "wizard": {
@@ -162,7 +166,9 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
       break;
     }
     case "current": {
-      if (existing) app.push(currentConfigScreen, { ...ctx, existing });
+      if (existing) {
+        app.push(currentConfigScreen, { ...ctx, existing });
+      }
       break;
     }
   }
@@ -192,7 +198,12 @@ const analyzeScreen = createScreen<AnalyzeContext>("analyze", "Analyze Config", 
       presetRuleNames.length > 0 ? Math.round((covered.length / presetRuleNames.length) * 100) : 0;
 
     const bar = progressBar(percentage);
-    const pctColor = percentage >= 80 ? color.green : (percentage >= 50 ? color.yellow : color.red);
+    let pctColor = color.red;
+    if (percentage >= 80) {
+      pctColor = color.green;
+    } else if (percentage >= 50) {
+      pctColor = color.yellow;
+    }
 
     console.log(
       `  ${preset.id.padEnd(12)} ${bar} ${pctColor(String(percentage).padStart(3) + "%")}  (${covered.length}/${presetRuleNames.length} rules)`,
@@ -399,7 +410,7 @@ const presetsScreen = createScreen<AppContext>("presets", "Available Presets", a
   for (const preset of getAllPresets()) {
     console.log(`  ${color.cyan(preset.id)} - ${preset.name}`);
     console.log(`    ${preset.description}`);
-    if (preset.extends?.length) {
+    if (preset.extends !== undefined && preset.extends.length > 0) {
       console.log(`    ${color.dim("Extends: " + preset.extends.join(", "))}`);
     }
     const ruleCount = Object.keys(preset.rules).length;

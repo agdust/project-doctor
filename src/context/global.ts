@@ -18,7 +18,7 @@ export async function createGlobalContext(
   const detected = await detectTools(files);
 
   let config: ResolvedConfig;
-  if (options.skipConfig) {
+  if (options.skipConfig === true) {
     // Still detect project type even when skipping config
     const detection = await detectProjectTypeWithCause(projectPath);
     config = {

@@ -25,7 +25,7 @@ export const check: Check<NpmSecurityContext> = {
       return skip(name, ".npmrc is gitignored - skipping (local config)");
     }
 
-    if (!npmrc) {
+    if (npmrc === null) {
       return fail(name, ".npmrc not found - post-install scripts are enabled by default");
     }
 

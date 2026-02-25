@@ -4,7 +4,14 @@
  * Shared state across all screens in the project-doctor app.
  */
 
-import type { CheckResult, CheckTag, FixResult, GlobalContext, ManualCheck, ManualCheckState } from "../types.js";
+import type {
+  CheckResult,
+  CheckTag,
+  FixResult,
+  GlobalContext,
+  ManualCheck,
+  ManualCheckState,
+} from "../types.js";
 
 /** An option for fixing an issue */
 export interface FixOptionRunnable {

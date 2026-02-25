@@ -27,7 +27,9 @@ export const check: Check<DocsContext> = {
   description: "Check if CHANGELOG.md exists",
   tags: ["universal", "recommended", "effort:low"],
   run: (_global, { changelog }) => {
-    if (!changelog) return fail(name, "CHANGELOG.md not found");
+    if (changelog === null) {
+      return fail(name, "CHANGELOG.md not found");
+    }
     return pass(name, "CHANGELOG.md exists");
   },
   fix: {

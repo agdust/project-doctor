@@ -11,7 +11,9 @@ export const check: Check<GitignoreContext> = {
   description: "Check if dist/build output is ignored",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { raw, gitignore }) => {
-    if (!raw || !gitignore) return skip(name, "No .gitignore");
+    if (raw === null || gitignore === null) {
+      return skip(name, "No .gitignore");
+    }
     // Check if any common build output directory is ignored
     const buildDirs = ["dist/index.js", "build/index.js", "out/index.js"];
     if (!gitignore.ignoresAny(buildDirs)) {

@@ -6,7 +6,7 @@
 
 import { yellow } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, text, success, error  } from "../../cli-framework/index.js";
+import { action, separator, blank, text, success, error } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
 
@@ -24,7 +24,9 @@ export const manualMutedScreen: Screen<AppContext> = {
     const opts: Option<AppContext>[] = [];
 
     for (const [index, item] of ctx.manualCheckItems.entries()) {
-      if (item.displayState !== "muted") continue;
+      if (item.displayState !== "muted") {
+        continue;
+      }
       const label = `${yellow("⏲")}  ${item.check.description}`;
       opts.push(
         action(`manual-${index}`, label, (c) => {
@@ -40,7 +42,9 @@ export const manualMutedScreen: Screen<AppContext> = {
         action("unmute-all", "Unmute all", async (c) => {
           let count = 0;
           for (const item of c.manualCheckItems) {
-            if (item.displayState !== "muted") continue;
+            if (item.displayState !== "muted") {
+              continue;
+            }
             try {
               await setCheckSeverity(c.projectPath, item.check.name, "error");
               item.displayState = item.state === "done" ? "done" : "not-done";

@@ -10,8 +10,10 @@ export const check: Check<TsConfigContext> = {
   description: "Check if tsconfig.json has outDir configured",
   tags: ["typescript", "recommended", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No tsconfig.json");
-    if (!parsed.compilerOptions?.outDir) {
+    if (!parsed) {
+      return skip(name, "No tsconfig.json");
+    }
+    if (parsed.compilerOptions?.outDir === undefined) {
       return fail(name, "No outDir configured");
     }
     return pass(name, `outDir: ${parsed.compilerOptions.outDir}`);
@@ -20,7 +22,9 @@ export const check: Check<TsConfigContext> = {
     description: "Set outDir to dist",
     run: async (global) => {
       const tsconfig = await readJson<Record<string, unknown>>(global.projectPath, "tsconfig.json");
-      if (!tsconfig) return { success: false, message: "Could not read tsconfig.json" };
+      if (!tsconfig) {
+        return { success: false, message: "Could not read tsconfig.json" };
+      }
 
       setNestedField(tsconfig, "compilerOptions.outDir", "dist");
       await writeJson(global.projectPath, "tsconfig.json", tsconfig);

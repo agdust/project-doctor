@@ -11,15 +11,21 @@ export const check: Check<PackageJsonContext> = {
   description: "Check if package.json has description field",
   tags: ["node", "recommended", "effort:low"],
   run: (_global, { parsed }) => {
-    if (!parsed) return skip(name, "No package.json");
-    if (!parsed.description) return fail(name, "Missing description");
+    if (!parsed) {
+      return skip(name, "No package.json");
+    }
+    if (parsed.description === undefined) {
+      return fail(name, "Missing description");
+    }
     return pass(name, "Description present");
   },
   fix: {
     description: "Add description field",
     run: async (global) => {
       const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
-      if (!pkg) return { success: false, message: "Could not read package.json" };
+      if (!pkg) {
+        return { success: false, message: "Could not read package.json" };
+      }
 
       const description = await input({
         message: "Enter project description:",

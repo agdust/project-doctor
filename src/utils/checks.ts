@@ -37,7 +37,9 @@ export const JS_GROUPS = new Set([
  * @returns true if the group should run for this project type
  */
 export function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
-  if (projectType === "js") return true;
+  if (projectType === "js") {
+    return true;
+  }
   // For "generic" projects, skip JS-specific groups
   return !JS_GROUPS.has(groupName);
 }
@@ -60,14 +62,20 @@ export function isGroupForProjectType(groupName: string, projectType: ProjectTyp
  * @returns Priority score (0-8, lower = higher priority)
  */
 export function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
-  const importance = tags.includes("required") ? 0 : (tags.includes("recommended") ? 1 : 2);
+  let importance = 2;
+  if (tags.includes("required")) {
+    importance = 0;
+  } else if (tags.includes("recommended")) {
+    importance = 1;
+  }
 
   const effortTags = rootTags ?? tags;
-  const effort = effortTags.includes("effort:low")
-    ? 0
-    : (effortTags.includes("effort:medium")
-      ? 1
-      : 2);
+  let effort = 2;
+  if (effortTags.includes("effort:low")) {
+    effort = 0;
+  } else if (effortTags.includes("effort:medium")) {
+    effort = 1;
+  }
 
   return importance * 3 + effort;
 }
@@ -178,7 +186,8 @@ export function isFixWithOptions<T>(fix: unknown): fix is {
   }[];
 } {
   return (
-    !!fix &&
+    fix !== undefined &&
+    fix !== null &&
     typeof fix === "object" &&
     "options" in fix &&
     Array.isArray((fix as { options: unknown[] }).options)
@@ -204,7 +213,9 @@ export interface CheckInfo {
 /** Get full info about a check including status and fix options */
 export function getCheckInfo(checkName: string, config: ResolvedConfig): CheckInfo | null {
   const found = findCheck(checkName);
-  if (!found) return null;
+  if (!found) {
+    return null;
+  }
 
   const { check, group } = found;
   const statusInfo = getCheckStatus(check.name, check.tags, group, config);

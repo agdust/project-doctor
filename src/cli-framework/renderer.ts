@@ -91,7 +91,7 @@ export function keyValue(key: string, value: string, indent = 2): void {
 export function header(appName: string, subtitle?: string): void {
   blank();
   title(appName);
-  if (subtitle) {
+  if (subtitle !== undefined) {
     muted(subtitle);
   }
   blank();
@@ -135,7 +135,7 @@ export function status(
   };
 
   const iconStr = icons[icon];
-  const messageStr = message ? dim(` - ${message}`) : "";
+  const messageStr = message === undefined ? "" : dim(` - ${message}`);
   console.log(`${prefix}${iconStr} ${label}${messageStr}`);
 }
 

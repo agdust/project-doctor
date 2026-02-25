@@ -62,7 +62,7 @@ export async function select<T>(config: SelectConfig<T>): Promise<T | Navigation
     ...config.choices,
   ];
 
-  if (config.includeBack) {
+  if (config.includeBack === true) {
     choices.push({
       name: dim(config.backLabel ?? "← Back"),
       value: BACK,
@@ -70,7 +70,7 @@ export async function select<T>(config: SelectConfig<T>): Promise<T | Navigation
     });
   }
 
-  if (config.includeExit) {
+  if (config.includeExit === true) {
     choices.push({
       name: "🚪 Exit",
       value: EXIT,

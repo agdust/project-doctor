@@ -6,7 +6,7 @@
 
 import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, action, blank, text  } from "../../cli-framework/index.js";
+import { nav, action, blank, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const issuesScreen: Screen<AppContext> = {

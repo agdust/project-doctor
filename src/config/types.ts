@@ -32,11 +32,15 @@ export function isSkipUntil(value: string): value is `skip-until-${string}` {
 
 /** Parse skip-until date, returns null if invalid or expired */
 export function parseSkipUntil(value: string): Date | null {
-  if (!isSkipUntil(value)) return null;
+  if (!isSkipUntil(value)) {
+    return null;
+  }
 
   const dateStr = value.slice("skip-until-".length);
   // Validate ISO date format YYYY-MM-DD
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return null;
+  }
 
   // Parse and validate the date components
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -69,14 +73,18 @@ const MAX_SKIP_YEARS = 3;
  */
 export function isSkipUntilActive(value: string): boolean {
   const date = parseSkipUntil(value);
-  if (!date) return false;
+  if (!date) {
+    return false;
+  }
 
   const now = new Date();
 
   // Check if date is too far in the future (more than 3 years)
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + MAX_SKIP_YEARS);
-  if (date > maxDate) return false;
+  if (date > maxDate) {
+    return false;
+  }
 
   return now <= date;
 }
