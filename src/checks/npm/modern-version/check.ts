@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { NpmContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -16,7 +16,7 @@ export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc specifies a modern, supported Node version",
   tags: ["node", "recommended", "effort:low"],
-  run: async (_global, { nvmrc }) => {
+  run: (_global, { nvmrc }) => {
     if (!nvmrc.raw) return skip(name, "No .nvmrc");
     if (!nvmrc.version) return skip(name, "Empty .nvmrc");
 
@@ -48,8 +48,8 @@ export const check: Check<NpmContext> = {
   fix: {
     description: `Update .nvmrc to Node ${CURRENT_LTS_MAJOR} (current LTS)`,
     run: async (global) => {
-      const nvmrcPath = join(global.projectPath, ".nvmrc");
-      await writeFile(nvmrcPath, `${CURRENT_LTS_MAJOR}\n`, "utf-8");
+      const nvmrcPath = path.join(global.projectPath, ".nvmrc");
+      await writeFile(nvmrcPath, `${CURRENT_LTS_MAJOR}\n`, "utf8");
       return {
         success: true,
         message: `Updated .nvmrc to Node ${CURRENT_LTS_MAJOR}`,

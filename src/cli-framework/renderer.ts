@@ -11,7 +11,7 @@ import { bold, dim, red, green, yellow, cyan } from "../utils/colors.js";
  * Print a horizontal divider
  */
 export function divider(width = 45): void {
-  console.log(`${dim(`  ${"─".repeat(width)}`)}`);
+  console.log(dim(`  ${"─".repeat(width)}`));
 }
 
 /**
@@ -99,7 +99,7 @@ export function header(appName: string, subtitle?: string): void {
 
 // Strip ANSI codes for visible length calculation
 function stripAnsi(str: string): string {
-  return str.replace(/\x1b\[[0-9;]*m/g, "");
+  return str.replaceAll(/\u001B\[[0-9;]*m/g, "");
 }
 
 /**

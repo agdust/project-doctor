@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -10,7 +10,7 @@ export const check: Check<GitignoreContext> = {
   name,
   description: "Check if dist/build output is ignored",
   tags: ["node", "recommended", "effort:low"],
-  run: async (_global, { raw, gitignore }) => {
+  run: (_global, { raw, gitignore }) => {
     if (!raw || !gitignore) return skip(name, "No .gitignore");
     // Check if any common build output directory is ignored
     const buildDirs = ["dist/index.js", "build/index.js", "out/index.js"];
@@ -22,10 +22,10 @@ export const check: Check<GitignoreContext> = {
   fix: {
     description: "Add dist/ to .gitignore",
     run: async (global) => {
-      const gitignorePath = join(global.projectPath, ".gitignore");
-      const content = await readFile(gitignorePath, "utf-8");
+      const gitignorePath = path.join(global.projectPath, ".gitignore");
+      const content = await readFile(gitignorePath, "utf8");
       const newContent = content.endsWith("\n") ? content + "dist/\n" : content + "\ndist/\n";
-      await writeFile(gitignorePath, newContent, "utf-8");
+      await writeFile(gitignorePath, newContent, "utf8");
       return { success: true, message: "Added dist/ to .gitignore" };
     },
   },

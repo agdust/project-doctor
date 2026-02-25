@@ -6,8 +6,7 @@
 
 import { bold, dim, green, yellow, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action } from "../../cli-framework/index.js";
-import { blank, text, success, error, muted } from "../../cli-framework/index.js";
+import { action, blank, text, success, error, muted  } from "../../cli-framework/index.js";
 import { setManualCheckState, setCheckSeverity } from "../../config/loader.js";
 import { createSkipUntil } from "../../config/types.js";
 import type { AppContext, ManualCheckItem } from "../types.js";
@@ -15,14 +14,18 @@ import type { AppContext, ManualCheckItem } from "../types.js";
 /** Icon and label for each display state */
 function statusDisplay(item: ManualCheckItem): { icon: string; label: string } {
   switch (item.displayState) {
-    case "done":
+    case "done": {
       return { icon: green("✓"), label: green("Verified") };
-    case "not-done":
+    }
+    case "not-done": {
       return { icon: dim("□"), label: dim("Not verified") };
-    case "muted":
+    }
+    case "muted": {
       return { icon: yellow("⏲"), label: yellow("Muted") };
-    case "disabled":
+    }
+    case "disabled": {
       return { icon: dim("–"), label: dim("Disabled") };
+    }
   }
 }
 
@@ -72,8 +75,8 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             item.displayState = "done";
             blank();
             success("Marked as done", 3);
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
+          } catch (error_) {
+            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
           }
           blank();
           return "manual-checklist";
@@ -88,8 +91,8 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             item.displayState = "not-done";
             blank();
             success("Marked as not done", 3);
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
+          } catch (error_) {
+            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
           }
           blank();
           return "manual-checklist";
@@ -106,8 +109,8 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             item.displayState = item.state === "done" ? "done" : "not-done";
             blank();
             success("Re-enabled", 3);
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
+          } catch (error_) {
+            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
           }
           blank();
           return "manual-checklist";
@@ -117,7 +120,7 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
 
     // Mute/disable only for active checks (not already muted/disabled)
     if (item.displayState === "done" || item.displayState === "not-done") {
-      // Mute for 2 weeks
+      // Mute for 2 weeks, Mute for 2 months, Disable permanently
       opts.push(
         action("mute-2w", "Mute for 2 weeks", async (c) => {
           try {
@@ -128,16 +131,12 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             c.stats.muted++;
             blank();
             muted("Muted for 2 weeks", 3);
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
+          } catch (error_) {
+            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
           }
           blank();
           return "manual-checklist";
         }),
-      );
-
-      // Mute for 2 months
-      opts.push(
         action("mute-2m", "Mute for 2 months", async (c) => {
           try {
             const muteDate = new Date();
@@ -147,16 +146,12 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             c.stats.muted++;
             blank();
             muted("Muted for 2 months", 3);
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
+          } catch (error_) {
+            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
           }
           blank();
           return "manual-checklist";
         }),
-      );
-
-      // Disable permanently
-      opts.push(
         action("disable", "Disable", async (c) => {
           try {
             await setCheckSeverity(c.projectPath, item.check.name, "off");
@@ -164,8 +159,8 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             c.stats.disabled++;
             blank();
             muted("Disabled permanently", 3);
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
+          } catch (error_) {
+            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
           }
           blank();
           return "manual-checklist";

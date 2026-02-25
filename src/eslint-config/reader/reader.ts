@@ -1,5 +1,5 @@
 import { access } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { ParsedConfig } from "../types.js";
 
 const CONFIG_FILES = [
@@ -12,7 +12,7 @@ const CONFIG_FILES = [
 
 export async function findConfigFile(projectPath: string): Promise<string | null> {
   for (const file of CONFIG_FILES) {
-    const filePath = join(projectPath, file);
+    const filePath = path.join(projectPath, file);
     try {
       await access(filePath);
       return filePath;

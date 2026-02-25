@@ -40,13 +40,10 @@ export async function detectTools(files: FileCache): Promise<DetectedTools> {
     ...packageJson?.devDependencies,
   };
 
-  const packageManager = hasPnpmLock
-    ? "pnpm"
-    : hasYarnLock
-      ? "yarn"
-      : hasPackageLock
-        ? "npm"
-        : null;
+  let packageManager: "npm" | "yarn" | "pnpm" | null = null;
+  if (hasPnpmLock) packageManager = "pnpm";
+  else if (hasYarnLock) packageManager = "yarn";
+  else if (hasPackageLock) packageManager = "npm";
 
   return {
     packageManager,

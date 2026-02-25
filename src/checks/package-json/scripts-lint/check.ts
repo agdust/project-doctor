@@ -9,7 +9,7 @@ export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if lint script exists",
   tags: ["node", "recommended", "effort:medium"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.scripts?.lint) return fail(name, "No lint script");
     return pass(name, "Lint script present");

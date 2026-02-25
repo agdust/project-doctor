@@ -60,14 +60,14 @@ export function isGroupForProjectType(groupName: string, projectType: ProjectTyp
  * @returns Priority score (0-8, lower = higher priority)
  */
 export function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
-  const importance = tags.includes("required") ? 0 : tags.includes("recommended") ? 1 : 2;
+  const importance = tags.includes("required") ? 0 : (tags.includes("recommended") ? 1 : 2);
 
   const effortTags = rootTags ?? tags;
   const effort = effortTags.includes("effort:low")
     ? 0
-    : effortTags.includes("effort:medium")
+    : (effortTags.includes("effort:medium")
       ? 1
-      : 2;
+      : 2);
 
   return importance * 3 + effort;
 }

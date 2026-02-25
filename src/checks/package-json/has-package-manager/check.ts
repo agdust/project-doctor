@@ -9,7 +9,7 @@ export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json specifies packageManager field",
   tags: ["node", "recommended", "effort:low"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.packageManager) return fail(name, "Missing packageManager field");
     return pass(name, `Package manager: ${parsed.packageManager}`);

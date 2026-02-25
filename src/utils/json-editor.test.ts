@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import path from "node:path";
 import { readJson, writeJson, updateJson, setNestedField } from "./json-editor.js";
 
 describe("json-editor", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), "json-editor-test-"));
+    tempDir = await mkdtemp(path.join(tmpdir(), "json-editor-test-"));
   });
 
   afterEach(async () => {
@@ -17,7 +17,7 @@ describe("json-editor", () => {
 
   describe("readJson", () => {
     it("should read and parse JSON file", async () => {
-      await writeFile(join(tempDir, "test.json"), '{"name": "test"}');
+      await writeFile(path.join(tempDir, "test.json"), '{"name": "test"}');
       const result = await readJson<{ name: string }>(tempDir, "test.json");
       expect(result).toEqual({ name: "test" });
     });
@@ -28,7 +28,7 @@ describe("json-editor", () => {
     });
 
     it("should return null for invalid JSON", async () => {
-      await writeFile(join(tempDir, "invalid.json"), "not json");
+      await writeFile(path.join(tempDir, "invalid.json"), "not json");
       const result = await readJson(tempDir, "invalid.json");
       expect(result).toBeNull();
     });
@@ -37,14 +37,14 @@ describe("json-editor", () => {
   describe("writeJson", () => {
     it("should write JSON with 2-space indentation and trailing newline", async () => {
       await writeJson(tempDir, "out.json", { name: "test", version: "1.0.0" });
-      const content = await readFile(join(tempDir, "out.json"), "utf-8");
+      const content = await readFile(path.join(tempDir, "out.json"), "utf-8");
       expect(content).toBe('{\n  "name": "test",\n  "version": "1.0.0"\n}\n');
     });
   });
 
   describe("updateJson", () => {
     it("should update existing JSON file", async () => {
-      await writeFile(join(tempDir, "pkg.json"), '{"name": "old"}');
+      await writeFile(path.join(tempDir, "pkg.json"), '{"name": "old"}');
       const result = await updateJson<{ name: string }>(tempDir, "pkg.json", (data) => ({
         ...data,
         name: "new",

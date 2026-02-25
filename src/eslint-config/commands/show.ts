@@ -1,4 +1,4 @@
-import { bold, dim, red, green, yellow, cyan } from "../../utils/colors.js";
+import { bold, dim, green, yellow, cyan } from "../../utils/colors.js";
 import { getAllPresets } from "../presets/presets.js";
 import { getStats } from "../../eslint-db/index.js";
 import { readExistingConfig } from "../reader/reader.js";

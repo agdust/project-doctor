@@ -1,11 +1,11 @@
 import { writeFile, mkdir } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { htmlPage, escapeHtml } from "./template.js";
 import { getAllCompiledDocs, type CompiledCheckDoc } from "./compiled-docs.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const outputDir = join(__dirname, "..", "..", "docs");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const outputDir = path.join(__dirname, "..", "..", "docs");
 
 async function generateDocs(): Promise<void> {
   console.log("Generating documentation...");
@@ -26,7 +26,7 @@ async function generateDocs(): Promise<void> {
     `;
     const html = htmlPage(doc.name, content, nav);
     const filename = `${doc.name}.html`;
-    await writeFile(join(outputDir, filename), html);
+    await writeFile(path.join(outputDir, filename), html);
     console.log(`  Generated ${filename}`);
   }
 
@@ -56,7 +56,7 @@ async function generateDocs(): Promise<void> {
   }
 
   const indexHtml = htmlPage("Checks", indexContent, "<nav>All Checks</nav>");
-  await writeFile(join(outputDir, "index.html"), indexHtml);
+  await writeFile(path.join(outputDir, "index.html"), indexHtml);
   console.log("  Generated index.html");
 
   console.log(`\nDocs generated in ${outputDir}`);

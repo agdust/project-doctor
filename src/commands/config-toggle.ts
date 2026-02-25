@@ -43,7 +43,7 @@ export async function toggleTag(
 
   if (!validTags.has(tagName)) {
     console.error(red(`Error: Unknown tag "${tagName}".`));
-    console.error(`Valid tags: ${Array.from(validTags).join(", ")}`);
+    console.error(`Valid tags: ${[...validTags].join(", ")}`);
     process.exit(2);
   }
 
@@ -60,7 +60,7 @@ export async function toggleGroup(
 
   if (!validGroups.has(groupName)) {
     console.error(red(`Error: Unknown group "${groupName}".`));
-    console.error(`Valid groups: ${Array.from(validGroups).join(", ")}`);
+    console.error(`Valid groups: ${[...validGroups].join(", ")}`);
     process.exit(2);
   }
 

@@ -8,7 +8,7 @@ export const check: Check<TestingContext> = {
   name,
   description: "Check if package.json has a test script",
   tags: ["node", "recommended", "effort:low"],
-  run: async (_global, ctx) => {
+  run: (_global, ctx) => {
     if (ctx.hasTestScript) {
       return pass(name, `test script: ${ctx.testScriptValue}`);
     }

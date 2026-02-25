@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { EnvContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -10,7 +10,7 @@ export const check: Check<EnvContext> = {
   name,
   description: "Create .env.example when .env exists (documents required variables)",
   tags: ["universal", "recommended", "effort:low"],
-  run: async (_global, ctx) => {
+  run: (_global, ctx) => {
     // Only relevant if .env exists
     if (!ctx.envExists) {
       return skip(name, "No .env file");
@@ -23,10 +23,10 @@ export const check: Check<EnvContext> = {
   fix: {
     description: "Create .env.example from .env (with values removed)",
     run: async (global) => {
-      const envPath = join(global.projectPath, ".env");
-      const envExamplePath = join(global.projectPath, ".env.example");
+      const envPath = path.join(global.projectPath, ".env");
+      const envExamplePath = path.join(global.projectPath, ".env.example");
 
-      const envContent = await readFile(envPath, "utf-8");
+      const envContent = await readFile(envPath, "utf8");
 
       // Convert .env to .env.example by removing values
       const exampleContent = envContent
@@ -40,7 +40,7 @@ export const check: Check<EnvContext> = {
         })
         .join("\n");
 
-      await writeFile(envExamplePath, exampleContent, "utf-8");
+      await writeFile(envExamplePath, exampleContent, "utf8");
       return { success: true, message: "Created .env.example from .env" };
     },
   },

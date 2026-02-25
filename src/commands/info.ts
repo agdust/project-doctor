@@ -67,7 +67,7 @@ export async function runInfo(
   console.log();
 
   const statusColor =
-    output.status === "enabled" ? green : output.status === "muted" ? yellow : dim;
+    output.status === "enabled" ? green : (output.status === "muted" ? yellow : dim);
   let statusStr = statusColor(output.status);
   if (output.mutedUntil) {
     statusStr += ` (until ${output.mutedUntil})`;
@@ -77,13 +77,13 @@ export async function runInfo(
 
   if (output.fixDescription) {
     console.log();
-    console.log(`${bold("Fix Description:")}`);
+    console.log(bold("Fix Description:"));
     console.log(`  ${output.fixDescription}`);
   }
 
   if (output.fixOptions && output.fixOptions.length > 0) {
     console.log();
-    console.log(`${bold("Fix Options:")}`);
+    console.log(bold("Fix Options:"));
     for (const opt of output.fixOptions) {
       console.log(`  ${dim(`[${opt.id}]`)} ${opt.label}`);
       if (opt.description) {
@@ -94,7 +94,7 @@ export async function runInfo(
 
   if (output.why) {
     console.log();
-    console.log(`${bold("Why This Matters:")}`);
+    console.log(bold("Why This Matters:"));
     console.log("─".repeat(60));
     console.log(output.why);
   }

@@ -1,5 +1,5 @@
 import { writeFile, access } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "../config/constants.js";
 import { green, yellow } from "./colors.js";
 
@@ -19,8 +19,8 @@ const DEFAULT_CONFIG = `{
 `;
 
 export async function runInit(projectPath: string): Promise<void> {
-  const configDir = join(projectPath, CONFIG_DIR);
-  const configPath = join(configDir, CONFIG_FILE);
+  const configDir = path.join(projectPath, CONFIG_DIR);
+  const configPath = path.join(configDir, CONFIG_FILE);
 
   console.log();
 
@@ -35,7 +35,7 @@ export async function runInit(projectPath: string): Promise<void> {
   }
 
   await ensureConfigDir(projectPath);
-  await writeFile(configPath, DEFAULT_CONFIG, "utf-8");
+  await writeFile(configPath, DEFAULT_CONFIG, "utf8");
 
   console.log(`  ${green("✓")} Created ${CONFIG_DIR}/${CONFIG_FILE}`);
   console.log();

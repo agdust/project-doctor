@@ -26,7 +26,7 @@ interface BaseOption {
 export type ActionOption<TCtx> = BaseOption & {
   type: "action";
   /** Run the action. Return next screen ID to navigate, or void to stay. */
-  run: (ctx: TCtx) => Promise<string | void>;
+  run: (ctx: TCtx) => Promise<string | undefined> | string | undefined;
 };
 
 /** Navigation to another screen */
@@ -70,7 +70,7 @@ export interface Screen<TCtx> {
   noBack?: boolean;
 
   /** Run before entering screen. Return screen ID to navigate immediately. */
-  onEnter?: (ctx: TCtx) => Promise<string | void>;
+  onEnter?: (ctx: TCtx) => Promise<string | undefined>;
 
   /** Run when leaving screen */
   onLeave?: (ctx: TCtx) => Promise<void>;
@@ -129,7 +129,7 @@ export interface AppState<TCtx> {
 export function action<TCtx>(
   value: string,
   label: string,
-  run: (ctx: TCtx) => Promise<string | void>,
+  run: (ctx: TCtx) => Promise<string | undefined> | string | undefined,
   description?: string,
 ): ActionOption<TCtx> {
   return { type: "action", value, label, run, description };

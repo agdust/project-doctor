@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -18,15 +18,15 @@ export const check: Check<GitignoreContext> = {
   name,
   description: "Check if .gitignore exists",
   tags: ["universal", "required", "effort:low"],
-  run: async (_global, { raw }) => {
+  run: (_global, { raw }) => {
     if (!raw) return fail(name, ".gitignore not found");
     return pass(name, ".gitignore exists");
   },
   fix: {
     description: "Create .gitignore with common defaults",
     run: async (global) => {
-      const gitignorePath = join(global.projectPath, ".gitignore");
-      await writeFile(gitignorePath, DEFAULT_GITIGNORE, "utf-8");
+      const gitignorePath = path.join(global.projectPath, ".gitignore");
+      await writeFile(gitignorePath, DEFAULT_GITIGNORE, "utf8");
       return { success: true, message: "Created .gitignore" };
     },
   },

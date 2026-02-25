@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import { bold, dim, red, green, yellow, cyan } from "../../utils/colors.js";
 import { runWizard, confirmApply, WizardCancelledError } from "../wizard/wizard.js";
 import { buildConfig } from "../builder/builder.js";
@@ -101,8 +101,8 @@ async function runEslintInitInner(projectPath: string, options: InitOptions): Pr
   }
 
   // Write the config
-  const configPath = join(projectPath, "eslint.config.js");
-  await writeFile(configPath, fileContent, "utf-8");
+  const configPath = path.join(projectPath, "eslint.config.js");
+  await writeFile(configPath, fileContent, "utf8");
 
   console.log(`  ${green("✓")} Generated eslint.config.js`);
   console.log(`    ${generatedConfig.rules.length} rules configured`);

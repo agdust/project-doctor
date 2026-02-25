@@ -6,8 +6,7 @@
 
 import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, action } from "../../cli-framework/index.js";
-import { blank, text } from "../../cli-framework/index.js";
+import { nav, action, blank, text  } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const issuesScreen: Screen<AppContext> = {
@@ -55,7 +54,7 @@ export const issuesScreen: Screen<AppContext> = {
     const failedCount = ctx.failedChecks.length;
     opts.push(
       nav("overview", "Overview", "overview", {
-        description: `All ${failedCount} failed check${failedCount !== 1 ? "s" : ""} (including non-fixable)`,
+        description: `All ${failedCount} failed check${failedCount === 1 ? "" : "s"} (including non-fixable)`,
       }),
     );
 
@@ -65,7 +64,7 @@ export const issuesScreen: Screen<AppContext> = {
         action(
           "fix",
           "Fix issues",
-          async (c) => {
+          (c) => {
             c.currentIssueIndex = 0;
             return "issue-detail";
           },

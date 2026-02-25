@@ -9,7 +9,7 @@ export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has main or exports entry point",
   tags: ["node", "recommended", "effort:medium"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.main && !parsed.exports) {
       return fail(name, "No main or exports field");

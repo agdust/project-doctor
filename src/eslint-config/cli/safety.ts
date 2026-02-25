@@ -59,7 +59,7 @@ export function checkGitStatus(projectPath: string): SafetyStatus {
     // Use execFileSync to avoid shell injection
     const statusOutput = execFileSync("git", ["status", "--porcelain"], {
       cwd: projectPath,
-      encoding: "utf-8",
+      encoding: "utf8",
     });
 
     const pendingFiles: string[] = [];

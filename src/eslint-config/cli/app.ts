@@ -69,7 +69,8 @@ export async function runApp<T>(
     printHeader();
 
     while (stack.length > 0) {
-      const current = stack[stack.length - 1];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guaranteed by while (stack.length > 0)
+      const current = stack.at(-1)!;
       pendingPush = null;
       shouldBack = false;
       shouldExit = false;
@@ -133,7 +134,7 @@ function isForceExitError(error: unknown): boolean {
 export function createScreen<T>(
   id: string,
   title: string,
-  run: (ctx: T, app: AppController) => Promise<typeof BACK | typeof EXIT | void>,
+  run: (ctx: T, app: AppController) => Promise<typeof BACK | typeof EXIT | undefined>,
 ): Screen<T> {
   return { id, title, run };
 }

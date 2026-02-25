@@ -39,7 +39,7 @@ export function parseMajorVersion(version: string): number | null {
   // Handle numeric versions (with or without v prefix)
   const numMatch = /^v?(\d+)/.exec(version);
   if (numMatch) {
-    return parseInt(numMatch[1], 10);
+    return Number.parseInt(numMatch[1], 10);
   }
 
   return null;

@@ -1,4 +1,4 @@
-import { basename } from "node:path";
+import path from "node:path";
 import { createGlobalContext } from "../context/global.js";
 import { runAllChecksRaw } from "./runner.js";
 import { safeJsonParse } from "./safe-json.js";
@@ -17,7 +17,7 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
   const global = await createGlobalContext(projectPath);
 
   // Get project name
-  let projectName = basename(projectPath) || "project";
+  let projectName = path.basename(projectPath) || "project";
   const pkgContent = await global.files.readText("package.json");
   if (pkgContent) {
     const pkg = safeJsonParse<{ name?: string }>(pkgContent);

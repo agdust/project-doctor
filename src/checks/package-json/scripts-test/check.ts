@@ -9,7 +9,7 @@ export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if test script exists",
   tags: ["node", "recommended", "effort:medium"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.scripts?.test) return fail(name, "No test script");
     return pass(name, "Test script present");

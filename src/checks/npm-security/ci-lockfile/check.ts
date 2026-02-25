@@ -34,7 +34,7 @@ export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if CI uses deterministic package installation (npm ci / --frozen-lockfile)",
   tags: ["node", "recommended", "effort:low", "security", "source:lirantal-npm-security"],
-  run: async (_global, { ciWorkflows }) => {
+  run: (_global, { ciWorkflows }) => {
     if (ciWorkflows.length === 0) {
       return skip(name, "No CI workflow files found");
     }

@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { EditorconfigContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -21,15 +21,15 @@ export const check: Check<EditorconfigContext> = {
   name,
   description: "Check if .editorconfig exists",
   tags: ["universal", "recommended", "effort:low"],
-  run: async (_global, { raw }) => {
+  run: (_global, { raw }) => {
     if (!raw) return fail(name, ".editorconfig not found");
     return pass(name, ".editorconfig exists");
   },
   fix: {
     description: "Create .editorconfig with defaults",
     run: async (global) => {
-      const editorconfigPath = join(global.projectPath, ".editorconfig");
-      await writeFile(editorconfigPath, DEFAULT_EDITORCONFIG, "utf-8");
+      const editorconfigPath = path.join(global.projectPath, ".editorconfig");
+      await writeFile(editorconfigPath, DEFAULT_EDITORCONFIG, "utf8");
       return { success: true, message: "Created .editorconfig" };
     },
   },

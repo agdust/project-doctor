@@ -93,7 +93,7 @@ export class App<TCtx> {
     const onData = (data: Buffer) => {
       if (data.length === 0) return;
       // ESC key is 0x1b (27)
-      if (data[0] === 0x1b && data.length === 1) {
+      if (data[0] === 0x1B && data.length === 1) {
         escPressed = true;
         ac.abort();
       }
@@ -226,15 +226,18 @@ export class App<TCtx> {
     const behavior = this.config.onEsc?.(this.state.context, screen.id) ?? "back";
 
     switch (behavior) {
-      case "back":
+      case "back": {
         await this.goBack(screen);
         break;
-      case "exit":
+      }
+      case "exit": {
         this.state.shouldExit = true;
         break;
-      case "stay":
+      }
+      case "stay": {
         // Do nothing, screen will re-render
         break;
+      }
     }
   }
 

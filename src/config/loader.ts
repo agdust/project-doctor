@@ -1,5 +1,5 @@
 import { readFile, access } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType } from "./types.js";
 import type { ManualCheckState } from "../types.js";
@@ -29,7 +29,7 @@ async function readFileWithParser<T>(
   parser: (content: string) => T | null,
 ): Promise<ReadResult<T>> {
   try {
-    const content = await readFile(path, "utf-8");
+    const content = await readFile(path, "utf8");
     // Use safe parsing to prevent prototype pollution
     const data = parser(content);
     if (data === null) {
@@ -61,7 +61,7 @@ async function readJsonFile<T>(path: string): Promise<ReadResult<T>> {
 
 export async function loadConfig(projectPath: string): Promise<Config | null> {
   // Try .project-doctor/config.json5 first
-  const json5Path = join(projectPath, ".project-doctor", "config.json5");
+  const json5Path = path.join(projectPath, ".project-doctor", "config.json5");
   const json5Result = await readJson5File<Config>(json5Path);
   if (json5Result.data) {
     return json5Result.data;
@@ -71,7 +71,7 @@ export async function loadConfig(projectPath: string): Promise<Config | null> {
   }
 
   // Try legacy .project-doctor/config.json
-  const jsonPath = join(projectPath, ".project-doctor", "config.json");
+  const jsonPath = path.join(projectPath, ".project-doctor", "config.json");
   const jsonResult = await readJsonFile<Config>(jsonPath);
   if (jsonResult.data) {
     return jsonResult.data;
@@ -81,7 +81,7 @@ export async function loadConfig(projectPath: string): Promise<Config | null> {
   }
 
   // Try package.json#doctor
-  const packagePath = join(projectPath, "package.json");
+  const packagePath = path.join(projectPath, "package.json");
   const packageResult = await readJsonFile<PackageJson>(packagePath);
   if (packageResult.data?.doctor) {
     return packageResult.data.doctor;
@@ -165,7 +165,7 @@ export async function detectProjectTypeWithCause(
   ];
 
   for (const indicator of jsIndicators) {
-    if (await fileExists(join(projectPath, indicator))) {
+    if (await fileExists(path.join(projectPath, indicator))) {
       return {
         type: "js",
         source: "detected",
@@ -224,7 +224,7 @@ const configLocks = new Map<string, Promise<void>>();
  * This prevents race conditions when multiple fixes run concurrently.
  */
 async function withConfigLock<T>(projectPath: string, fn: () => Promise<T>): Promise<T> {
-  const lockKey = join(projectPath, CONFIG_DIR, CONFIG_FILE);
+  const lockKey = path.join(projectPath, CONFIG_DIR, CONFIG_FILE);
 
   // Wait for any existing operation to complete
   while (configLocks.has(lockKey)) {
@@ -232,7 +232,7 @@ async function withConfigLock<T>(projectPath: string, fn: () => Promise<T>): Pro
   }
 
   // Create a new lock
-  let releaseLock: () => void;
+  let releaseLock: (() => void) | undefined;
   const lockPromise = new Promise<void>((resolve) => {
     releaseLock = resolve;
   });
@@ -242,15 +242,15 @@ async function withConfigLock<T>(projectPath: string, fn: () => Promise<T>): Pro
     return await fn();
   } finally {
     configLocks.delete(lockKey);
-    releaseLock!();
+    releaseLock?.();
   }
 }
 
 /** Update config with new values, merging with existing config */
 export async function updateConfig(projectPath: string, updates: Partial<Config>): Promise<void> {
   return withConfigLock(projectPath, async () => {
-    const configDir = join(projectPath, CONFIG_DIR);
-    const configPath = join(configDir, CONFIG_FILE);
+    const configDir = path.join(projectPath, CONFIG_DIR);
+    const configPath = path.join(configDir, CONFIG_FILE);
 
     // Load existing config (if any)
     const existing = await loadConfig(projectPath);

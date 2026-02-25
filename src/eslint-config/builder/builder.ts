@@ -57,11 +57,11 @@ export function buildConfig(config: BuildConfig): GeneratedConfig {
   }
 
   // Remove rules that are "off"
-  const finalRules = Array.from(rules.values()).filter((r) => r.value !== "off");
+  const finalRules = [...rules.values()].filter((r) => r.value !== "off");
 
   return {
     rules: sortRules(finalRules),
-    plugins: Array.from(plugins).filter(Boolean),
+    plugins: [...plugins].filter(Boolean),
     requiresTypeChecking,
     presets: config.presets,
   };
@@ -92,17 +92,20 @@ function expandPresets(presets: PresetId[]): PresetId[] {
 function getPluginForPreset(presetId: PresetId): string {
   switch (presetId) {
     case "typescript":
-    case "strict":
+    case "strict": {
       return "@typescript-eslint";
-    case "style":
+    }
+    case "style": {
       return "@stylistic";
-    default:
+    }
+    default: {
       return "";
+    }
   }
 }
 
 function sortRules(rules: ResolvedRule[]): ResolvedRule[] {
-  return rules.sort((a, b) => {
+  return rules.toSorted((a, b) => {
     const aPrefix = getPrefix(a.name);
     const bPrefix = getPrefix(b.name);
     if (aPrefix !== bPrefix) {

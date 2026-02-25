@@ -8,7 +8,7 @@ export const check: Check<EnvContext> = {
   name,
   description: "Check if .env.example has content",
   tags: ["universal", "recommended", "effort:medium"],
-  run: async (_global, ctx) => {
+  run: (_global, ctx) => {
     if (!ctx.exampleExists) return skip(name, "No .env.example");
     if (ctx.exampleVars.length === 0) {
       return fail(name, ".env.example is empty");

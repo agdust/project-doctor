@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import { createGlobalContext } from "../../context/global.js";
 import { loadContext } from "./context.js";
 import {
@@ -64,7 +64,7 @@ describe("package-json fixes", () => {
       tempFixture = await createEmptyTempDir("pkg-name-test");
 
       // Create a subdirectory with special characters
-      const specialDir = join(tempFixture.path, "My Project Name");
+      const specialDir = path.join(tempFixture.path, "My Project Name");
       await mkdir(specialDir);
       await tempFixture.writeFile(
         "My Project Name/package.json",

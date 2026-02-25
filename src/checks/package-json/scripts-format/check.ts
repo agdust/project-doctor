@@ -9,7 +9,7 @@ export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if format script exists",
   tags: ["node", "recommended", "effort:medium"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.scripts?.format) return fail(name, "No format script");
     return pass(name, "Format script present");

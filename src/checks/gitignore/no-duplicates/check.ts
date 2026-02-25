@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -13,7 +13,7 @@ export const check: Check<GitignoreContext> = {
   name,
   description: "Check for duplicate patterns in .gitignore",
   tags: ["universal", "recommended", "effort:low"],
-  run: async (_global, { raw, patterns }) => {
+  run: (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
     const seen = new Set<string>();
     const duplicates: string[] = [];
@@ -31,7 +31,7 @@ export const check: Check<GitignoreContext> = {
   fix: {
     description: "Remove duplicate patterns",
     run: async (global) => {
-      const gitignorePath = join(global.projectPath, ".gitignore");
+      const gitignorePath = path.join(global.projectPath, ".gitignore");
       const { content, lineEnding } = await readFileWithLineEnding(gitignorePath);
       // Split by any line ending, preserving original style for output
       const lines = content.split(/\r?\n/);
@@ -47,11 +47,11 @@ export const check: Check<GitignoreContext> = {
           continue;
         }
         // Only keep first occurrence of each pattern
-        if (!seenPatterns.has(trimmed)) {
+        if (seenPatterns.has(trimmed)) {
+          removedCount++;
+        } else {
           seenPatterns.add(trimmed);
           deduped.push(line);
-        } else {
-          removedCount++;
         }
       }
 

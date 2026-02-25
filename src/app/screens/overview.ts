@@ -6,8 +6,7 @@
 
 import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator } from "../../cli-framework/index.js";
-import { blank, title, muted } from "../../cli-framework/index.js";
+import { action, separator, blank, title, muted  } from "../../cli-framework/index.js";
 import type { AppContext, FailedCheck } from "../types.js";
 
 function formatCheckOption(
@@ -61,7 +60,7 @@ export const overviewScreen: Screen<AppContext> = {
           action(
             `check-${index}`,
             name,
-            async (c) => {
+            (c) => {
               c.selectedOverviewIndex = index;
               return "overview-detail";
             },
@@ -81,7 +80,7 @@ export const overviewScreen: Screen<AppContext> = {
           action(
             `check-${index}`,
             name,
-            async (c) => {
+            (c) => {
               c.selectedOverviewIndex = index;
               return "overview-detail";
             },
@@ -101,7 +100,7 @@ export const overviewScreen: Screen<AppContext> = {
           action(
             `check-${index}`,
             name,
-            async (c) => {
+            (c) => {
               c.selectedOverviewIndex = index;
               return "overview-detail";
             },

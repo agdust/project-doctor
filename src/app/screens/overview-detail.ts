@@ -6,8 +6,7 @@
 
 import { bold, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator } from "../../cli-framework/index.js";
-import { blank, text, muted, success, error } from "../../cli-framework/index.js";
+import { action, separator, blank, text, muted, success, error  } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { openBrowser } from "../../utils/open-browser.js";
 
@@ -125,8 +124,8 @@ export const overviewDetailScreen: Screen<AppContext> = {
                 } else {
                   error(result.message, 3);
                 }
-              } catch (err) {
-                error(err instanceof Error ? err.message : "Unknown error", 3);
+              } catch (error_) {
+                error(error_ instanceof Error ? error_.message : "Unknown error", 3);
               }
               blank();
               return "overview";
@@ -152,8 +151,8 @@ export const overviewDetailScreen: Screen<AppContext> = {
               } else {
                 error(result.message, 3);
               }
-            } catch (err) {
-              error(err instanceof Error ? err.message : "Unknown error", 3);
+            } catch (error_) {
+              error(error_ instanceof Error ? error_.message : "Unknown error", 3);
             }
             blank();
             return "overview";
@@ -175,6 +174,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
             blank();
             muted(`Opened ${toolLink.url}`, 3);
             blank();
+            // eslint-disable-next-line unicorn/no-useless-undefined
             return undefined;
           },
           `Open ${toolLink.tool} documentation in browser`,

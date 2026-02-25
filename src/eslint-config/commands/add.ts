@@ -83,7 +83,7 @@ async function runEslintAddInner(projectPath: string, presetArg: string): Promis
 
   // Generate and write
   const fileContent = generateConfigFile(newConfig);
-  await writeFile(existing.filePath, fileContent, "utf-8");
+  await writeFile(existing.filePath, fileContent, "utf8");
 
   console.log(`  ${green("✓")} Updated ${existing.filePath}`);
   console.log();

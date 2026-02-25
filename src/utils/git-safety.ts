@@ -6,7 +6,7 @@
  */
 
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import path from "node:path";
 import * as readline from "node:readline";
 import { loadConfig, updateConfig } from "../config/loader.js";
 import { createMatcher } from "../typing-challenge/typing-challenge.js";
@@ -21,7 +21,7 @@ const matchesChallenge = createMatcher(CHALLENGE_PHRASE);
  * Check if project has a git repository
  */
 export function hasGitRepo(projectPath: string): boolean {
-  const gitDir = join(projectPath, ".git");
+  const gitDir = path.join(projectPath, ".git");
   return existsSync(gitDir);
 }
 

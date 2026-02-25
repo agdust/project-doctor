@@ -6,8 +6,7 @@
 
 import { bold, dim } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action } from "../../cli-framework/index.js";
-import { blank, text, success, error } from "../../cli-framework/index.js";
+import { action, blank, text, success, error  } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const fixOptionsScreen: Screen<AppContext> = {
@@ -46,8 +45,8 @@ export const fixOptionsScreen: Screen<AppContext> = {
               } else {
                 error(result.message, 3);
               }
-            } catch (err) {
-              error(err instanceof Error ? err.message : "Unknown error", 3);
+            } catch (error_) {
+              error(error_ instanceof Error ? error_.message : "Unknown error", 3);
             }
             blank();
 

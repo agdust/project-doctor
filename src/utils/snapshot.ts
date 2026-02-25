@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import { createGlobalContext } from "../context/global.js";
 import { ensureConfigDir } from "../config/constants.js";
 import { runAllChecksRaw } from "./runner.js";
@@ -24,9 +24,9 @@ function getToday(): string {
 }
 
 async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
-  const historyPath = join(projectPath, HISTORY_DIR, HISTORY_FILE);
+  const historyPath = path.join(projectPath, HISTORY_DIR, HISTORY_FILE);
   try {
-    const content = await readFile(historyPath, "utf-8");
+    const content = await readFile(historyPath, "utf8");
     return safeJsonParse<SnapshotEntry[]>(content) ?? [];
   } catch {
     // History file doesn't exist yet
@@ -35,10 +35,10 @@ async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
 }
 
 async function saveHistory(projectPath: string, history: SnapshotEntry[]): Promise<void> {
-  const historyPath = join(projectPath, HISTORY_DIR, HISTORY_FILE);
+  const historyPath = path.join(projectPath, HISTORY_DIR, HISTORY_FILE);
 
   await ensureConfigDir(projectPath);
-  await writeFile(historyPath, JSON.stringify(history, null, 2) + "\n", "utf-8");
+  await writeFile(historyPath, JSON.stringify(history, null, 2) + "\n", "utf8");
 }
 
 export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> {
@@ -69,10 +69,10 @@ export async function runSnapshot(projectPath: string): Promise<void> {
 
   // Replace or append today's entry
   const existingIndex = history.findIndex((e) => e.date === snapshot.date);
-  if (existingIndex >= 0) {
-    history[existingIndex] = snapshot;
-  } else {
+  if (existingIndex === -1) {
     history.push(snapshot);
+  } else {
+    history[existingIndex] = snapshot;
   }
 
   // Sort by date
@@ -114,7 +114,8 @@ export async function runHistory(projectPath: string): Promise<void> {
   // Show progress if multiple entries
   if (history.length >= 2) {
     const first = history[0];
-    const last = history[history.length - 1];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- history.length >= 2 guaranteed above
+    const last = history.at(-1)!;
     const checkDiff = last.checks.failed - first.checks.failed;
 
     console.log();

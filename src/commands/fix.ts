@@ -57,11 +57,9 @@ function shouldIncludeCheck(
   }
 
   // CLI filters
-  if (options.groups && options.groups.length > 0) {
-    if (!options.groups.includes(groupName)) {
+  if (options.groups && options.groups.length > 0 && !options.groups.includes(groupName)) {
       return false;
     }
-  }
 
   if (options.tags && options.tags.length > 0) {
     const tagsToMatch = options.tags;
@@ -102,7 +100,7 @@ async function collectFixableChecks(
       }
 
       const baseResult = await (
-        check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>
+        check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase> | CheckResultBase
       )(global, groupContext);
 
       if (baseResult.status === "fail") {
@@ -127,7 +125,7 @@ async function collectFixableChecks(
               }
               return option.run(global, groupContext);
             } else {
-              return (fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> }).run(
+              return (fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult }).run(
                 global,
                 groupContext,
               );

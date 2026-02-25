@@ -18,7 +18,7 @@ export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has license field",
   tags: ["node", "recommended", "effort:low"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.license) return fail(name, "Missing license field");
     return pass(name, `License: ${parsed.license}`);
@@ -30,25 +30,25 @@ export const check: Check<PackageJsonContext> = {
         id: "mit",
         label: "MIT",
         description: "Permissive license, allows forks to be closed source",
-        run: async (global) => setLicense(global.projectPath, "MIT"),
+        run: (global) => setLicense(global.projectPath, "MIT"),
       },
       {
         id: "apache",
         label: "Apache-2.0",
         description: "Permissive license with patent protection",
-        run: async (global) => setLicense(global.projectPath, "Apache-2.0"),
+        run: (global) => setLicense(global.projectPath, "Apache-2.0"),
       },
       {
         id: "isc",
         label: "ISC",
         description: "Simplified permissive license (similar to MIT)",
-        run: async (global) => setLicense(global.projectPath, "ISC"),
+        run: (global) => setLicense(global.projectPath, "ISC"),
       },
       {
         id: "gpl3",
         label: "GPL-3.0",
         description: "Copyleft license, requires derivative works to be open source",
-        run: async (global) => setLicense(global.projectPath, "GPL-3.0"),
+        run: (global) => setLicense(global.projectPath, "GPL-3.0"),
       },
     ],
   },

@@ -11,7 +11,7 @@ export interface FixOptionRunnable {
   id: string;
   label: string;
   description?: string;
-  runFix: () => Promise<FixResult>;
+  runFix: () => Promise<FixResult> | FixResult;
 }
 
 /** A check that has an available fix */
@@ -23,7 +23,7 @@ export interface FixableIssue {
   fixDescription: string;
   why: string | null;
   /** For simple fixes - single action */
-  runFix?: () => Promise<FixResult>;
+  runFix?: () => Promise<FixResult> | FixResult;
   /** For fixes with options - multiple choices */
   fixOptions?: FixOptionRunnable[];
 }
@@ -37,7 +37,7 @@ export interface FailedCheck {
   why: string | null;
   fixDescription: string | null;
   /** For simple fixes - single action */
-  runFix?: () => Promise<FixResult>;
+  runFix?: () => Promise<FixResult> | FixResult;
   /** For fixes with options - multiple choices */
   fixOptions?: FixOptionRunnable[];
 }

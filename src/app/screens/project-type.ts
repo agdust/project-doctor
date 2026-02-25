@@ -5,8 +5,7 @@
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action } from "../../cli-framework/index.js";
-import { blank, title, muted } from "../../cli-framework/index.js";
+import { action, blank, title, muted  } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { setProjectType } from "../../config/loader.js";
 import { rescanProject } from "../loader.js";

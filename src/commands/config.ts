@@ -55,7 +55,7 @@ export async function runConfigShow(projectPath: string): Promise<void> {
   // Show checks configuration
   const checkEntries = Object.entries(resolved.checks);
   if (checkEntries.length > 0) {
-    console.log(`${bold("Checks:")}`);
+    console.log(bold("Checks:"));
     for (const [name, severity] of checkEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
@@ -68,7 +68,7 @@ export async function runConfigShow(projectPath: string): Promise<void> {
   // Show tags configuration
   const tagEntries = Object.entries(resolved.tags);
   if (tagEntries.length > 0) {
-    console.log(`${bold("Tags:")}`);
+    console.log(bold("Tags:"));
     for (const [name, severity] of tagEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
@@ -81,7 +81,7 @@ export async function runConfigShow(projectPath: string): Promise<void> {
   // Show groups configuration
   const groupEntries = Object.entries(resolved.groups);
   if (groupEntries.length > 0) {
-    console.log(`${bold("Groups:")}`);
+    console.log(bold("Groups:"));
     for (const [name, severity] of groupEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }

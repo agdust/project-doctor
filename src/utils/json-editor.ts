@@ -6,7 +6,7 @@
  */
 
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import { safeJsonParse } from "./safe-json.js";
 
 /**
@@ -15,7 +15,7 @@ import { safeJsonParse } from "./safe-json.js";
  */
 export async function readJson<T>(projectPath: string, filename: string): Promise<T | null> {
   try {
-    const content = await readFile(join(projectPath, filename), "utf-8");
+    const content = await readFile(path.join(projectPath, filename), "utf8");
     return safeJsonParse<T>(content);
   } catch (error) {
     // Log in debug mode to help diagnose issues (permissions, etc.)
@@ -37,7 +37,7 @@ export async function writeJson(
   data: unknown,
 ): Promise<void> {
   const content = JSON.stringify(data, null, 2) + "\n";
-  await writeFile(join(projectPath, filename), content, "utf-8");
+  await writeFile(path.join(projectPath, filename), content, "utf8");
 }
 
 /**
@@ -79,6 +79,7 @@ export function setNestedField<T extends object>(obj: T, path: string, value: un
     current = current[part] as Record<string, unknown>;
   }
 
-  current[parts[parts.length - 1]] = value;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- parts.length > 0 guaranteed above
+  current[parts.at(-1)!] = value;
   return obj;
 }

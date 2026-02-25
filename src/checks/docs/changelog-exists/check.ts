@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -26,15 +26,15 @@ export const check: Check<DocsContext> = {
   name,
   description: "Check if CHANGELOG.md exists",
   tags: ["universal", "recommended", "effort:low"],
-  run: async (_global, { changelog }) => {
+  run: (_global, { changelog }) => {
     if (!changelog) return fail(name, "CHANGELOG.md not found");
     return pass(name, "CHANGELOG.md exists");
   },
   fix: {
     description: "Create CHANGELOG.md template",
     run: async (global) => {
-      const changelogPath = join(global.projectPath, "CHANGELOG.md");
-      await writeFile(changelogPath, DEFAULT_CHANGELOG, "utf-8");
+      const changelogPath = path.join(global.projectPath, "CHANGELOG.md");
+      await writeFile(changelogPath, DEFAULT_CHANGELOG, "utf8");
       return { success: true, message: "Created CHANGELOG.md" };
     },
   },

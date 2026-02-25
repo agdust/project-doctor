@@ -6,8 +6,7 @@
 
 import { dim, red, green } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, action, separator } from "../../cli-framework/index.js";
-import { blank, text } from "../../cli-framework/index.js";
+import { nav, action, separator, blank, text  } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const homeScreen: Screen<AppContext> = {
@@ -74,33 +73,20 @@ export const homeScreen: Screen<AppContext> = {
       opts.push(nav("issues", "Current issues", "issues", { badge: "all passing" }));
     }
 
-    // Manual checklist
+    // Manual checklist, Config, Run checks again, About, separator, Exit
     const uncheckedCount = ctx.manualCheckItems.filter((i) => i.displayState === "not-done").length;
     const manualBadge = uncheckedCount === 0 ? "all done" : `${uncheckedCount} unchecked`;
-    opts.push(nav("manual-checklist", "Manual checklist", "manual-checklist", { badge: manualBadge }));
-
-    // Config
     opts.push(
+      nav("manual-checklist", "Manual checklist", "manual-checklist", { badge: manualBadge }),
       nav("config", "Config", "config", {
         description: "Manage categories and checks",
       }),
-    );
-
-    // Run checks again
-    opts.push(
-      action("rescan", "Run checks again", async () => {
+      action("rescan", "Run checks again", () => {
         return "scanning";
       }),
-    );
-
-    // About
-    opts.push(nav("about", "About Project Doctor", "about"));
-
-    opts.push(separator());
-
-    // Exit
-    opts.push(
-      action("exit", "Exit", async () => {
+      nav("about", "About Project Doctor", "about"),
+      separator(),
+      action("exit", "Exit", () => {
         return "__exit__";
       }),
     );

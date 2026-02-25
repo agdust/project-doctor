@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import { fixtures } from "./test/fixtures.js";
 
 const execAsync = promisify(exec);
@@ -111,8 +111,8 @@ describe("CLI", () => {
     });
 
     it("should warn if config already exists", async () => {
-      await mkdir(join(testDir, ".project-doctor"), { recursive: true });
-      await writeFile(join(testDir, ".project-doctor", "config.json5"), "{}", "utf-8");
+      await mkdir(path.join(testDir, ".project-doctor"), { recursive: true });
+      await writeFile(path.join(testDir, ".project-doctor", "config.json5"), "{}", "utf-8");
 
       const { stdout, code } = await runCli(`init ${testDir}`);
 
@@ -126,7 +126,7 @@ describe("CLI", () => {
 
     beforeEach(async () => {
       await mkdir(testDir, { recursive: true });
-      await writeFile(join(testDir, "package.json"), '{"name": "test"}', "utf-8");
+      await writeFile(path.join(testDir, "package.json"), '{"name": "test"}', "utf-8");
     });
 
     afterEach(async () => {

@@ -8,7 +8,7 @@ export const check: Check<BundleSizeContext> = {
   name,
   description: "Check if package.json has a size-limit npm script",
   tags: ["node", "recommended", "tool:size-limit", "effort:low"],
-  run: async (global, ctx) => {
+  run: (global, ctx) => {
     if (!global.detected.hasSizeLimit) {
       return skip(name, "size-limit not installed");
     }

@@ -6,8 +6,7 @@
 
 import { yellow } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator } from "../../cli-framework/index.js";
-import { blank, text, success, error } from "../../cli-framework/index.js";
+import { action, separator, blank, text, success, error  } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
 
@@ -24,20 +23,20 @@ export const manualMutedScreen: Screen<AppContext> = {
   options: (ctx): Option<AppContext>[] => {
     const opts: Option<AppContext>[] = [];
 
-    ctx.manualCheckItems.forEach((item, index) => {
-      if (item.displayState !== "muted") return;
+    for (const [index, item] of ctx.manualCheckItems.entries()) {
+      if (item.displayState !== "muted") continue;
       const label = `${yellow("⏲")}  ${item.check.description}`;
       opts.push(
-        action(`manual-${index}`, label, async (c) => {
+        action(`manual-${index}`, label, (c) => {
           c.selectedManualCheckIndex = index;
           return "manual-check-detail";
         }),
       );
-    });
+    }
 
     if (opts.length > 0) {
-      opts.push(separator());
       opts.push(
+        separator(),
         action("unmute-all", "Unmute all", async (c) => {
           let count = 0;
           for (const item of c.manualCheckItems) {
@@ -46,12 +45,12 @@ export const manualMutedScreen: Screen<AppContext> = {
               await setCheckSeverity(c.projectPath, item.check.name, "error");
               item.displayState = item.state === "done" ? "done" : "not-done";
               count++;
-            } catch (err) {
-              error(err instanceof Error ? err.message : "Unknown error", 3);
+            } catch (error_) {
+              error(error_ instanceof Error ? error_.message : "Unknown error", 3);
             }
           }
           blank();
-          success(`Unmuted ${count} item${count !== 1 ? "s" : ""}`, 3);
+          success(`Unmuted ${count} item${count === 1 ? "" : "s"}`, 3);
           blank();
           return "manual-checklist";
         }),

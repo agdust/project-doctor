@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { input } from "@inquirer/prompts";
 import type { Check } from "../../../types.js";
@@ -10,18 +10,18 @@ import { openBrowser } from "../../../utils/open-browser.js";
 const name = "license-exists";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const LICENSES_DIR = join(__dirname, "licenses");
+const __dirname = path.dirname(__filename);
+const LICENSES_DIR = path.join(__dirname, "licenses");
 
 /**
  * Load a license template and replace placeholders
  */
 async function loadLicense(filename: string, copyrightHolder?: string): Promise<string> {
-  const content = await readFile(join(LICENSES_DIR, filename), "utf-8");
+  const content = await readFile(path.join(LICENSES_DIR, filename), "utf8");
   const year = new Date().getFullYear();
-  let result = content.replace(/\{\{YEAR\}\}/g, String(year));
+  let result = content.replaceAll('{{YEAR}}', String(year));
   if (copyrightHolder) {
-    result = result.replace(/\{\{COPYRIGHT_HOLDER\}\}/g, copyrightHolder);
+    result = result.replaceAll('{{COPYRIGHT_HOLDER}}', copyrightHolder);
   }
   return result;
 }
@@ -30,7 +30,7 @@ export const check: Check<DocsContext> = {
   name,
   description: "Check if LICENSE file exists",
   tags: ["universal", "required", "effort:low"],
-  run: async (_global, { license }) => {
+  run: (_global, { license }) => {
     if (!license) return fail(name, "LICENSE file not found");
     return pass(name, "LICENSE file exists");
   },
@@ -45,8 +45,8 @@ export const check: Check<DocsContext> = {
           const copyrightHolder = await input({
             message: "Copyright holder (e.g., Your Name or Company):",
           });
-          const licensePath = join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("mit.txt", copyrightHolder), "utf-8");
+          const licensePath = path.join(global.projectPath, "LICENSE");
+          await writeFile(licensePath, await loadLicense("mit.txt", copyrightHolder), "utf8");
           return { success: true, message: "Created MIT LICENSE" };
         },
       },
@@ -55,8 +55,8 @@ export const check: Check<DocsContext> = {
         label: "GPL-3.0 License",
         description: "Copyleft license, requires derivative works to be open source",
         run: async (global) => {
-          const licensePath = join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("gpl3.txt"), "utf-8");
+          const licensePath = path.join(global.projectPath, "LICENSE");
+          await writeFile(licensePath, await loadLicense("gpl3.txt"), "utf8");
           return { success: true, message: "Created GPL-3.0 LICENSE" };
         },
       },
@@ -65,8 +65,8 @@ export const check: Check<DocsContext> = {
         label: "CC0 (Public Domain)",
         description: "Dedicate to public domain, no restrictions",
         run: async (global) => {
-          const licensePath = join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("cc0.txt"), "utf-8");
+          const licensePath = path.join(global.projectPath, "LICENSE");
+          await writeFile(licensePath, await loadLicense("cc0.txt"), "utf8");
           return { success: true, message: "Created CC0 LICENSE" };
         },
       },
@@ -78,11 +78,11 @@ export const check: Check<DocsContext> = {
           const copyrightHolder = await input({
             message: "Copyright holder (e.g., Your Name or Company):",
           });
-          const licensePath = join(global.projectPath, "LICENSE");
+          const licensePath = path.join(global.projectPath, "LICENSE");
           await writeFile(
             licensePath,
             await loadLicense("proprietary.txt", copyrightHolder),
-            "utf-8",
+            "utf8",
           );
           return { success: true, message: "Created PROPRIETARY LICENSE" };
         },

@@ -9,7 +9,7 @@ export const check: Check<TsConfigContext> = {
   name,
   description: "Check if noImplicitAny is enabled",
   tags: ["typescript", "opinionated", "effort:high"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No tsconfig.json");
     const opts = parsed.compilerOptions;
     if (!opts?.strict && !opts?.noImplicitAny) {

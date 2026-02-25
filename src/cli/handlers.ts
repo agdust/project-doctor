@@ -3,7 +3,7 @@
  */
 
 import { parseArgs } from "node:util";
-import { resolve } from "node:path";
+import path from "node:path";
 import { runConfigShow, runConfigSetProjectType, runConfigShowJson } from "../commands/config.js";
 import { runDisableCheck, runDisableTag, runDisableGroup } from "../commands/disable.js";
 import { runEnableCheck, runEnableTag, runEnableGroup } from "../commands/enable.js";
@@ -28,8 +28,8 @@ type ConfigTargetType = "check" | "tag" | "group";
  */
 function parsePositiveInt(value: string | undefined): number | undefined {
   if (!value) return undefined;
-  const parsed = parseInt(value, 10);
-  if (isNaN(parsed) || parsed <= 0) {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isNaN(parsed) || parsed <= 0) {
     return undefined;
   }
   return parsed;
@@ -89,26 +89,25 @@ export async function handleConfigCommand(args: string[]): Promise<void> {
 
   const projectPath = getProjectPath(args);
 
-  if (format === "json") {
-    await runConfigShowJson(projectPath);
-  } else {
-    await runConfigShow(projectPath);
-  }
+  await (format === "json" ? runConfigShowJson(projectPath) : runConfigShow(projectPath));
 }
 
 export async function handleDisableCommand(args: string[]): Promise<void> {
   const { type, name, projectPath } = parseConfigTargetArgs(args);
 
   switch (type) {
-    case "check":
+    case "check": {
       await runDisableCheck(projectPath, name);
       break;
-    case "tag":
+    }
+    case "tag": {
       await runDisableTag(projectPath, name);
       break;
-    case "group":
+    }
+    case "group": {
       await runDisableGroup(projectPath, name);
       break;
+    }
   }
 }
 
@@ -116,15 +115,18 @@ export async function handleEnableCommand(args: string[]): Promise<void> {
   const { type, name, projectPath } = parseConfigTargetArgs(args);
 
   switch (type) {
-    case "check":
+    case "check": {
       await runEnableCheck(projectPath, name);
       break;
-    case "tag":
+    }
+    case "tag": {
       await runEnableTag(projectPath, name);
       break;
-    case "group":
+    }
+    case "group": {
       await runEnableGroup(projectPath, name);
       break;
+    }
   }
 }
 
@@ -294,11 +296,11 @@ export async function handleEslintCommand(args: string[]): Promise<void> {
   if (isPath(firstArg)) {
     // First arg is a path, no subcommand - launch wizard
     subcommand = undefined;
-    projectPath = resolve(firstArg);
+    projectPath = path.resolve(firstArg);
   } else {
     subcommand = firstArg;
     args.shift(); // remove subcommand
-    projectPath = resolve(args.find((a) => !a.startsWith("-")) ?? process.cwd());
+    projectPath = path.resolve(args.find((a) => !a.startsWith("-")) ?? process.cwd());
   }
 
   const hasWizard = args.includes("--wizard") || args.includes("-w");
@@ -310,7 +312,7 @@ export async function handleEslintCommand(args: string[]): Promise<void> {
   const presetsArg = args.find((a, i) => args[i - 1] === "--presets");
 
   switch (subcommand) {
-    case "init":
+    case "init": {
       await runEslintInit(projectPath, {
         wizard: hasWizard,
         presets: presetsArg,
@@ -318,32 +320,39 @@ export async function handleEslintCommand(args: string[]): Promise<void> {
         force: hasForce,
       });
       return;
-    case "add":
+    }
+    case "add": {
       await runEslintAdd(projectPath, args[0] ?? "");
       return;
-    case "show":
+    }
+    case "show": {
       await runEslintShow(projectPath, {
         presets: hasPresetsFlag,
         rules: hasRulesFlag,
       });
       return;
-    case "diff":
+    }
+    case "diff": {
       await runEslintDiff(projectPath, { presets: presetsArg });
       return;
+    }
     case "help":
     case "-h":
-    case "--help":
+    case "--help": {
       printEslintHelp();
       return;
+    }
     case undefined:
-    case "":
+    case "": {
       // No subcommand - launch interactive wizard
       await runMainWizard(projectPath);
       return;
-    default:
+    }
+    default: {
       console.log(red(`Unknown eslint subcommand: ${subcommand}`));
       console.log();
       printEslintHelp();
       return;
+    }
   }
 }

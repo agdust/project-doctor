@@ -6,21 +6,24 @@
 
 import { dim, green, yellow } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, nav, separator } from "../../cli-framework/index.js";
-import { blank, text } from "../../cli-framework/index.js";
+import { action, nav, separator, blank, text  } from "../../cli-framework/index.js";
 import type { AppContext, ManualCheckItem } from "../types.js";
 
 /** Icon for each display state */
 function checkIcon(item: ManualCheckItem): string {
   switch (item.displayState) {
-    case "done":
+    case "done": {
       return green("✓");
-    case "not-done":
+    }
+    case "not-done": {
       return dim("□");
-    case "muted":
+    }
+    case "muted": {
       return yellow("⏲");
-    case "disabled":
+    }
+    case "disabled": {
       return dim("–");
+    }
   }
 }
 
@@ -49,16 +52,16 @@ export const manualChecklistScreen: Screen<AppContext> = {
     const opts: Option<AppContext>[] = [];
 
     // Show unchecked items
-    ctx.manualCheckItems.forEach((item, index) => {
-      if (item.displayState !== "not-done") return;
+    for (const [index, item] of ctx.manualCheckItems.entries()) {
+      if (item.displayState !== "not-done") continue;
       const label = `${checkIcon(item)}  ${item.check.description}`;
       opts.push(
-        action(`manual-${index}`, label, async (c) => {
+        action(`manual-${index}`, label, (c) => {
           c.selectedManualCheckIndex = index;
           return "manual-check-detail";
         }),
       );
-    });
+    }
 
     // Sub-lists for resolved states
     const doneCount = ctx.manualCheckItems.filter((i) => i.displayState === "done").length;

@@ -5,7 +5,7 @@
  */
 
 import { writeFile, rename, unlink, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import path from "node:path";
 import { randomBytes } from "node:crypto";
 
 /**
@@ -28,9 +28,9 @@ export function normalizeLineEndings(
   lineEnding: "\r\n" | "\n",
 ): string {
   // First normalize all to LF, then convert to target
-  const normalized = content.replace(/\r\n/g, "\n");
+  const normalized = content.replaceAll('\r\n', "\n");
   if (lineEnding === "\r\n") {
-    return normalized.replace(/\n/g, "\r\n");
+    return normalized.replaceAll('\n', "\r\n");
   }
   return normalized;
 }
@@ -40,9 +40,9 @@ export function normalizeLineEndings(
  * Using the same directory ensures atomic rename works (same filesystem).
  */
 function getTempPath(targetPath: string): string {
-  const dir = dirname(targetPath);
+  const dir = path.dirname(targetPath);
   const random = randomBytes(8).toString("hex");
-  return join(dir, `.tmp-${random}`);
+  return path.join(dir, `.tmp-${random}`);
 }
 
 /**
@@ -56,7 +56,7 @@ function getTempPath(targetPath: string): string {
 export async function atomicWriteFile(
   filePath: string,
   content: string,
-  encoding: BufferEncoding = "utf-8",
+  encoding: BufferEncoding = "utf8",
 ): Promise<void> {
   const tempPath = getTempPath(filePath);
 
@@ -95,7 +95,7 @@ export async function transformFile(
 ): Promise<void> {
   const { preserveLineEndings = true } = options;
 
-  const original = await readFile(filePath, "utf-8");
+  const original = await readFile(filePath, "utf8");
   const originalLineEnding = detectLineEnding(original);
 
   let transformed = transform(original);
@@ -115,7 +115,7 @@ export async function transformFile(
 export async function readFileWithLineEnding(
   filePath: string,
 ): Promise<{ content: string; lineEnding: "\r\n" | "\n" }> {
-  const content = await readFile(filePath, "utf-8");
+  const content = await readFile(filePath, "utf8");
   return {
     content,
     lineEnding: detectLineEnding(content),

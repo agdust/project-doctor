@@ -1,4 +1,4 @@
-import { basename } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -10,7 +10,7 @@ export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has name field",
   tags: ["node", "required", "effort:low"],
-  run: async (_global, { parsed }) => {
+  run: (_global, { parsed }) => {
     if (!parsed) return skip(name, "No package.json");
     if (!parsed.name) return fail(name, "Missing name field");
     return pass(name, `Name: ${parsed.name}`);
@@ -21,12 +21,12 @@ export const check: Check<PackageJsonContext> = {
       const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
       if (!pkg) return { success: false, message: "Could not read package.json" };
 
-      const dirName = basename(global.projectPath);
+      const dirName = path.basename(global.projectPath);
       // Sanitize: lowercase, replace spaces with hyphens, remove invalid chars
       const safeName = dirName
         .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-_.]/g, "");
+        .replaceAll(/\s+/g, "-")
+        .replaceAll(/[^a-z0-9-_.]/g, "");
       pkg.name = safeName;
 
       await writeJson(global.projectPath, "package.json", pkg);

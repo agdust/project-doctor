@@ -4,17 +4,14 @@
  * Scans project, runs checks, and populates app context.
  */
 
-import { basename } from "node:path";
-import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult } from "../types.js";
+import path from "node:path";
+import type { CheckResult, CheckResultBase, GlobalContext, CheckTag, FixResult, ManualCheck  } from "../types.js";
 import { checkGroups, manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
-import { isCheckOff, isTagOff } from "../config/loader.js";
 import { isSkipUntilActive } from "../config/types.js";
-import type { ManualCheckDisplayState } from "./types.js";
-import type { ManualCheck } from "../types.js";
-import type { AppContext, FixableIssue, FailedCheck, FailedByCategory, ManualCheckItem } from "./types.js";
+import type { ManualCheckDisplayState, AppContext, FixableIssue, FailedCheck, FailedByCategory, ManualCheckItem  } from "./types.js";
 import { safeJsonParse } from "../utils/safe-json.js";
 
 /**
@@ -26,7 +23,7 @@ async function getProjectName(global: GlobalContext, projectPath: string): Promi
     const pkg = safeJsonParse<{ name?: string }>(pkgContent);
     if (pkg && typeof pkg.name === "string") return pkg.name;
   }
-  return basename(projectPath) || "project";
+  return path.basename(projectPath) || "project";
 }
 
 /**
@@ -93,7 +90,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
       let baseResult: CheckResultBase;
       try {
         baseResult = await (
-          check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase>
+          check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase> | CheckResultBase
         )(global, groupContext);
       } catch (error) {
         // Convert thrown errors to failed check results
@@ -140,14 +137,14 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
               label: opt.label,
               description: opt.description,
               runFix: () =>
-                (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(
+                (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
                   global,
                   groupContext,
                 ),
             }));
           } else {
             failedCheck.runFix = () =>
-              (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult>)(
+              (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
                 global,
                 groupContext,
               );

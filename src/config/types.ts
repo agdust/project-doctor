@@ -46,7 +46,7 @@ export function parseSkipUntil(value: string): Date | null {
 
   // Check if the date is valid (e.g., reject "2025-02-30")
   if (
-    isNaN(date.getTime()) ||
+    Number.isNaN(date.getTime()) ||
     date.getUTCFullYear() !== year ||
     date.getUTCMonth() !== month - 1 ||
     date.getUTCDate() !== day

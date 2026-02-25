@@ -6,7 +6,7 @@
  */
 
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { GlobalContext } from "../../types.js";
 import { isIgnored, parseGitignore, type GitignoreInstance } from "../../utils/gitignore.js";
 
@@ -37,7 +37,7 @@ export interface NpmSecurityContext {
 }
 
 async function loadCIWorkflows(projectPath: string): Promise<string[]> {
-  const workflowDir = join(projectPath, ".github", "workflows");
+  const workflowDir = path.join(projectPath, ".github", "workflows");
   const workflows: string[] = [];
 
   try {
@@ -45,7 +45,7 @@ async function loadCIWorkflows(projectPath: string): Promise<string[]> {
     for (const file of files) {
       if (file.endsWith(".yml") || file.endsWith(".yaml")) {
         try {
-          const content = await readFile(join(workflowDir, file), "utf-8");
+          const content = await readFile(path.join(workflowDir, file), "utf8");
           workflows.push(content);
         } catch {
           // Skip unreadable files

@@ -35,12 +35,15 @@ interface CheckListInfo {
 
 function formatStatus(status: CheckStatus, mutedUntil?: string): string {
   switch (status) {
-    case "enabled":
+    case "enabled": {
       return green("enabled");
-    case "disabled":
+    }
+    case "disabled": {
       return dim("disabled");
-    case "muted":
+    }
+    case "muted": {
       return yellow(`muted${mutedUntil ? ` (until ${mutedUntil})` : ""}`);
+    }
   }
 }
 
@@ -121,7 +124,7 @@ export async function runList(projectPath: string, options: ListOptions): Promis
   console.log(
     `${bold("Check Name".padEnd(nameWidth))}  ` +
       `${bold("Group".padEnd(groupWidth))}  ` +
-      `${bold("Tags")}`,
+      bold("Tags"),
   );
   console.log("─".repeat(nameWidth + groupWidth + 60));
 

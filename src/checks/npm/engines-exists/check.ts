@@ -8,7 +8,7 @@ export const check: Check<NpmContext> = {
   name,
   description: "Check if engines.node is defined in package.json",
   tags: ["node", "recommended", "effort:medium"],
-  run: async (_global, { engines }) => {
+  run: (_global, { engines }) => {
     if (!engines.node) {
       return fail(name, "engines.node not defined in package.json");
     }

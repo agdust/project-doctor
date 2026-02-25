@@ -82,6 +82,61 @@ export default defineConfig(
 
       // Console is expected in CLI
       "no-console": "off",
+
+      // Relax unnecessary condition checks (false positives with type guards)
+      "@typescript-eslint/no-unnecessary-condition": "off",
+
+      // Allow single-use type parameters (useful for type inference)
+      "@typescript-eslint/no-unnecessary-type-parameters": "off",
+
+      // Allow control characters in regex (for ANSI escape codes)
+      "no-control-regex": "off",
+
+      // =========================================================================
+      // unicorn overrides
+      // =========================================================================
+
+      // Allow abbreviations (ctx, args, opts, pkg, etc. are idiomatic)
+      "unicorn/prevent-abbreviations": "off",
+
+      // Allow null — used for JSON compat and intentional absence
+      "unicorn/no-null": "off",
+
+      // Don't force top-level await (CLI entry point pattern)
+      "unicorn/prefer-top-level-await": "off",
+
+      // Allow process.exit in CLI tool
+      "unicorn/no-process-exit": "off",
+
+      // =========================================================================
+      // eslint-plugin-n overrides
+      // =========================================================================
+
+      // Handled by TypeScript — false positives with .js extensions in ESM
+      "n/no-missing-import": "off",
+
+      // Handled by TypeScript
+      "n/no-unpublished-import": "off",
+
+      // Allow process.exit in CLI tool
+      "n/no-process-exit": "off",
+
+      // =========================================================================
+      // eslint-plugin-import-x overrides
+      // =========================================================================
+
+      // Handled by TypeScript resolver
+      "import-x/no-unresolved": "off",
+
+      // Allow namespace usage for JSON5 and similar libraries
+      "import-x/no-named-as-default-member": "off",
+
+      // =========================================================================
+      // eslint-plugin-promise overrides
+      // =========================================================================
+
+      // Allow async/await style (no need to always return promise)
+      "promise/always-return": "off",
     },
   }
 );

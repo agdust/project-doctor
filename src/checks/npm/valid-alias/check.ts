@@ -9,7 +9,7 @@ export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc uses valid LTS codename",
   tags: ["node", "recommended", "effort:low"],
-  run: async (_global, { nvmrc }) => {
+  run: (_global, { nvmrc }) => {
     if (!nvmrc.version) return skip(name, "No .nvmrc");
 
     const match = /^lts\/(\w+)$/i.exec(nvmrc.version);

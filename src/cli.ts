@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
 /**
  * CLI Entry Point
@@ -8,7 +7,7 @@
  */
 
 import { parseArgs } from "node:util";
-import { resolve, dirname, join } from "node:path";
+import path from "node:path";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { CheckTag } from "./types.js";
@@ -36,13 +35,13 @@ import {
 } from "./cli/index.js";
 
 // Read version from package.json
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageJsonPath = join(__dirname, "..", "package.json");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const packageJsonPath = path.join(__dirname, "..", "package.json");
 
 const IS_DEV = process.env.NODE_ENV !== "production" && !__dirname.includes("node_modules");
 let VERSION = "0.0.0";
 try {
-  const content = readFileSync(packageJsonPath, "utf-8");
+  const content = readFileSync(packageJsonPath, "utf8");
   const packageJson = safeJsonParse<{ version?: string }>(content);
   if (packageJson?.version) {
     VERSION = packageJson.version;
@@ -189,7 +188,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const projectPath = resolve(positionals[0] ?? process.cwd());
+  const projectPath = path.resolve(positionals[0] ?? process.cwd());
 
   if (command === "overview") {
     await runOverview(projectPath);
@@ -246,7 +245,7 @@ process.on("uncaughtException", (error) => {
   process.exit(1);
 });
 
-main().catch((error) => {
-  console.error(red("Fatal error:"), error);
+main().catch((error: unknown) => {
+  console.error(red("Fatal error:"), error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

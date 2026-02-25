@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import { tmpdir } from "node:os";
 import {
   loadConfig,
@@ -15,7 +15,7 @@ describe("config loader", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), "project-doctor-test-"));
+    tempDir = await mkdtemp(path.join(tmpdir(), "project-doctor-test-"));
   });
 
   afterEach(async () => {
@@ -49,7 +49,7 @@ describe("config loader", () => {
   describe("loadAndResolveConfig", () => {
     it("should return projectType from config with source 'config'", async () => {
       // Set up a JS project (has package.json which would auto-detect as "js")
-      await writeFile(join(tempDir, "package.json"), '{"name": "test"}');
+      await writeFile(path.join(tempDir, "package.json"), '{"name": "test"}');
 
       // But explicitly set project type to "generic" in config
       await setProjectType(tempDir, "generic");
@@ -63,7 +63,7 @@ describe("config loader", () => {
 
     it("should auto-detect projectType when not in config", async () => {
       // Set up a JS project without explicit config
-      await writeFile(join(tempDir, "package.json"), '{"name": "test"}');
+      await writeFile(path.join(tempDir, "package.json"), '{"name": "test"}');
 
       const resolved = await loadAndResolveConfig(tempDir);
       expect(resolved.projectType).toBe("js");
@@ -112,7 +112,7 @@ describe("config loader", () => {
 
   describe("detectProjectTypeWithCause", () => {
     it("should detect JS project from package.json", async () => {
-      await writeFile(join(tempDir, "package.json"), "{}");
+      await writeFile(path.join(tempDir, "package.json"), "{}");
 
       const result = await detectProjectTypeWithCause(tempDir);
       expect(result.type).toBe("js");
@@ -121,7 +121,7 @@ describe("config loader", () => {
     });
 
     it("should detect JS project from tsconfig.json", async () => {
-      await writeFile(join(tempDir, "tsconfig.json"), "{}");
+      await writeFile(path.join(tempDir, "tsconfig.json"), "{}");
 
       const result = await detectProjectTypeWithCause(tempDir);
       expect(result.type).toBe("js");
@@ -140,7 +140,7 @@ describe("config loader", () => {
   describe("config persistence flow (end-to-end)", () => {
     it("should persist projectType selection across load cycles", async () => {
       // Simulate a JS project
-      await writeFile(join(tempDir, "package.json"), '{"name": "test-app"}');
+      await writeFile(path.join(tempDir, "package.json"), '{"name": "test-app"}');
 
       // Initial load should auto-detect as JS
       let resolved = await loadAndResolveConfig(tempDir);

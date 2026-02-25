@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -47,11 +47,9 @@ export const check: Check<GitignoreContext> = {
 
     // Special handling for .npmrc - only flag if it contains auth tokens
     const npmrcContent = await global.files.readText(".npmrc");
-    if (npmrcContent && npmrcHasAuthTokens(npmrcContent)) {
-      if (!gitignore.ignores(".npmrc")) {
+    if (npmrcContent && npmrcHasAuthTokens(npmrcContent) && !gitignore.ignores(".npmrc")) {
         notIgnored.push(".npmrc (contains auth tokens)");
       }
-    }
 
     if (notIgnored.length > 0) {
       return fail(name, `Secret files not ignored: ${notIgnored.join(", ")}`);
@@ -61,7 +59,7 @@ export const check: Check<GitignoreContext> = {
   fix: {
     description: "Add secret files to .gitignore",
     run: async (global, { gitignore }) => {
-      const gitignorePath = join(global.projectPath, ".gitignore");
+      const gitignorePath = path.join(global.projectPath, ".gitignore");
       const { content, lineEnding } = await readFileWithLineEnding(gitignorePath);
 
       // Find which secret files exist but aren't ignored
@@ -75,11 +73,9 @@ export const check: Check<GitignoreContext> = {
 
       // Special handling for .npmrc with auth tokens
       const npmrcContent = await global.files.readText(".npmrc");
-      if (npmrcContent && npmrcHasAuthTokens(npmrcContent)) {
-        if (gitignore && !gitignore.ignores(".npmrc")) {
+      if (npmrcContent && npmrcHasAuthTokens(npmrcContent) && gitignore && !gitignore.ignores(".npmrc")) {
           toAdd.push(".npmrc");
         }
-      }
 
       if (toAdd.length === 0) {
         return { success: true, message: "No secret files to add" };

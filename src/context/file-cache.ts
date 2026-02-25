@@ -1,5 +1,5 @@
 import { readFile, stat, realpath } from "node:fs/promises";
-import { resolve, relative, isAbsolute } from "node:path";
+import path from "node:path";
 import type { FileCache } from "../types.js";
 import { safeJsonParse } from "../utils/safe-json.js";
 
@@ -17,13 +17,13 @@ async function validateRelativePath(
   relativePath: string,
   resolvedProjectPath?: string,
 ): Promise<string> {
-  const fullPath = resolve(projectPath, relativePath);
-  const resolvedRelative = relative(projectPath, fullPath);
+  const fullPath = path.resolve(projectPath, relativePath);
+  const resolvedRelative = path.relative(projectPath, fullPath);
 
   // Path escapes project directory if:
   // 1. It starts with ".." (goes up from project root)
   // 2. It's an absolute path (e.g., /etc/passwd on Unix, C:\... on Windows)
-  if (resolvedRelative.startsWith("..") || isAbsolute(resolvedRelative)) {
+  if (resolvedRelative.startsWith("..") || path.isAbsolute(resolvedRelative)) {
     throw new Error(`Path traversal not allowed: ${relativePath}`);
   }
 
@@ -68,7 +68,7 @@ export async function createFileCache(projectPath: string): Promise<FileCache> {
 
     try {
       const fullPath = await validateRelativePath(projectPath, relativePath, resolvedProjectPath);
-      const content = await readFile(fullPath, "utf-8");
+      const content = await readFile(fullPath, "utf8");
       textCache.set(relativePath, content);
       return content;
     } catch (error) {

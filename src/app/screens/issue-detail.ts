@@ -6,8 +6,7 @@
 
 import { bold, dim, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, nav } from "../../cli-framework/index.js";
-import { blank, title, muted, text, success, error } from "../../cli-framework/index.js";
+import { action, nav, blank, title, muted, text, success, error  } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
 import { createSkipUntil } from "../../config/types.js";
 import type { AppContext } from "../types.js";
@@ -41,7 +40,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     // No issue - show done
     if (!issue) {
       return [
-        action("done", "Done", async () => {
+        action("done", "Done", () => {
           return "home";
         }),
       ];
@@ -71,8 +70,8 @@ export const issueDetailScreen: Screen<AppContext> = {
             } else {
               error(result.message, 3);
             }
-          } catch (err) {
-            error(err instanceof Error ? err.message : "Unknown error", 3);
+          } catch (error_) {
+            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
           }
           blank();
 
@@ -87,7 +86,7 @@ export const issueDetailScreen: Screen<AppContext> = {
         action(
           "why",
           "Why?",
-          async () => {
+          () => {
             return "why";
           },
           "Learn why this check matters",
@@ -95,16 +94,12 @@ export const issueDetailScreen: Screen<AppContext> = {
       );
     }
 
-    // Next (skip without tracking)
+    // Next (skip without tracking), Mute options, Disable
     opts.push(
-      action("next", "Next", async (c) => {
+      action("next", "Next", (c) => {
         c.stats.skipped++;
         return moveToNextIssue(c);
       }),
-    );
-
-    // Mute for 2 weeks
-    opts.push(
       action("mute-2w", "Mute for 2 weeks", async (c) => {
         try {
           const muteDate = new Date();
@@ -113,17 +108,13 @@ export const issueDetailScreen: Screen<AppContext> = {
           blank();
           muted("Muted for 2 weeks", 3);
           c.stats.muted++;
-        } catch (err) {
-          error(err instanceof Error ? err.message : "Unknown error", 3);
+        } catch (error_) {
+          error(error_ instanceof Error ? error_.message : "Unknown error", 3);
         }
         blank();
 
         return moveToNextIssue(c);
       }),
-    );
-
-    // Mute for 2 months
-    opts.push(
       action("mute-2m", "Mute for 2 months", async (c) => {
         try {
           const muteDate = new Date();
@@ -132,25 +123,21 @@ export const issueDetailScreen: Screen<AppContext> = {
           blank();
           muted("Muted for 2 months", 3);
           c.stats.muted++;
-        } catch (err) {
-          error(err instanceof Error ? err.message : "Unknown error", 3);
+        } catch (error_) {
+          error(error_ instanceof Error ? error_.message : "Unknown error", 3);
         }
         blank();
 
         return moveToNextIssue(c);
       }),
-    );
-
-    // Disable check permanently
-    opts.push(
       action("disable", "Disable", async (c) => {
         try {
           await setCheckSeverity(c.projectPath, issue.name, "off");
           blank();
           muted("Disabled permanently", 3);
           c.stats.disabled++;
-        } catch (err) {
-          error(err instanceof Error ? err.message : "Unknown error", 3);
+        } catch (error_) {
+          error(error_ instanceof Error ? error_.message : "Unknown error", 3);
         }
         blank();
 

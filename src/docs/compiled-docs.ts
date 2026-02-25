@@ -6,15 +6,15 @@
  */
 
 import { readFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Resolve manifest path relative to project root (works from both src/ and dist/)
 // From src/docs or dist/docs, go up 2 levels to project root, then into dist/
-const PROJECT_ROOT = join(__dirname, "..", "..");
-const MANIFEST_PATH = join(PROJECT_ROOT, "dist", "docs-manifest.json");
+const PROJECT_ROOT = path.join(__dirname, "..", "..");
+const MANIFEST_PATH = path.join(PROJECT_ROOT, "dist", "docs-manifest.json");
 
 export interface CompiledCheckDoc {
   name: string;
@@ -44,10 +44,10 @@ export async function loadDocsManifest(): Promise<DocsManifest> {
   }
 
   try {
-    const content = await readFile(MANIFEST_PATH, "utf-8");
+    const content = await readFile(MANIFEST_PATH, "utf8");
     cachedManifest = JSON.parse(content) as DocsManifest;
     return cachedManifest;
-  } catch (error) {
+  } catch {
     // Return empty manifest if file doesn't exist (e.g., during development)
     return {
       generatedAt: "",
@@ -87,7 +87,7 @@ export async function getWhyHtml(checkName: string): Promise<string | null> {
  */
 export async function getAllCompiledDocs(): Promise<CompiledCheckDoc[]> {
   const manifest = await loadDocsManifest();
-  return Object.values(manifest.checks).sort((a, b) =>
+  return Object.values(manifest.checks).toSorted((a, b) =>
     a.name.localeCompare(b.name)
   );
 }

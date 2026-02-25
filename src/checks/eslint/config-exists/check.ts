@@ -8,7 +8,7 @@ export const check: Check<EslintContext> = {
   name,
   description: "Check if ESLint configuration exists",
   tags: ["node", "recommended", "tool:eslint", "effort:medium"],
-  run: async (global, { hasFlatConfig, hasLegacyConfig }) => {
+  run: (global, { hasFlatConfig, hasLegacyConfig }) => {
     if (!global.detected.hasEslint) {
       return skip(name, "ESLint not detected");
     }

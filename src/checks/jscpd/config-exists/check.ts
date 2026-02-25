@@ -8,7 +8,7 @@ export const check: Check<JscpdContext> = {
   name,
   description: "Check if jscpd (copy/paste detector) is configured",
   tags: ["node", "recommended", "tool:jscpd", "effort:low"],
-  run: async (_global, { hasConfig }) => {
+  run: (_global, { hasConfig }) => {
     if (!hasConfig) {
       return fail(name, "No jscpd config found (.jscpd.json or .jscpdrc)");
     }

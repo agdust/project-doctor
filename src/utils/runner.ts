@@ -136,7 +136,7 @@ export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
         // Type assertion needed because checkGroups contains mixed context types
         // but each group's checks are correctly typed for their own context
         const baseResult = await (
-          check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>
+          check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase> | CheckResultBase
         )(global, groupContext);
         const result: CheckResult = { ...baseResult, group: group.name };
         allResults.push(result);
@@ -172,7 +172,7 @@ export async function runAllChecksRaw(
     const groupContext = await group.loadContext(global);
     for (const check of group.checks) {
       const result = await (
-        check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase>
+        check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase> | CheckResultBase
       )(global, groupContext);
       checkResults.push(result);
     }

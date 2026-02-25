@@ -2,15 +2,10 @@ import { bold, dim, green, yellow, red } from "../../utils/colors.js";
 import type { ConfigDiff, RuleValue } from "../types.js";
 
 export function formatDiff(diff: ConfigDiff): string {
-  const lines: string[] = [];
-
-  lines.push("");
-  lines.push(bold("Proposed Changes:"));
-  lines.push("");
+  const lines: string[] = ["", bold("Proposed Changes:"), ""];
 
   if (diff.entries.length === 0) {
-    lines.push(`  ${dim("No changes - configuration is up to date")}`);
-    lines.push("");
+    lines.push(`  ${dim("No changes - configuration is up to date")}`, "");
     return lines.join("\n");
   }
 
@@ -32,9 +27,11 @@ export function formatDiff(diff: ConfigDiff): string {
   if (changed.length > 0) {
     lines.push(`  ${yellow("Changed rules (~)")}`);
     for (const entry of changed.slice(0, 10)) {
-      lines.push(`    ${yellow("~")} ${entry.rule}`);
-      lines.push(`        ${red(`- ${formatValue(entry.current)}`)}`);
-      lines.push(`        ${green(`+ ${formatValue(entry.proposed)}`)}`);
+      lines.push(
+        `    ${yellow("~")} ${entry.rule}`,
+        `        ${red(`- ${formatValue(entry.current)}`)}`,
+        `        ${green(`+ ${formatValue(entry.proposed)}`)}`,
+      );
     }
     if (changed.length > 10) {
       lines.push(`    ${dim(`... and ${changed.length - 10} more`)}`);
@@ -53,13 +50,13 @@ export function formatDiff(diff: ConfigDiff): string {
     lines.push("");
   }
 
-  lines.push(dim("  ─────────────────────────────────────────"));
-  lines.push("");
-  lines.push(`  ${bold("Summary")}`);
-  lines.push(`    ${green(`+${diff.summary.added}`)} added`);
-  lines.push(`    ${yellow(`~${diff.summary.changed}`)} changed`);
-  lines.push(`    ${red(`-${diff.summary.removed}`)} removed`);
-  lines.push("");
+  lines.push(
+    dim("  ─────────────────────────────────────────"), "",
+    `  ${bold("Summary")}`,
+    `    ${green(`+${diff.summary.added}`)} added`,
+    `    ${yellow(`~${diff.summary.changed}`)} changed`,
+    `    ${red(`-${diff.summary.removed}`)} removed`, "",
+  );
 
   return lines.join("\n");
 }

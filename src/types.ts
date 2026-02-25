@@ -18,7 +18,7 @@ export interface FixOption<GroupCtx = unknown> {
   id: string;
   label: string;
   description?: string;
-  run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult>;
+  run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult> | FixResult;
 }
 
 export type CheckResult = CheckResultBase & {
@@ -72,7 +72,7 @@ export interface GlobalContext {
 
 export interface SimpleFix<GroupCtx = unknown> {
   description: string;
-  run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult>;
+  run: (global: GlobalContext, group: GroupCtx) => Promise<FixResult> | FixResult;
 }
 
 export interface FixWithOptions<GroupCtx = unknown> {
@@ -86,11 +86,11 @@ export interface Check<GroupCtx = unknown> {
   name: string;
   description: string;
   tags: CheckTag[];
-  run: (global: GlobalContext, group: GroupCtx) => Promise<CheckResultBase>;
+  run: (global: GlobalContext, group: GroupCtx) => Promise<CheckResultBase> | CheckResultBase;
   fix?: Fix<GroupCtx>;
 }
 
-export type GroupContextLoader<T> = (global: GlobalContext) => Promise<T>;
+export type GroupContextLoader<T> = (global: GlobalContext) => Promise<T> | T;
 
 export interface CheckGroup<GroupCtx = unknown> {
   name: string;

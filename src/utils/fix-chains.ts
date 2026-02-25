@@ -138,7 +138,7 @@ export function sortByChainAndPriority<T extends { name: string }>(
   }
 
   // Sort: first by depth (dependencies first), then by priority
-  return [...checks].sort((a, b) => {
+  return [...checks].toSorted((a, b) => {
     const depthA = depthCache.get(a.name) ?? 0;
     const depthB = depthCache.get(b.name) ?? 0;
 

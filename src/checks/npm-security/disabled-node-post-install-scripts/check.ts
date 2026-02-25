@@ -8,7 +8,7 @@
  */
 
 import { writeFile, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { NpmSecurityContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -19,7 +19,7 @@ export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if npm is configured to ignore post-install scripts",
   tags: ["node", "recommended", "effort:low", "security", "source:lirantal-npm-security"],
-  run: async (_global, { npmrc, npmrcGitignored }) => {
+  run: (_global, { npmrc, npmrcGitignored }) => {
     // Skip if .npmrc is gitignored (user likely stores secrets there and has local-only config)
     if (npmrcGitignored) {
       return skip(name, ".npmrc is gitignored - skipping (local config)");
@@ -41,11 +41,11 @@ export const check: Check<NpmSecurityContext> = {
   fix: {
     description: "Add ignore-scripts=true to .npmrc",
     run: async (global) => {
-      const npmrcPath = join(global.projectPath, ".npmrc");
+      const npmrcPath = path.join(global.projectPath, ".npmrc");
       let content = "";
 
       try {
-        content = await readFile(npmrcPath, "utf-8");
+        content = await readFile(npmrcPath, "utf8");
       } catch {
         // File doesn't exist
       }
@@ -56,7 +56,7 @@ export const check: Check<NpmSecurityContext> = {
       }
       content += "ignore-scripts=true\n";
 
-      await writeFile(npmrcPath, content, "utf-8");
+      await writeFile(npmrcPath, content, "utf8");
 
       return {
         success: true,

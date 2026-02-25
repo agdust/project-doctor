@@ -14,10 +14,10 @@ export function generateComment(ruleName: string): string {
   }
 
   // Truncate at word boundary
-  const truncated = desc.substring(0, MAX_COMMENT_LENGTH - 3);
+  const truncated = desc.slice(0, Math.max(0, MAX_COMMENT_LENGTH - 3));
   const lastSpace = truncated.lastIndexOf(" ");
   if (lastSpace > MAX_COMMENT_LENGTH - 20) {
-    return truncated.substring(0, lastSpace) + "...";
+    return truncated.slice(0, Math.max(0, lastSpace)) + "...";
   }
   return truncated + "...";
 }

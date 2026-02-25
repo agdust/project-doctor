@@ -6,7 +6,7 @@ import { bold, dim, cyan, green, yellow, red } from "../../utils/colors.js";
 
 // Clear terminal screen
 export function clearScreen(): void {
-  process.stdout.write("\x1b[2J\x1b[H");
+  process.stdout.write("\u001B[2J\u001B[H");
 }
 
 // App header
@@ -62,14 +62,18 @@ export function progressBar(percentage: number, width = 20): string {
 export function formatRuleValue(value: unknown): string {
   if (typeof value === "string") {
     switch (value) {
-      case "error":
+      case "error": {
         return red(value);
-      case "warn":
+      }
+      case "warn": {
         return yellow(value);
-      case "off":
+      }
+      case "off": {
         return dim(value);
-      default:
+      }
+      default: {
         return value;
+      }
     }
   }
   return JSON.stringify(value);

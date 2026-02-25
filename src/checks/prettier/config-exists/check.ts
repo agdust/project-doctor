@@ -8,7 +8,7 @@ export const check: Check<PrettierContext> = {
   name,
   description: "Check if Prettier configuration exists",
   tags: ["node", "recommended", "tool:prettier", "effort:medium"],
-  run: async (global, { hasConfig }) => {
+  run: (global, { hasConfig }) => {
     if (!global.detected.hasPrettier) {
       return skip(name, "Prettier not detected");
     }

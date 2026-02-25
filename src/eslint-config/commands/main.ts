@@ -8,7 +8,7 @@
  */
 
 import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import path from "node:path";
 
 import {
   runApp,
@@ -136,27 +136,34 @@ const mainMenuScreen = createScreen<AppContext>("main", "Main Menu", async (ctx,
 
   // Navigate to appropriate screen
   switch (action) {
-    case "analyze":
+    case "analyze": {
       if (existing) app.push(analyzeScreen, { ...ctx, existing });
       break;
-    case "add":
+    }
+    case "add": {
       if (existing) app.push(addPresetScreen, { ...ctx, existing });
       break;
-    case "wizard":
+    }
+    case "wizard": {
       app.push(wizardScreen, { ...ctx, existing });
       break;
-    case "quick":
+    }
+    case "quick": {
       app.push(quickSetupScreen, ctx);
       break;
-    case "presets":
+    }
+    case "presets": {
       app.push(presetsScreen, ctx);
       break;
-    case "rules":
+    }
+    case "rules": {
       app.push(rulesScreen, ctx);
       break;
-    case "current":
+    }
+    case "current": {
       if (existing) app.push(currentConfigScreen, { ...ctx, existing });
       break;
+    }
   }
 });
 
@@ -184,7 +191,7 @@ const analyzeScreen = createScreen<AnalyzeContext>("analyze", "Analyze Config", 
       presetRuleNames.length > 0 ? Math.round((covered.length / presetRuleNames.length) * 100) : 0;
 
     const bar = progressBar(percentage);
-    const pctColor = percentage >= 80 ? color.green : percentage >= 50 ? color.yellow : color.red;
+    const pctColor = percentage >= 80 ? color.green : (percentage >= 50 ? color.yellow : color.red);
 
     console.log(
       `  ${preset.id.padEnd(12)} ${bar} ${pctColor(String(percentage).padStart(3) + "%")}  (${covered.length}/${presetRuleNames.length} rules)`,
@@ -261,7 +268,7 @@ const addPresetScreen = createScreen<AnalyzeContext>("add-preset", "Add Preset",
   const selectedPresets: PresetId[] = ["base", "typescript", presetId];
   const newConfig = buildConfig({ presets: selectedPresets });
   const fileContent = generateConfigFile(newConfig);
-  await writeFile(ctx.existing.filePath, fileContent, "utf-8");
+  await writeFile(ctx.existing.filePath, fileContent, "utf8");
 
   printSuccess(`Updated config with ${preset.name} preset`);
 
@@ -346,8 +353,8 @@ const wizardScreen = createScreen<WizardContext>("wizard", "Configuration Wizard
   console.log(`  Rules: ${color.bold(String(config.rules.length))}`);
   console.log();
 
-  const configPath = join(ctx.projectPath, "eslint.config.js");
-  await writeFile(configPath, fileContent, "utf-8");
+  const configPath = path.join(ctx.projectPath, "eslint.config.js");
+  await writeFile(configPath, fileContent, "utf8");
   printSuccess("Created eslint.config.js");
 
   return BACK;
@@ -376,8 +383,8 @@ const quickSetupScreen = createScreen<AppContext>("quick", "Quick Setup", async 
   console.log(`  Rules: ${color.bold(String(config.rules.length))}`);
   console.log();
 
-  const configPath = join(ctx.projectPath, "eslint.config.js");
-  await writeFile(configPath, fileContent, "utf-8");
+  const configPath = path.join(ctx.projectPath, "eslint.config.js");
+  await writeFile(configPath, fileContent, "utf8");
   printSuccess("Created eslint.config.js");
 
   return BACK;

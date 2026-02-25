@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import path from "node:path";
 import type { Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -19,7 +19,7 @@ export const check: Check<GitignoreContext> = {
   name,
   description: "Check that lockfiles are not ignored by git",
   tags: ["node", "required", "effort:low"],
-  run: async (_global, { raw, patterns }) => {
+  run: (_global, { raw, patterns }) => {
     if (!raw) return skip(name, "No .gitignore");
 
     const ignoredLockfiles = patterns.filter((p) =>
@@ -37,7 +37,7 @@ export const check: Check<GitignoreContext> = {
     run: async (global, { raw }) => {
       if (!raw) return { success: false, message: "No .gitignore found" };
 
-      const gitignorePath = join(global.projectPath, ".gitignore");
+      const gitignorePath = path.join(global.projectPath, ".gitignore");
       const lineEnding = detectLineEnding(raw);
       const lines = raw.split(/\r?\n/);
 

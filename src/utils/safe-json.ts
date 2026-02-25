@@ -19,7 +19,8 @@ function sanitizeObject<T>(obj: T): T {
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(sanitizeObject) as T;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return obj.map((item) => sanitizeObject(item)) as T;
   }
 
   const result: Record<string, unknown> = {};

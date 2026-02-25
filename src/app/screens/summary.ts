@@ -5,8 +5,7 @@
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action } from "../../cli-framework/index.js";
-import { blank, title, text } from "../../cli-framework/index.js";
+import { action, blank, title, text  } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 
 export const summaryScreen: Screen<AppContext> = {
@@ -44,7 +43,7 @@ export const summaryScreen: Screen<AppContext> = {
   },
 
   options: (): Option<AppContext>[] => [
-    action("home", "Back to home", async () => "home"),
-    action("exit", "Exit", async () => "__exit__"),
+    action("home", "Back to home", () => "home"),
+    action("exit", "Exit", () => "__exit__"),
   ],
 };

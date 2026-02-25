@@ -18,7 +18,7 @@ function extractMinMajor(value: string): number | null {
   for (const pattern of patterns) {
     const match = value.match(pattern);
     if (match) {
-      return parseInt(match[1], 10);
+      return Number.parseInt(match[1], 10);
     }
   }
 
@@ -29,7 +29,7 @@ export const check: Check<NpmContext> = {
   name,
   description: "Check if engines.node specifies a modern, supported Node version",
   tags: ["node", "recommended", "effort:medium"],
-  run: async (_global, { engines }) => {
+  run: (_global, { engines }) => {
     if (!engines.node) {
       return skip(name, "No engines.node defined");
     }
