@@ -174,10 +174,7 @@ describe("package-json-dev-deps-in-dependencies", () => {
   it("should respect exceptions from config", async () => {
     const global = makeGlobal({
       checks: {
-        "package-json-dev-deps-in-dependencies": [
-          "error",
-          { exceptions: ["eslint", "prettier"] },
-        ],
+        "package-json-dev-deps-in-dependencies": ["error", { exceptions: ["eslint", "prettier"] }],
       },
     });
     const ctx = makeContext({ eslint: "^8.0.0", prettier: "^3.0.0" });
@@ -203,10 +200,7 @@ describe("package-json-dev-deps-in-dependencies", () => {
   it("should handle exceptions for prefix-matched packages", async () => {
     const global = makeGlobal({
       checks: {
-        "package-json-dev-deps-in-dependencies": [
-          "error",
-          { exceptions: ["@types/node"] },
-        ],
+        "package-json-dev-deps-in-dependencies": ["error", { exceptions: ["@types/node"] }],
       },
     });
     const ctx = makeContext({ "@types/node": "^20.0.0", "@types/express": "^4.0.0" });

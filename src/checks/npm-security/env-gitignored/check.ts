@@ -17,7 +17,13 @@ const name = "npm-security-env-gitignored";
 export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if .env files are ignored in .gitignore",
-  tags: [TAG.universal, TAG.required, TAG.effort.low, TAG.security, TAG.source["lirantal-npm-security"]],
+  tags: [
+    TAG.universal,
+    TAG.required,
+    TAG.effort.low,
+    TAG.security,
+    TAG.source["lirantal-npm-security"],
+  ],
   run: (_global, { gitignoreInstance }) => {
     if (!gitignoreInstance) {
       return fail(name, ".gitignore not found");

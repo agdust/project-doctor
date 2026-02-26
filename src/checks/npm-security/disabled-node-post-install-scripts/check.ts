@@ -19,7 +19,13 @@ const name = "npm-security-disabled-node-post-install-scripts";
 export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if npm is configured to ignore post-install scripts",
-  tags: [TAG.node, TAG.recommended, TAG.effort.low, TAG.security, TAG.source["lirantal-npm-security"]],
+  tags: [
+    TAG.node,
+    TAG.recommended,
+    TAG.effort.low,
+    TAG.security,
+    TAG.source["lirantal-npm-security"],
+  ],
   run: (_global, { npmrc, npmrcGitignored }) => {
     // Skip if .npmrc is gitignored (user likely stores secrets there and has local-only config)
     if (npmrcGitignored) {

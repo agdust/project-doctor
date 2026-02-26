@@ -17,7 +17,13 @@ const name = "npm-security-lockfile-lint";
 export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if lockfile-lint is configured to prevent lockfile injection",
-  tags: [TAG.node, TAG.recommended, TAG.effort.low, TAG.security, TAG.source["lirantal-npm-security"]],
+  tags: [
+    TAG.node,
+    TAG.recommended,
+    TAG.effort.low,
+    TAG.security,
+    TAG.source["lirantal-npm-security"],
+  ],
   run: (_global, { devDependencies, scripts }) => {
     const hasLockfileLint = "lockfile-lint" in devDependencies;
 

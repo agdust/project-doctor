@@ -283,4 +283,3 @@ export async function handleFixCommand(args: string[]): Promise<void> {
   });
   process.exit(exitCode);
 }
-

@@ -34,7 +34,13 @@ const BAD_PATTERNS = [
 export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if CI uses deterministic package installation (npm ci / --frozen-lockfile)",
-  tags: [TAG.node, TAG.recommended, TAG.effort.low, TAG.security, TAG.source["lirantal-npm-security"]],
+  tags: [
+    TAG.node,
+    TAG.recommended,
+    TAG.effort.low,
+    TAG.security,
+    TAG.source["lirantal-npm-security"],
+  ],
   run: (_global, { ciWorkflows }) => {
     if (ciWorkflows.length === 0) {
       return skip(name, "No CI workflow files found");

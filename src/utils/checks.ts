@@ -7,7 +7,12 @@
 import { TAG, type CheckTag, type Check, type FixResult, type GlobalContext } from "../types.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isTagOff, isGroupOff } from "../config/loader.js";
-import { isSkipUntil, parseSkipUntil, isSkipUntilActive, extractSeverity } from "../config/types.js";
+import {
+  isSkipUntil,
+  parseSkipUntil,
+  isSkipUntilActive,
+  extractSeverity,
+} from "../config/types.js";
 import { checkGroups, listChecks } from "../registry.js";
 import { getWhyText as getWhyTextFromDocs } from "../docs/compiled-docs.js";
 

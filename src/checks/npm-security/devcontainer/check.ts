@@ -17,7 +17,13 @@ const name = "npm-security-devcontainer";
 export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if dev container configuration exists",
-  tags: [TAG.universal, TAG.opinionated, TAG.effort.medium, TAG.security, TAG.source["lirantal-npm-security"]],
+  tags: [
+    TAG.universal,
+    TAG.opinionated,
+    TAG.effort.medium,
+    TAG.security,
+    TAG.source["lirantal-npm-security"],
+  ],
   run: (_global, { hasDevcontainer }) => {
     if (hasDevcontainer) {
       return pass(name, "Dev container configuration exists");
