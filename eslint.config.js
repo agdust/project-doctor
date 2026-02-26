@@ -103,6 +103,15 @@ export default defineConfig(
       // Ban nested ternary expressions
       "no-nested-ternary": "error",
 
+      // Ban dynamic import() — use static imports instead
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ImportExpression",
+          message: "Dynamic import() is not allowed. Use static imports instead.",
+        },
+      ],
+
       // Flag TODO/FIXME/HACK comments as warnings
       "no-warning-comments": "warn",
 
