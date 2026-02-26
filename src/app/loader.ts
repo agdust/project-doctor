@@ -19,7 +19,7 @@ import { checkGroups, manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
-import { isSkipUntilActive } from "../config/types.js";
+import { isSkipUntilActive, extractSeverity } from "../config/types.js";
 import type {
   ManualCheckDisplayState,
   AppContext,
@@ -54,11 +54,11 @@ function getManualCheckDisplayState(
   state: ManualCheckState,
 ): ManualCheckDisplayState {
   // Check-level severity
-  const checkSeverity = config.checks[check.name];
+  const checkSeverity = extractSeverity(config.checks[check.name]);
   if (checkSeverity === "off") {
     return "disabled";
   }
-  if (checkSeverity && isSkipUntilActive(checkSeverity)) {
+  if (checkSeverity !== undefined && isSkipUntilActive(checkSeverity)) {
     return "muted";
   }
 

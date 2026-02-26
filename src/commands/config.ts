@@ -8,7 +8,7 @@
 
 import { loadAndResolveConfig, setProjectType } from "../config/loader.js";
 import type { ProjectType, Severity } from "../config/types.js";
-import { isSkipUntil, parseSkipUntil } from "../config/types.js";
+import { isSkipUntil, parseSkipUntil, extractSeverity } from "../config/types.js";
 import { bold, dim, green, yellow, red } from "../utils/colors.js";
 
 function formatSeverity(severity: Severity): string {
@@ -56,7 +56,8 @@ export async function runConfigShow(projectPath: string): Promise<void> {
   const checkEntries = Object.entries(resolved.checks);
   if (checkEntries.length > 0) {
     console.log(bold("Checks:"));
-    for (const [name, severity] of checkEntries) {
+    for (const [name, entry] of checkEntries) {
+      const severity = extractSeverity(entry) ?? "error";
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
     console.log();

@@ -25,6 +25,31 @@ import type { ManualCheckState } from "../types.js";
  */
 export type Severity = "off" | "error" | `skip-until-${string}`;
 
+/** Per-check options (e.g. exceptions list) */
+export type CheckOptions = Record<string, unknown>;
+
+/** A check config entry: plain severity or [severity, options] tuple */
+export type CheckEntry = Severity | [Severity, CheckOptions];
+
+/** Extract the severity from a CheckEntry */
+export function extractSeverity(entry: CheckEntry | undefined): Severity | undefined {
+  if (entry === undefined) {
+    return undefined;
+  }
+  if (Array.isArray(entry)) {
+    return entry[0];
+  }
+  return entry;
+}
+
+/** Extract per-check options from a CheckEntry (undefined if plain severity) */
+export function extractCheckOptions(entry: CheckEntry | undefined): CheckOptions | undefined {
+  if (Array.isArray(entry)) {
+    return entry[1];
+  }
+  return undefined;
+}
+
 /** Check if a severity value is a skip-until pattern */
 export function isSkipUntil(value: string): value is `skip-until-${string}` {
   return value.startsWith("skip-until-");
@@ -104,8 +129,8 @@ export type ProjectType = "js" | "generic";
 export interface Config {
   /** Project type - "js" for JavaScript/Node projects, "generic" for non-JS projects */
   projectType?: ProjectType;
-  /** Per-check configuration */
-  checks?: Record<string, Severity>;
+  /** Per-check configuration (severity or [severity, options] tuple) */
+  checks?: Record<string, CheckEntry>;
   /** Per-tag configuration */
   tags?: Record<string, Severity>;
   /** Per-group configuration */
@@ -129,7 +154,7 @@ export interface ResolvedConfig {
   projectTypeSource: ProjectTypeSource;
   /** If detected, which file triggered detection (or "fallback") */
   projectTypeDetectedFrom?: string;
-  checks: Record<string, Severity>;
+  checks: Record<string, CheckEntry>;
   tags: Record<string, Severity>;
   groups: Record<string, Severity>;
   eslintOverwriteConfirmed: boolean;

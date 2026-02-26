@@ -7,7 +7,7 @@
 import { TAG, type CheckTag, type Check, type FixResult, type GlobalContext } from "../types.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isTagOff, isGroupOff } from "../config/loader.js";
-import { isSkipUntil, parseSkipUntil, isSkipUntilActive } from "../config/types.js";
+import { isSkipUntil, parseSkipUntil, isSkipUntilActive, extractSeverity } from "../config/types.js";
 import { checkGroups, listChecks } from "../registry.js";
 import { getWhyText as getWhyTextFromDocs } from "../docs/compiled-docs.js";
 
@@ -109,8 +109,8 @@ export function getCheckStatus(
   config: ResolvedConfig,
 ): CheckStatusInfo {
   // Check if check is directly configured
-  const checkSeverity = config.checks[checkName];
-  if (checkSeverity) {
+  const checkSeverity = extractSeverity(config.checks[checkName]);
+  if (checkSeverity !== undefined) {
     if (checkSeverity === "off") {
       return { status: "disabled" };
     }
@@ -294,8 +294,9 @@ export async function loadWhyFromDocs(_group: string, checkName: string): Promis
  */
 export function countMutedChecks(config: ResolvedConfig): number {
   let count = 0;
-  for (const severity of Object.values(config.checks)) {
-    if (isSkipUntil(severity) && isSkipUntilActive(severity)) {
+  for (const entry of Object.values(config.checks)) {
+    const severity = extractSeverity(entry);
+    if (severity !== undefined && isSkipUntil(severity) && isSkipUntilActive(severity)) {
       count++;
     }
   }

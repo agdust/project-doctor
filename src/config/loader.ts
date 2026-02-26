@@ -3,7 +3,7 @@ import path from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType } from "./types.js";
 import type { ManualCheckState } from "../types.js";
-import { DEFAULT_CONFIG, isSkipUntilActive } from "./types.js";
+import { DEFAULT_CONFIG, isSkipUntilActive, extractSeverity } from "./types.js";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "./constants.js";
 import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
 import { atomicWriteFile } from "../utils/safe-fs.js";
@@ -209,7 +209,7 @@ function isSeverityOff(value: Severity | undefined): boolean {
 
 /** Check if a check is disabled */
 export function isCheckOff(config: ResolvedConfig, checkName: string): boolean {
-  return isSeverityOff(config.checks[checkName]);
+  return isSeverityOff(extractSeverity(config.checks[checkName]));
 }
 
 /** Check if a tag is disabled */
