@@ -10,7 +10,8 @@
     "rootDir": "./src",
     "declaration": true,
     "verbatimModuleSyntax": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "erasableSyntaxOnly": true
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts", "src/test/**/*"]
