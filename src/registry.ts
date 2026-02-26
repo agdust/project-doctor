@@ -23,7 +23,7 @@ import {
   loadContext as loadEditorconfigContext,
   checks as editorconfigChecks,
 } from "./checks/editorconfig/index.js";
-import { loadContext as loadNpmContext, checks as npmChecks } from "./checks/npm/index.js";
+import { loadContext as loadNodeVersionContext, checks as nodeVersionChecks } from "./checks/node-version/index.js";
 import { loadContext as loadDocsContext, checks as docsChecks } from "./checks/docs/index.js";
 import { loadContext as loadDepsContext, checks as depsChecks } from "./checks/deps/index.js";
 import { loadContext as loadEnvContext, checks as envChecks } from "./checks/env/index.js";
@@ -55,7 +55,7 @@ export const checkGroups = [
   createGroup("prettier", loadPrettierContext, prettierChecks),
   createGroup("jscpd", loadJscpdContext, jscpdChecks),
   createGroup("editorconfig", loadEditorconfigContext, editorconfigChecks),
-  createGroup("npm", loadNpmContext, npmChecks),
+  createGroup("node-version", loadNodeVersionContext, nodeVersionChecks),
   createGroup("docs", loadDocsContext, docsChecks),
   createGroup("deps", loadDepsContext, depsChecks),
   createGroup("env", loadEnvContext, envChecks),

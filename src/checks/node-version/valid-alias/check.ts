@@ -1,12 +1,12 @@
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmContext } from "../context.js";
+import type { NodeVersionContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { ALL_LTS_CODENAMES } from "../constants.js";
 
-const name = "npm-nvmrc-valid-alias";
+const name = "node-version-nvmrc-valid-alias";
 
-export const check: Check<NpmContext> = {
+export const check: Check<NodeVersionContext> = {
   name,
   description: "Check if .nvmrc uses valid LTS codename",
   tags: [TAG.node, TAG.recommended, TAG.effort.low],

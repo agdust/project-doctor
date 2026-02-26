@@ -2,13 +2,13 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmContext } from "../context.js";
+import type { NodeVersionContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
 import { CURRENT_LTS_MAJOR } from "../constants.js";
 
-const name = "npm-nvmrc-exists";
+const name = "node-version-nvmrc-exists";
 
-export const check: Check<NpmContext> = {
+export const check: Check<NodeVersionContext> = {
   name,
   description: "Check if .nvmrc file exists",
   tags: [TAG.node, TAG.recommended, TAG.effort.low],

@@ -1,9 +1,9 @@
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmContext } from "../context.js";
+import type { NodeVersionContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
-const name = "npm-engines-valid";
+const name = "node-version-engines-valid";
 
 /**
  * Valid semver range patterns for engines.node field.
@@ -39,7 +39,7 @@ function isValidEnginesNode(value: string): boolean {
   return VALID_PATTERNS.some((pattern) => pattern.test(trimmed));
 }
 
-export const check: Check<NpmContext> = {
+export const check: Check<NodeVersionContext> = {
   name,
   description: "Check if engines.node has valid semver range format",
   tags: [TAG.node, TAG.recommended, TAG.effort.low],

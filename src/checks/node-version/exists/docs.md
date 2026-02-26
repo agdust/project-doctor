@@ -1,4 +1,4 @@
-# nvmrc-exists
+# node-version-nvmrc-exists
 
 Checks that an `.nvmrc` file exists.
 

@@ -1,4 +1,4 @@
-# dockerfile-small-base-image
+# docker-small-base-image
 
 Checks that the Dockerfile uses a small, efficient base image instead of large general-purpose images.
 

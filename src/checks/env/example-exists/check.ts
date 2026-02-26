@@ -9,7 +9,7 @@ const name = "env-example-exists";
 
 export const check: Check<EnvContext> = {
   name,
-  description: "Create .env.example when .env exists (documents required variables)",
+  description: "Check if .env.example exists when .env is present",
   tags: [TAG.universal, TAG.recommended, TAG.effort.low],
   run: (_global, ctx) => {
     // Only relevant if .env exists

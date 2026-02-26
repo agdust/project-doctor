@@ -6,7 +6,7 @@ import { check as exists } from "./exists/check.js";
 import { check as validFormat } from "./valid-format/check.js";
 import { check as modernVersion } from "./modern-version/check.js";
 
-describe("npm checks", () => {
+describe("node-version checks", () => {
   describe("exists", () => {
     it("should pass when .nvmrc exists", async () => {
       const global = await createGlobalContext(fixtures.healthy);

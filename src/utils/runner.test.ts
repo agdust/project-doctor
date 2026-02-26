@@ -16,9 +16,8 @@ describe("runner", () => {
         "tsconfig",
         "eslint",
         "prettier",
-        "npm",
+        "node-version",
         "deps",
-        "testing",
         "bundle-size",
         "jscpd",
       ];

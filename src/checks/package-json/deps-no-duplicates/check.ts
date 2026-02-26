@@ -7,7 +7,7 @@ const name = "package-json-deps-no-duplicates";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check that no package is in both dependencies and devDependencies",
-  tags: [TAG.node, TAG.recommended, TAG.effort.medium],
+  tags: [TAG.node, TAG.required, TAG.effort.medium],
   run: (_global, { parsed }) => {
     if (!parsed) {
       return skip(name, "No package.json");

@@ -18,7 +18,7 @@ export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if dev container configuration exists",
   tags: [
-    TAG.universal,
+    TAG.node,
     TAG.opinionated,
     TAG.effort.medium,
     TAG.security,

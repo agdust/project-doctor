@@ -1,10 +1,10 @@
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmContext } from "../context.js";
+import type { NodeVersionContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { MIN_SUPPORTED_MAJOR, LTS_VERSIONS } from "../constants.js";
 
-const name = "npm-engines-modern";
+const name = "node-version-engines-modern";
 
 // Extract the minimum major version from an engines.node range
 function extractMinMajor(value: string): number | null {
@@ -26,7 +26,7 @@ function extractMinMajor(value: string): number | null {
   return null;
 }
 
-export const check: Check<NpmContext> = {
+export const check: Check<NodeVersionContext> = {
   name,
   description: "Check if engines.node specifies a modern, supported Node version",
   tags: [TAG.node, TAG.recommended, TAG.effort.medium],

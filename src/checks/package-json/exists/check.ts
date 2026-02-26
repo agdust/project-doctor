@@ -7,7 +7,7 @@ const name = "package-json-exists";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json exists",
-  tags: [TAG.node, TAG.required, TAG.effort.medium],
+  tags: [TAG.node, TAG.required, TAG.effort.low],
   run: (_global, { raw }) => {
     if (raw === null) {
       return fail(name, "package.json not found");

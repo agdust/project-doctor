@@ -15,8 +15,18 @@ describe("jscpd checks", () => {
   });
 
   describe("configExists", () => {
-    it("should fail when config is missing", async () => {
+    it("should skip when jscpd is not detected", async () => {
       const global = await createGlobalContext(fixtures.empty);
+      global.detected.hasJscpd = false;
+      const ctx = await loadContext(global);
+      const result = await configExists.run(global, ctx);
+
+      expect(result.status).toBe("skip");
+    });
+
+    it("should fail when config is missing but jscpd is detected", async () => {
+      const global = await createGlobalContext(fixtures.empty);
+      global.detected.hasJscpd = true;
       const ctx = await loadContext(global);
       const result = await configExists.run(global, ctx);
 
@@ -25,6 +35,7 @@ describe("jscpd checks", () => {
 
     it("should pass when config exists", async () => {
       const global = await createGlobalContext(fixtures.empty);
+      global.detected.hasJscpd = true;
       const ctx = { hasConfig: true };
       const result = await configExists.run(global, ctx);
 

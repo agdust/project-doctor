@@ -3,7 +3,7 @@ import type { Check } from "../../../types.js";
 import type { PrettierContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
-const name = "prettierrc-exists";
+const name = "prettier-config-exists";
 
 export const check: Check<PrettierContext> = {
   name,

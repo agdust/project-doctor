@@ -18,7 +18,7 @@ const LOCKFILE_PATTERNS = [
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check that lockfiles are not ignored by git",
-  tags: [TAG.node, TAG.required, TAG.effort.low],
+  tags: [TAG.node, TAG.required, TAG.effort.low, TAG.security],
   run: (_global, { raw, patterns }) => {
     if (raw === null) {
       return skip(name, "No .gitignore");

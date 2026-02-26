@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { check as dockerfileSmallBaseImage } from "./dockerfile-small-base-image/check.js";
+import { check as dockerfileSmallBaseImage } from "./small-base-image/check.js";
 import type { GlobalContext } from "../../types.js";
 import type { DockerContext } from "./context.js";
 

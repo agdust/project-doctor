@@ -1,4 +1,4 @@
-# nvmrc-valid-format
+# node-version-nvmrc-valid-format
 
 Checks that `.nvmrc` contains a valid Node version format.
 

@@ -1,4 +1,4 @@
-# prettierrc-exists
+# prettier-config-exists
 
 Checks that a Prettier configuration file exists.
 

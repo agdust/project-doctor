@@ -3,7 +3,7 @@ import type { Check } from "../../../types.js";
 import type { DockerContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
-const name = "dockerfile-small-base-image";
+const name = "docker-small-base-image";
 
 /**
  * Large base images that should be avoided

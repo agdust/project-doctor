@@ -1,11 +1,11 @@
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmContext } from "../context.js";
+import type { NodeVersionContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
-const name = "npm-nvmrc-valid-format";
+const name = "node-version-nvmrc-valid-format";
 
-export const check: Check<NpmContext> = {
+export const check: Check<NodeVersionContext> = {
   name,
   description: "Check if .nvmrc has valid Node version format",
   tags: [TAG.node, TAG.recommended, TAG.effort.low],

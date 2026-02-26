@@ -19,10 +19,10 @@ export const fixChains: string[][] = [
   ["knip-installed", "knip-config"],
 
   // nvmrc: create file → valid format → modern version
-  ["npm-nvmrc-exists", "npm-nvmrc-valid-format", "npm-nvmrc-modern-version"],
+  ["node-version-nvmrc-exists", "node-version-nvmrc-valid-format", "node-version-nvmrc-modern-version"],
 
   // engines: add field → valid format → modern version
-  ["package-json-has-engines", "npm-engines-valid", "npm-engines-modern"],
+  ["package-json-has-engines", "node-version-engines-valid", "node-version-engines-modern"],
 
   // editorconfig: create file → add settings
   ["editorconfig-exists", "editorconfig-has-root"],
@@ -37,7 +37,7 @@ export const fixChains: string[][] = [
   ["env-example-exists", "env-example-not-empty"],
 
   // prettier: config → ignore (optional dependency)
-  ["prettierrc-exists", "prettier-ignore-exists"],
+  ["prettier-config-exists", "prettier-ignore-exists"],
 
   // ESLint: config → flat config migration
   ["eslint-config-exists", "eslint-flat-config"],

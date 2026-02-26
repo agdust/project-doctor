@@ -1,4 +1,4 @@
-# nvmrc-modern-version
+# node-version-nvmrc-modern-version
 
 Checks that `.nvmrc` specifies a modern, supported Node.js version.
 

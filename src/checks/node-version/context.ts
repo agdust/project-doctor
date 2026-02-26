@@ -7,7 +7,7 @@ interface PackageJson {
   };
 }
 
-export interface NpmContext {
+export interface NodeVersionContext {
   nvmrc: {
     raw: string | null;
     version: string | null;
@@ -18,7 +18,7 @@ export interface NpmContext {
   };
 }
 
-export async function loadContext(global: GlobalContext): Promise<NpmContext> {
+export async function loadContext(global: GlobalContext): Promise<NodeVersionContext> {
   // Load .nvmrc
   const nvmrcRaw = await global.files.readText(".nvmrc");
   const nvmrc = {

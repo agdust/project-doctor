@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmContext } from "../context.js";
+import type { NodeVersionContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import {
   LTS_VERSIONS,
@@ -11,9 +11,9 @@ import {
   parseMajorVersion,
 } from "../constants.js";
 
-const name = "npm-nvmrc-modern-version";
+const name = "node-version-nvmrc-modern-version";
 
-export const check: Check<NpmContext> = {
+export const check: Check<NodeVersionContext> = {
   name,
   description: "Check if .nvmrc specifies a modern, supported Node version",
   tags: [TAG.node, TAG.recommended, TAG.effort.low],
