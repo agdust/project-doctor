@@ -71,20 +71,20 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@eslint/js": "^9.39.2",
     "@inquirer/core": "^11.1.0",
     "@inquirer/prompts": "^8.1.0",
-    "@stylistic/eslint-plugin": "^5.8.0",
-    "eslint": "^9.39.2",
     "ignore": "^7.0.5",
     "json5": "^2.2.3",
-    "picocolors": "^1.1.1",
-    "typescript-eslint": "^8.50.0"
+    "picocolors": "^1.1.1"
   },
   "devDependencies": {
     "@size-limit/file": "^12.0.0",
+    "typescript-eslint": "^8.50.0",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^4.0.18",
+    "@stylistic/eslint-plugin": "^5.8.0",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-n": "^17.24.0",

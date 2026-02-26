@@ -1,8 +1,5 @@
 // LTS versions with their codenames and EOL dates
 // https://nodejs.org/en/about/previous-releases
-//
-// TODO: These values are hardcoded and need manual updates when Node.js releases new LTS versions.
-// Consider fetching from https://nodejs.org/dist/index.json or using a package like `node-releases`.
 export const LTS_VERSIONS = [
   { major: 20, codename: "iron", eol: "2026-04-30" },
   { major: 22, codename: "jod", eol: "2027-04-30" },

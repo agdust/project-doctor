@@ -13,6 +13,7 @@ interface DevOnlyPackage {
 /** Packages that should almost always be in devDependencies */
 const DEV_ONLY_PACKAGES: Record<string, DevOnlyPackage> = {
   eslint: { reason: "Linter — only needed during development" },
+  "@stylistic/eslint-plugin": { reason: "ESlint plugin — only needed during development" },
   prettier: { reason: "Code formatter — only needed during development" },
   typescript: { reason: "TypeScript compiler — only needed during build" },
   "ts-node": { reason: "TypeScript runner — only needed during development" },

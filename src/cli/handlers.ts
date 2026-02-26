@@ -3,7 +3,6 @@
  */
 
 import { parseArgs } from "node:util";
-import path from "node:path";
 import { runConfigShow, runConfigSetProjectType, runConfigShowJson } from "../commands/config.js";
 import { runDisableCheck, runDisableTag, runDisableGroup } from "../commands/disable.js";
 import { runEnableCheck, runEnableTag, runEnableGroup } from "../commands/enable.js";
@@ -11,14 +10,9 @@ import { runMute, runUnmute } from "../commands/mute.js";
 import { runList } from "../commands/list.js";
 import { runInfo } from "../commands/info.js";
 import { runFixList, runFixAll, runFixOne } from "../commands/fix.js";
-import { runEslintInit } from "../eslint-config/commands/init.js";
-import { runEslintShow } from "../eslint-config/commands/show.js";
-import { runEslintAdd } from "../eslint-config/commands/add.js";
-import { runEslintDiff } from "../eslint-config/commands/diff.js";
-import { runMainWizard } from "../eslint-config/commands/main.js";
 import { red } from "../utils/colors.js";
 import { getProjectPath, isPath } from "./utils.js";
-import { printEslintHelp, printFixHelp } from "./help.js";
+import { printFixHelp } from "./help.js";
 
 type ConfigTargetType = "check" | "tag" | "group";
 
@@ -290,73 +284,3 @@ export async function handleFixCommand(args: string[]): Promise<void> {
   process.exit(exitCode);
 }
 
-export async function handleEslintCommand(args: string[]): Promise<void> {
-  const firstArg = args[0];
-
-  // Determine subcommand and project path
-  let subcommand: string | undefined;
-  let projectPath: string;
-
-  if (isPath(firstArg)) {
-    // First arg is a path, no subcommand - launch wizard
-    subcommand = undefined;
-    projectPath = path.resolve(firstArg);
-  } else {
-    subcommand = firstArg;
-    args.shift(); // remove subcommand
-    projectPath = path.resolve(args.find((a) => !a.startsWith("-")) ?? process.cwd());
-  }
-
-  const hasWizard = args.includes("--wizard") || args.includes("-w");
-  const hasDryRun = args.includes("--dry-run");
-  const hasForce = args.includes("--force");
-  const hasPresetsFlag = args.includes("--presets");
-  const hasRulesFlag = args.includes("--rules");
-
-  const presetsArg = args.find((a, i) => args[i - 1] === "--presets");
-
-  switch (subcommand) {
-    case "init": {
-      await runEslintInit(projectPath, {
-        wizard: hasWizard,
-        presets: presetsArg,
-        dryRun: hasDryRun,
-        force: hasForce,
-      });
-      return;
-    }
-    case "add": {
-      await runEslintAdd(projectPath, args[0] ?? "");
-      return;
-    }
-    case "show": {
-      await runEslintShow(projectPath, {
-        presets: hasPresetsFlag,
-        rules: hasRulesFlag,
-      });
-      return;
-    }
-    case "diff": {
-      await runEslintDiff(projectPath, { presets: presetsArg });
-      return;
-    }
-    case "help":
-    case "-h":
-    case "--help": {
-      printEslintHelp();
-      return;
-    }
-    case undefined:
-    case "": {
-      // No subcommand - launch interactive wizard
-      await runMainWizard(projectPath);
-      return;
-    }
-    default: {
-      console.log(red(`Unknown eslint subcommand: ${subcommand}`));
-      console.log();
-      printEslintHelp();
-      return;
-    }
-  }
-}

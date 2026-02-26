@@ -106,52 +106,6 @@ Tags:
 `);
 }
 
-export function printEslintHelp(): void {
-  console.log(`
-project-doctor eslint - ESLint configuration builder
-
-Usage:
-  project-doctor eslint [path]                    Interactive wizard
-  project-doctor eslint init [options] [path]
-  project-doctor eslint add <preset> [path]
-  project-doctor eslint show [options] [path]
-  project-doctor eslint diff [options] [path]
-
-Commands:
-  (no command)   Launch interactive wizard
-  init           Generate new ESLint flat config
-  add            Add a preset to existing config
-  show           Show available presets and current config
-  diff           Show diff between current and proposed config
-
-Init Options:
-  -w, --wizard     Interactive wizard mode
-  --presets <list> Comma-separated preset list (e.g. base,typescript,strict)
-  --dry-run        Show changes without applying
-  --force          Overwrite existing config without prompting
-
-Show Options:
-  --presets        List available presets
-  --rules          Show rule database statistics
-
-Presets:
-  base         Essential error prevention (JS)
-  typescript   TypeScript-specific rules
-  strict       Stricter than recommended
-  style        Stylistic rules (@stylistic)
-  security     Security-focused rules
-  performance  Performance-focused rules
-
-Examples:
-  project-doctor eslint init --wizard
-  project-doctor eslint init --presets base,typescript
-  project-doctor eslint add strict
-  project-doctor eslint show --presets
-  project-doctor eslint show --rules
-  project-doctor eslint diff
-`);
-}
-
 export function printFixHelp(): void {
   console.log(`
 project-doctor fix - Fix issues
