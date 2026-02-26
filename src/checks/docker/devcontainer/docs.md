@@ -1,4 +1,4 @@
-# npm-security-devcontainer
+# docker-devcontainer
 
 Checks for dev container configuration for isolated development.
 

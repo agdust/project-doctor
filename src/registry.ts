@@ -32,10 +32,6 @@ import {
   checks as bundleSizeChecks,
 } from "./checks/bundle-size/index.js";
 import { loadContext as loadDockerContext, checks as dockerChecks } from "./checks/docker/index.js";
-import {
-  loadContext as loadNpmSecurityContext,
-  checks as npmSecurityChecks,
-} from "./checks/npm-security/index.js";
 import { manualChecks as manualChecksList } from "./checks/manual/index.js";
 
 function createGroup<T>(
@@ -61,7 +57,6 @@ export const checkGroups = [
   createGroup("env", loadEnvContext, envChecks),
   createGroup("bundle-size", loadBundleSizeContext, bundleSizeChecks),
   createGroup("docker", loadDockerContext, dockerChecks),
-  createGroup("npm-security", loadNpmSecurityContext, npmSecurityChecks),
 ];
 
 export const manualChecks: ManualCheck[] = manualChecksList;

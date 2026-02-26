@@ -1,5 +1,5 @@
 /**
- * Check: ci-uses-lockfile
+ * Check: git-ci-lockfile
  *
  * Verifies that CI workflows use deterministic installation commands
  * (npm ci, --frozen-lockfile) instead of npm install.
@@ -9,10 +9,10 @@
 
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmSecurityContext } from "../context.js";
+import type { GitContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
-const name = "npm-security-ci-lockfile";
+const name = "git-ci-lockfile";
 
 // Patterns for deterministic installation commands
 const GOOD_PATTERNS = [
@@ -31,7 +31,7 @@ const BAD_PATTERNS = [
   /npm\s+i\b(?!\s+--)/, // npm i without flags
 ];
 
-export const check: Check<NpmSecurityContext> = {
+export const check: Check<GitContext> = {
   name,
   description: "Check if CI uses deterministic package installation (npm ci / --frozen-lockfile)",
   tags: [

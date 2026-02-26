@@ -30,7 +30,6 @@ export const JS_GROUPS = new Set([
   "deps",
   "bundle-size",
   "jscpd",
-  "npm-security",
 ]);
 
 /**

@@ -1,4 +1,4 @@
-# npm-security-disabled-node-post-install-scripts
+# deps-disabled-post-install-scripts
 
 Checks that npm is configured to disable post-install scripts.
 

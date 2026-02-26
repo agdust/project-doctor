@@ -1,4 +1,4 @@
-# npm-security-lockfile-lint
+# deps-lockfile-lint
 
 Checks that lockfile-lint is configured to prevent lockfile injection attacks.
 

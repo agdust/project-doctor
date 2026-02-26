@@ -1,5 +1,5 @@
 /**
- * Check: lockfile-lint-configured
+ * Check: deps-lockfile-lint
  *
  * Verifies that lockfile-lint is set up to prevent lockfile injection attacks.
  * Attackers can modify lockfiles in PRs to inject compromised packages.
@@ -9,12 +9,12 @@
 
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmSecurityContext } from "../context.js";
+import type { DepsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
 
-const name = "npm-security-lockfile-lint";
+const name = "deps-lockfile-lint";
 
-export const check: Check<NpmSecurityContext> = {
+export const check: Check<DepsContext> = {
   name,
   description: "Check if lockfile-lint is configured to prevent lockfile injection",
   tags: [

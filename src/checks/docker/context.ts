@@ -5,6 +5,8 @@ export interface DockerContext {
   baseImage: string | null;
   /** The tag, or null if no tag specified (implies :latest) or using digest */
   baseImageTag: string | null;
+  /** Whether .devcontainer/devcontainer.json exists */
+  hasDevcontainer: boolean;
 }
 
 /**
@@ -79,5 +81,7 @@ export async function loadContext(global: GlobalContext): Promise<DockerContext>
     }
   }
 
-  return { dockerfile, baseImage, baseImageTag };
+  const devcontainerJson = await global.files.readText(".devcontainer/devcontainer.json");
+
+  return { dockerfile, baseImage, baseImageTag, hasDevcontainer: devcontainerJson !== null };
 }

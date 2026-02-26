@@ -1,4 +1,4 @@
-# npm-security-ci-lockfile
+# git-ci-lockfile
 
 Checks that CI workflows use deterministic package installation.
 

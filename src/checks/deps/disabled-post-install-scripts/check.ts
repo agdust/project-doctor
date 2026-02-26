@@ -1,5 +1,5 @@
 /**
- * Check: npm-security-disabled-node-post-install-scripts
+ * Check: deps-disabled-post-install-scripts
  *
  * Verifies that npm is configured to ignore post-install scripts by default.
  * This prevents arbitrary code execution during package installation.
@@ -11,12 +11,12 @@ import { writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmSecurityContext } from "../context.js";
+import type { DepsContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
-const name = "npm-security-disabled-node-post-install-scripts";
+const name = "deps-disabled-post-install-scripts";
 
-export const check: Check<NpmSecurityContext> = {
+export const check: Check<DepsContext> = {
   name,
   description: "Check if npm is configured to ignore post-install scripts",
   tags: [

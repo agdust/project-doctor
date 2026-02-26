@@ -1,5 +1,5 @@
 /**
- * Check: devcontainer-exists
+ * Check: docker-devcontainer
  *
  * Verifies that a dev container configuration exists.
  * Dev containers isolate development environments, limiting malware blast radius.
@@ -9,12 +9,12 @@
 
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { NpmSecurityContext } from "../context.js";
+import type { DockerContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
 
-const name = "npm-security-devcontainer";
+const name = "docker-devcontainer";
 
-export const check: Check<NpmSecurityContext> = {
+export const check: Check<DockerContext> = {
   name,
   description: "Check if dev container configuration exists",
   tags: [
