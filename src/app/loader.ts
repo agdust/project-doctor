@@ -5,14 +5,15 @@
  */
 
 import path from "node:path";
-import type {
-  CheckResult,
-  CheckResultBase,
-  GlobalContext,
-  CheckTag,
-  FixResult,
-  ManualCheck,
-  ManualCheckState,
+import {
+  TAG,
+  type CheckResult,
+  type CheckResultBase,
+  type GlobalContext,
+  type CheckTag,
+  type FixResult,
+  type ManualCheck,
+  type ManualCheckState,
 } from "../types.js";
 import { checkGroups, manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
@@ -132,9 +133,9 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
       // Track failed checks
       if (baseResult.status === "fail") {
         // Count by category
-        if (check.tags.includes("required")) {
+        if (check.tags.includes(TAG.required)) {
           failedByCategory.required++;
-        } else if (check.tags.includes("recommended")) {
+        } else if (check.tags.includes(TAG.recommended)) {
           failedByCategory.recommended++;
         } else {
           failedByCategory.opinionated++;

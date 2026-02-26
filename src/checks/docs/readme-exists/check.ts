@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -10,7 +11,7 @@ const name = "readme-exists";
 export const check: Check<DocsContext> = {
   name,
   description: "Check if README.md exists",
-  tags: ["universal", "required", "effort:low"],
+  tags: [TAG.universal, TAG.required, TAG.effort.low],
   run: (_global, { readme }) => {
     if (readme === null) {
       return fail(name, "README.md not found");

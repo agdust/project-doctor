@@ -1,3 +1,4 @@
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { TsConfigContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -8,7 +9,7 @@ const name = "tsconfig-no-any-enabled";
 export const check: Check<TsConfigContext> = {
   name,
   description: "Check if noImplicitAny is enabled",
-  tags: ["typescript", "opinionated", "effort:high"],
+  tags: [TAG.typescript, TAG.opinionated, TAG.effort.high],
   run: (_global, { parsed }) => {
     if (!parsed) {
       return skip(name, "No tsconfig.json");

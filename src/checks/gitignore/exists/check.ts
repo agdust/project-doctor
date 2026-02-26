@@ -1,6 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
 
@@ -17,7 +17,7 @@ dist/
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check if .gitignore exists",
-  tags: ["universal", "required", "effort:low"],
+  tags: [TAG.universal, TAG.required, TAG.effort.low],
   run: (_global, { raw }) => {
     if (raw === null) {
       return fail(name, ".gitignore not found");

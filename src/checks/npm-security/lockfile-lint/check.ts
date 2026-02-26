@@ -7,6 +7,7 @@
  * Source: https://github.com/lirantal/npm-security-best-practices
  */
 
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { NpmSecurityContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -16,7 +17,7 @@ const name = "npm-security-lockfile-lint";
 export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if lockfile-lint is configured to prevent lockfile injection",
-  tags: ["node", "recommended", "effort:low", "security", "source:lirantal-npm-security"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.low, TAG.security, TAG.source["lirantal-npm-security"]],
   run: (_global, { devDependencies, scripts }) => {
     const hasLockfileLint = "lockfile-lint" in devDependencies;
 

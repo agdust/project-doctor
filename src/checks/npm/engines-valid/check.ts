@@ -1,3 +1,4 @@
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { NpmContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -41,7 +42,7 @@ function isValidEnginesNode(value: string): boolean {
 export const check: Check<NpmContext> = {
   name,
   description: "Check if engines.node has valid semver range format",
-  tags: ["node", "recommended", "effort:low"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.low],
   run: (_global, { engines }) => {
     if (engines.node === null) {
       return skip(name, "No engines.node defined");

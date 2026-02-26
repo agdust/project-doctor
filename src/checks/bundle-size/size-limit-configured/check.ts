@@ -1,3 +1,4 @@
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { BundleSizeContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -7,7 +8,7 @@ const name = "size-limit-configured";
 export const check: Check<BundleSizeContext> = {
   name,
   description: "Check if size-limit has limits configured",
-  tags: ["node", "recommended", "tool:size-limit", "effort:medium"],
+  tags: [TAG.node, TAG.recommended, TAG.tool["size-limit"], TAG.effort.medium],
   run: (global, ctx) => {
     if (!global.detected.hasSizeLimit) {
       return skip(name, "size-limit not installed");

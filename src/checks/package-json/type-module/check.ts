@@ -1,4 +1,4 @@
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { readJson, writeJson } from "../../../utils/json-editor.js";
@@ -8,7 +8,7 @@ const name = "package-json-type-module";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has type: module for ESM",
-  tags: ["node", "recommended", "effort:medium"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.medium],
   run: (_global, { parsed }) => {
     if (!parsed) {
       return skip(name, "No package.json");

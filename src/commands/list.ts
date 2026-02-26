@@ -11,6 +11,7 @@
  *   --format <format>      Output format: table (default), json, names
  */
 
+import type { CheckTag } from "../types.js";
 import { loadAndResolveConfig } from "../config/loader.js";
 import { listChecks } from "../registry.js";
 import { getCheckStatus, buildFixableMap, type CheckStatus } from "../utils/checks.js";
@@ -27,7 +28,7 @@ interface CheckListInfo {
   name: string;
   group: string;
   description: string;
-  tags: string[];
+  tags: CheckTag[];
   status: CheckStatus;
   mutedUntil?: string;
   fixable: boolean;
@@ -47,7 +48,7 @@ function formatStatus(status: CheckStatus, mutedUntil?: string): string {
   }
 }
 
-function formatTags(tags: string[]): string {
+function formatTags(tags: CheckTag[]): string {
   return tags.map((t) => dim(t)).join(", ");
 }
 

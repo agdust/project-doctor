@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { EnvContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -9,7 +10,7 @@ const name = "env-example-exists";
 export const check: Check<EnvContext> = {
   name,
   description: "Create .env.example when .env exists (documents required variables)",
-  tags: ["universal", "recommended", "effort:low"],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.low],
   run: (_global, ctx) => {
     // Only relevant if .env exists
     if (!ctx.envExists) {

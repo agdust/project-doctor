@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
@@ -9,7 +9,7 @@ const name = "gitignore-has-env";
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check if .env files are ignored",
-  tags: ["universal", "required", "effort:low"],
+  tags: [TAG.universal, TAG.required, TAG.effort.low],
   run: (_global, { raw, gitignore }) => {
     if (raw === null || gitignore === null) {
       return skip(name, "No .gitignore");

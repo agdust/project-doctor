@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { EditorconfigContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -15,7 +16,7 @@ indent_size = 2
 export const check: Check<EditorconfigContext> = {
   name,
   description: "Check if .editorconfig has indent settings",
-  tags: ["universal", "recommended", "effort:low"],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.low],
   run: (_global, { raw, hasIndent }) => {
     if (raw === null) {
       return skip(name, "No .editorconfig");

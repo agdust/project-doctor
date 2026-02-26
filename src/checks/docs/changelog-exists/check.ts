@@ -1,5 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -25,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 export const check: Check<DocsContext> = {
   name,
   description: "Check if CHANGELOG.md exists",
-  tags: ["universal", "recommended", "effort:low"],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.low],
   run: (_global, { changelog }) => {
     if (changelog === null) {
       return fail(name, "CHANGELOG.md not found");

@@ -8,7 +8,7 @@
  *   --format <format>   Output format: text (default), json
  */
 
-import type { CheckResult } from "../types.js";
+import type { CheckResult, CheckTag } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
 import { buildFixableMap, buildTagsMap, countMutedChecks } from "../utils/checks.js";
 
@@ -25,7 +25,7 @@ export interface CheckJsonOutput {
     group: string;
     status: "pass" | "fail" | "skip";
     message: string;
-    tags: string[];
+    tags: CheckTag[];
     fixable: boolean;
   }[];
 }

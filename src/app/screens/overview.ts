@@ -8,6 +8,7 @@ import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, separator, blank, title, muted } from "../../cli-framework/index.js";
 import type { AppContext, FailedCheck } from "../types.js";
+import { TAG } from "../../types.js";
 
 function formatCheckOption(
   check: FailedCheck,
@@ -43,10 +44,10 @@ export const overviewScreen: Screen<AppContext> = {
     const opts: Option<AppContext>[] = [];
 
     // Group by importance
-    const required = checks.filter((c) => c.tags.includes("required"));
-    const recommended = checks.filter((c) => c.tags.includes("recommended"));
+    const required = checks.filter((c) => c.tags.includes(TAG.required));
+    const recommended = checks.filter((c) => c.tags.includes(TAG.recommended));
     const opinionated = checks.filter(
-      (c) => !c.tags.includes("required") && !c.tags.includes("recommended"),
+      (c) => !c.tags.includes(TAG.required) && !c.tags.includes(TAG.recommended),
     );
 
     // Find max name length for alignment

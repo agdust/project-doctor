@@ -16,6 +16,7 @@ import {
   error,
 } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { TAG, type CheckTag } from "../../types.js";
 import { openBrowser } from "../../utils/open-browser.js";
 
 // Tool documentation links
@@ -28,7 +29,7 @@ const TOOL_DOCS: Record<string, string> = {
   jscpd: "https://github.com/kucherenko/jscpd",
 };
 
-function getToolLink(tags: string[]): { tool: string; url: string } | null {
+function getToolLink(tags: CheckTag[]): { tool: string; url: string } | null {
   for (const tag of tags) {
     if (tag.startsWith("tool:")) {
       const tool = tag.slice(5);
@@ -100,9 +101,9 @@ export const overviewDetailScreen: Screen<AppContext> = {
       }
 
       // Update category counts
-      if (checkToRemove.tags.includes("required")) {
+      if (checkToRemove.tags.includes(TAG.required)) {
         c.failedByCategory.required--;
-      } else if (checkToRemove.tags.includes("recommended")) {
+      } else if (checkToRemove.tags.includes(TAG.recommended)) {
         c.failedByCategory.recommended--;
       } else {
         c.failedByCategory.opinionated--;

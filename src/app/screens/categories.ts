@@ -9,11 +9,12 @@ import type { Screen } from "../../cli-framework/index.js";
 import { clear, bigTitle, blank, muted, colors } from "../../cli-framework/index.js";
 import { updateConfig, isTagOff } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
+import { TAG } from "../../types.js";
 
 const CATEGORIES = [
-  { value: "required", name: "Required", description: "Essential checks" },
-  { value: "recommended", name: "Recommended", description: "Best practices" },
-  { value: "opinionated", name: "Opinionated", description: "Style preferences" },
+  { value: TAG.required, name: "Required", description: "Essential checks" },
+  { value: TAG.recommended, name: "Recommended", description: "Best practices" },
+  { value: TAG.opinionated, name: "Opinionated", description: "Style preferences" },
 ] as const;
 
 export const categoriesScreen: Screen<AppContext> = {

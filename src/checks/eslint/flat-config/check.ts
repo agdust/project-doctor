@@ -1,4 +1,4 @@
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { EslintContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
@@ -7,7 +7,7 @@ const name = "eslint-flat-config";
 export const check: Check<EslintContext> = {
   name,
   description: "Check if using ESLint flat config format (v9+)",
-  tags: ["node", "recommended", "tool:eslint", "effort:high"],
+  tags: [TAG.node, TAG.recommended, TAG.tool.eslint, TAG.effort.high],
   run: (global, { hasFlatConfig, flatConfigFile }) => {
     if (!global.detected.hasEslint) {
       return skip(name, "ESLint not detected");

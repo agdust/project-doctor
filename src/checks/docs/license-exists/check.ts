@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { input } from "@inquirer/prompts";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -29,7 +30,7 @@ async function loadLicense(filename: string, copyrightHolder?: string): Promise<
 export const check: Check<DocsContext> = {
   name,
   description: "Check if LICENSE file exists",
-  tags: ["universal", "required", "effort:low"],
+  tags: [TAG.universal, TAG.required, TAG.effort.low],
   run: (_global, { license }) => {
     if (license === null) {
       return fail(name, "LICENSE file not found");

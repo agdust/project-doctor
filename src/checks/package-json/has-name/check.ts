@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { readJson, writeJson } from "../../../utils/json-editor.js";
@@ -9,7 +9,7 @@ const name = "package-json-has-name";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has name field",
-  tags: ["node", "required", "effort:low"],
+  tags: [TAG.node, TAG.required, TAG.effort.low],
   run: (_global, { parsed }) => {
     if (!parsed) {
       return skip(name, "No package.json");

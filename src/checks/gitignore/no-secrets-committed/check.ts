@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { readFileWithLineEnding, atomicWriteFile } from "../../../utils/safe-fs.js";
@@ -28,7 +28,7 @@ function npmrcHasAuthTokens(content: string): boolean {
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check that common secret files are ignored",
-  tags: ["universal", "required", "effort:medium"],
+  tags: [TAG.universal, TAG.required, TAG.effort.medium],
   run: async (global, { raw, gitignore }) => {
     if (raw === null || gitignore === null) {
       return skip(name, "No .gitignore");

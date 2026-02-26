@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { atomicWriteFile, detectLineEnding } from "../../../utils/safe-fs.js";
@@ -18,7 +18,7 @@ const LOCKFILE_PATTERNS = [
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check that lockfiles are not ignored by git",
-  tags: ["node", "required", "effort:low"],
+  tags: [TAG.node, TAG.required, TAG.effort.low],
   run: (_global, { raw, patterns }) => {
     if (raw === null) {
       return skip(name, "No .gitignore");

@@ -1,3 +1,4 @@
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { NpmContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -8,7 +9,7 @@ const name = "npm-nvmrc-valid-alias";
 export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc uses valid LTS codename",
-  tags: ["node", "recommended", "effort:low"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.low],
   run: (_global, { nvmrc }) => {
     if (nvmrc.version === null) {
       return skip(name, "No .nvmrc");

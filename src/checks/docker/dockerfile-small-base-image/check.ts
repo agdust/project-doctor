@@ -1,3 +1,4 @@
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { DockerContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -50,7 +51,7 @@ function isSmallVariant(tag: string): boolean {
 export const check: Check<DockerContext> = {
   name,
   description: "Check if Dockerfile uses a small base image",
-  tags: ["universal", "recommended", "effort:medium"],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.medium],
   run: (_global, { dockerfile, baseImage, baseImageTag }) => {
     if (dockerfile === null) {
       return skip(name, "No Dockerfile");

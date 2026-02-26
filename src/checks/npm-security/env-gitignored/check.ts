@@ -7,6 +7,7 @@
  * Source: https://github.com/lirantal/npm-security-best-practices
  */
 
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { NpmSecurityContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -16,7 +17,7 @@ const name = "npm-security-env-gitignored";
 export const check: Check<NpmSecurityContext> = {
   name,
   description: "Check if .env files are ignored in .gitignore",
-  tags: ["universal", "required", "effort:low", "security", "source:lirantal-npm-security"],
+  tags: [TAG.universal, TAG.required, TAG.effort.low, TAG.security, TAG.source["lirantal-npm-security"]],
   run: (_global, { gitignoreInstance }) => {
     if (!gitignoreInstance) {
       return fail(name, ".gitignore not found");

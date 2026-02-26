@@ -1,5 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { TsConfigContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -24,7 +25,7 @@ const DEFAULT_TSCONFIG = {
 export const check: Check<TsConfigContext> = {
   name,
   description: "Check if tsconfig.json exists",
-  tags: ["typescript", "required", "effort:medium"],
+  tags: [TAG.typescript, TAG.required, TAG.effort.medium],
   run: (_global, { raw }) => {
     if (raw === null) {
       return fail(name, "tsconfig.json not found");

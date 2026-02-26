@@ -25,25 +25,50 @@ export type CheckResult = CheckResultBase & {
   group: string;
 };
 
-export type CheckScope = "universal" | "node" | "typescript";
+// ============================================================================
+// Tag System — 2-level typed constants
+// ============================================================================
 
-export type CheckRequirement = "required" | "recommended" | "opinionated";
+/** Helper: auto-generates `{ key: "prefix:key" }` from keys */
+function tagGroup<const P extends string, const K extends string>(
+  prefix: P,
+  ...keys: K[]
+): { readonly [V in K]: `${P}:${V}` } {
+  const result = {} as Record<string, string>;
+  for (const key of keys) {
+    result[key] = `${prefix}:${key}`;
+  }
+  return result as { readonly [V in K]: `${P}:${V}` };
+}
 
-export type CheckTool = `tool:${string}`;
+export const TAG = {
+  // Simple tags (no colon, flat)
+  universal: "universal",
+  node: "node",
+  typescript: "typescript",
+  required: "required",
+  recommended: "recommended",
+  opinionated: "opinionated",
+  security: "security",
 
-export type CheckEffort = "effort:low" | "effort:medium" | "effort:high";
+  // Grouped tags (colon-separated, 2-level)
+  tool: tagGroup("tool", "eslint", "prettier", "knip", "jscpd", "size-limit"),
+  effort: tagGroup("effort", "low", "medium", "high"),
+  source: tagGroup("source", "lirantal-npm-security"),
+} as const;
 
-export type CheckSource = `source:${string}`;
+type TagValues<T> = T extends string ? T : T extends Record<string, infer V> ? V : never;
+export type CheckTag = TagValues<(typeof TAG)[keyof typeof TAG]>;
 
-export type CheckCategory = "security";
-
-export type CheckTag =
-  | CheckScope
-  | CheckRequirement
-  | CheckTool
-  | CheckEffort
-  | CheckSource
-  | CheckCategory;
+export type CheckScope = typeof TAG.universal | typeof TAG.node | typeof TAG.typescript;
+export type CheckRequirement =
+  | typeof TAG.required
+  | typeof TAG.recommended
+  | typeof TAG.opinionated;
+export type CheckEffort = (typeof TAG.effort)[keyof typeof TAG.effort];
+export type CheckTool = (typeof TAG.tool)[keyof typeof TAG.tool];
+export type CheckSource = (typeof TAG.source)[keyof typeof TAG.source];
+export type CheckCategory = typeof TAG.security;
 
 export interface FileCache {
   readText(relativePath: string): Promise<string | null>;

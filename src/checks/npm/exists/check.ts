@@ -1,5 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { NpmContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -10,7 +11,7 @@ const name = "npm-nvmrc-exists";
 export const check: Check<NpmContext> = {
   name,
   description: "Check if .nvmrc file exists",
-  tags: ["node", "recommended", "effort:low"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.low],
   run: (_global, { nvmrc }) => {
     if (nvmrc.raw === null) {
       return fail(name, ".nvmrc not found");

@@ -1,4 +1,4 @@
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { readJson, writeJson } from "../../../utils/json-editor.js";
@@ -19,7 +19,7 @@ async function setLicense(projectPath: string, license: string) {
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if package.json has license field",
-  tags: ["node", "recommended", "effort:low"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.low],
   run: (_global, { parsed }) => {
     if (!parsed) {
       return skip(name, "No package.json");

@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { readFileWithLineEnding, atomicWriteFile } from "../../../utils/safe-fs.js";
@@ -9,7 +9,7 @@ const name = "gitignore-no-duplicates";
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check for duplicate patterns in .gitignore",
-  tags: ["universal", "recommended", "effort:low"],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.low],
   run: (_global, { raw, patterns }) => {
     if (raw === null) {
       return skip(name, "No .gitignore");

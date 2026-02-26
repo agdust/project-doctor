@@ -8,6 +8,7 @@
  * Source: https://github.com/lirantal/npm-security-best-practices
  */
 
+import { TAG } from "../../types.js";
 import type { ManualCheck } from "../../types.js";
 
 export const check: ManualCheck = {
@@ -36,6 +37,6 @@ Or in package.json scripts:
   }
 
 Users can verify provenance on npmjs.com by checking the "Provenance" badge.`,
-  tags: ["node", "recommended", "effort:low", "security"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.low, TAG.security],
   why: "Provenance attestations provide cryptographic proof of where and how a package was built. This helps users verify that the package they're installing actually came from the claimed source repository and CI system.",
 };

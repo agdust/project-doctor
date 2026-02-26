@@ -8,6 +8,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { CheckTag } from "../types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -20,7 +21,7 @@ export interface CompiledCheckDoc {
   name: string;
   group: string;
   description: string;
-  tags: string[];
+  tags: CheckTag[];
   hasFix: boolean;
   whyText: string | null;
   whyHtml: string | null;

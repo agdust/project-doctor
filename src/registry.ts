@@ -1,4 +1,4 @@
-import type { Check, CheckGroup, GroupContextLoader, ManualCheck } from "./types.js";
+import type { Check, CheckGroup, CheckTag, GroupContextLoader, ManualCheck } from "./types.js";
 
 import {
   loadContext as loadPackageJsonContext,
@@ -88,7 +88,7 @@ export function listChecks(): {
   group: string;
   name: string;
   description: string;
-  tags: string[];
+  tags: CheckTag[];
 }[] {
   return checkGroups.flatMap((group) =>
     group.checks.map((check) => ({

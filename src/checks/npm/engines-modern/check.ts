@@ -1,3 +1,4 @@
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { NpmContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -28,7 +29,7 @@ function extractMinMajor(value: string): number | null {
 export const check: Check<NpmContext> = {
   name,
   description: "Check if engines.node specifies a modern, supported Node version",
-  tags: ["node", "recommended", "effort:medium"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.medium],
   run: (_global, { engines }) => {
     if (engines.node === null) {
       return skip(name, "No engines.node defined");

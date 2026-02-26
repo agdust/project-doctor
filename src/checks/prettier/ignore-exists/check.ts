@@ -1,5 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { PrettierContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -15,7 +16,7 @@ node_modules/
 export const check: Check<PrettierContext> = {
   name,
   description: "Check if .prettierignore exists",
-  tags: ["node", "recommended", "tool:prettier", "effort:low"],
+  tags: [TAG.node, TAG.recommended, TAG.tool.prettier, TAG.effort.low],
   run: (global, { hasIgnore }) => {
     if (!global.detected.hasPrettier) {
       return skip(name, "Prettier not detected");

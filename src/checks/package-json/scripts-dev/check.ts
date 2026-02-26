@@ -1,4 +1,4 @@
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
@@ -7,7 +7,7 @@ const name = "package-json-scripts-dev";
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if dev script exists",
-  tags: ["node", "recommended", "effort:medium"],
+  tags: [TAG.node, TAG.recommended, TAG.effort.medium],
   run: (_global, { parsed }) => {
     if (!parsed) {
       return skip(name, "No package.json");

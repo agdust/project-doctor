@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { EnvContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -9,7 +10,7 @@ const name = "env-example-complete";
 export const check: Check<EnvContext> = {
   name,
   description: "Check if .env.example documents all variables from .env",
-  tags: ["universal", "recommended", "effort:low"],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.low],
   run: (_global, ctx) => {
     // Only relevant if both files exist
     if (!ctx.envExists) {

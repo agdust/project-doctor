@@ -1,5 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { EditorconfigContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -20,7 +21,7 @@ insert_final_newline = true
 export const check: Check<EditorconfigContext> = {
   name,
   description: "Check if .editorconfig exists",
-  tags: ["universal", "recommended", "effort:low"],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.low],
   run: (_global, { raw }) => {
     if (raw === null) {
       return fail(name, ".editorconfig not found");

@@ -8,6 +8,7 @@ import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { nav, action, blank, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { TAG } from "../../types.js";
 
 export const issuesScreen: Screen<AppContext> = {
   id: "issues",
@@ -22,17 +23,17 @@ export const issuesScreen: Screen<AppContext> = {
     blank();
 
     // Category breakdown - all failed with fixable count
-    const requiredAll = ctx.failedChecks.filter((c) => c.tags.includes("required")).length;
-    const requiredFixable = ctx.issues.filter((i) => i.tags.includes("required")).length;
+    const requiredAll = ctx.failedChecks.filter((c) => c.tags.includes(TAG.required)).length;
+    const requiredFixable = ctx.issues.filter((i) => i.tags.includes(TAG.required)).length;
 
-    const recommendedAll = ctx.failedChecks.filter((c) => c.tags.includes("recommended")).length;
-    const recommendedFixable = ctx.issues.filter((i) => i.tags.includes("recommended")).length;
+    const recommendedAll = ctx.failedChecks.filter((c) => c.tags.includes(TAG.recommended)).length;
+    const recommendedFixable = ctx.issues.filter((i) => i.tags.includes(TAG.recommended)).length;
 
     const opinionatedAll = ctx.failedChecks.filter(
-      (c) => !c.tags.includes("required") && !c.tags.includes("recommended"),
+      (c) => !c.tags.includes(TAG.required) && !c.tags.includes(TAG.recommended),
     ).length;
     const opinionatedFixable = ctx.issues.filter(
-      (i) => !i.tags.includes("required") && !i.tags.includes("recommended"),
+      (i) => !i.tags.includes(TAG.required) && !i.tags.includes(TAG.recommended),
     ).length;
 
     if (requiredAll > 0) {

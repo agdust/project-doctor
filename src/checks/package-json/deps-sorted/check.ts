@@ -1,4 +1,4 @@
-import type { Check } from "../../../types.js";
+import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
@@ -19,7 +19,7 @@ const checkSorted = (deps: Record<string, string> | undefined, depsName: string)
 export const check: Check<PackageJsonContext> = {
   name,
   description: "Check if dependencies are sorted alphabetically",
-  tags: ["node", "opinionated", "effort:low"],
+  tags: [TAG.node, TAG.opinionated, TAG.effort.low],
   run: (_global, { parsed }) => {
     if (!parsed) {
       return skip(name, "No package.json");

@@ -4,7 +4,7 @@
  * Common logic used by both CLI commands and interactive wizard.
  */
 
-import type { CheckTag, Check, FixResult, GlobalContext } from "../types.js";
+import { TAG, type CheckTag, type Check, type FixResult, type GlobalContext } from "../types.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isTagOff, isGroupOff } from "../config/loader.js";
 import { isSkipUntil, parseSkipUntil, isSkipUntilActive } from "../config/types.js";
@@ -63,17 +63,17 @@ export function isGroupForProjectType(groupName: string, projectType: ProjectTyp
  */
 export function getFixPriority(tags: CheckTag[], rootTags?: CheckTag[]): number {
   let importance = 2;
-  if (tags.includes("required")) {
+  if (tags.includes(TAG.required)) {
     importance = 0;
-  } else if (tags.includes("recommended")) {
+  } else if (tags.includes(TAG.recommended)) {
     importance = 1;
   }
 
   const effortTags = rootTags ?? tags;
   let effort = 2;
-  if (effortTags.includes("effort:low")) {
+  if (effortTags.includes(TAG.effort.low)) {
     effort = 0;
-  } else if (effortTags.includes("effort:medium")) {
+  } else if (effortTags.includes(TAG.effort.medium)) {
     effort = 1;
   }
 
@@ -104,7 +104,7 @@ export interface CheckStatusInfo {
  */
 export function getCheckStatus(
   checkName: string,
-  checkTags: string[],
+  checkTags: CheckTag[],
   groupName: string,
   config: ResolvedConfig,
 ): CheckStatusInfo {
@@ -202,7 +202,7 @@ export interface CheckInfo {
   name: string;
   group: string;
   description: string;
-  tags: string[];
+  tags: CheckTag[];
   status: CheckStatus;
   mutedUntil?: string;
   fixable: boolean;
@@ -257,8 +257,8 @@ export function buildFixableMap(): Map<string, boolean> {
 }
 
 /** Build a map of check names to their tags */
-export function buildTagsMap(): Map<string, string[]> {
-  const map = new Map<string, string[]>();
+export function buildTagsMap(): Map<string, CheckTag[]> {
+  const map = new Map<string, CheckTag[]>();
   for (const group of checkGroups) {
     for (const check of group.checks) {
       map.set(check.name, check.tags);
