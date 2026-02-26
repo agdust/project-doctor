@@ -176,5 +176,12 @@ export default defineConfig(
       // Allow async/await style (no need to always return promise)
       "promise/always-return": "off",
     },
+  },
+  {
+    files: "src/cli.ts",
+    rules: {
+      // false positive
+      'n/hashbang': 'off',
+    }
   }
 );
