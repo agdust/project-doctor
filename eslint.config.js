@@ -178,7 +178,7 @@ export default defineConfig(
     },
   },
   {
-    files: "src/cli.ts",
+    files: ["src/cli.ts"],
     rules: {
       // false positive
       'n/hashbang': 'off',
