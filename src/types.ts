@@ -67,9 +67,6 @@ export type CheckRequirement =
   | typeof TAG.opinionated;
 export type CheckEffort = (typeof TAG.effort)[keyof typeof TAG.effort];
 export type CheckTool = (typeof TAG.tool)[keyof typeof TAG.tool];
-export type CheckSource = (typeof TAG.source)[keyof typeof TAG.source];
-export type CheckCategory = typeof TAG.security;
-
 export interface FileCache {
   readText(relativePath: string): Promise<string | null>;
   readJson<T>(relativePath: string): Promise<T | null>;

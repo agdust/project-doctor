@@ -1,16 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "src/eslint-config/index.ts",
     "src/cli-framework/index.ts"
   ],
   "project": ["src/**/*.ts"],
   "ignore": [
     "src/test/**",
     "src/docs/**"
-  ],
-  "ignoreDependencies": [
-    "@inquirer/core"
   ],
   "ignoreBinaries": [
     "claude"

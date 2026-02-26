@@ -21,18 +21,6 @@ export function detectLineEnding(content: string): "\r\n" | "\n" {
 }
 
 /**
- * Normalize line endings to the specified style.
- */
-export function normalizeLineEndings(content: string, lineEnding: "\r\n" | "\n"): string {
-  // First normalize all to LF, then convert to target
-  const normalized = content.replaceAll("\r\n", "\n");
-  if (lineEnding === "\r\n") {
-    return normalized.replaceAll("\n", "\r\n");
-  }
-  return normalized;
-}
-
-/**
  * Generate a temporary file path in the same directory as the target.
  * Using the same directory ensures atomic rename works (same filesystem).
  */
@@ -72,37 +60,6 @@ export async function atomicWriteFile(
     }
     throw error;
   }
-}
-
-/**
- * Read a file, apply a transformation, and write it back atomically.
- * Preserves original line endings unless explicitly changed.
- *
- * @param filePath - File to transform
- * @param transform - Function to transform the content
- * @param options - Options for the operation
- */
-export async function transformFile(
-  filePath: string,
-  transform: (content: string) => string,
-  options: {
-    /** Preserve original line endings (default: true) */
-    preserveLineEndings?: boolean;
-  } = {},
-): Promise<void> {
-  const { preserveLineEndings = true } = options;
-
-  const original = await readFile(filePath, "utf8");
-  const originalLineEnding = detectLineEnding(original);
-
-  let transformed = transform(original);
-
-  // Restore original line endings if requested
-  if (preserveLineEndings) {
-    transformed = normalizeLineEndings(transformed, originalLineEnding);
-  }
-
-  await atomicWriteFile(filePath, transformed);
 }
 
 /**

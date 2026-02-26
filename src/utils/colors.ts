@@ -14,13 +14,3 @@ export const red = pc.red;
 export const green = pc.green;
 export const yellow = pc.yellow;
 export const cyan = pc.cyan;
-export const blue = pc.blue;
-export const magenta = pc.magenta;
-export const gray = pc.gray;
-export const white = pc.white;
-
-// Combination helpers
-export const boldRed = (s: string) => pc.bold(pc.red(s));
-export const boldGreen = (s: string) => pc.bold(pc.green(s));
-export const boldYellow = (s: string) => pc.bold(pc.yellow(s));
-export const boldCyan = (s: string) => pc.bold(pc.cyan(s));
