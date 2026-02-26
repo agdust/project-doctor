@@ -7,7 +7,6 @@
 
 import { check as disabledNodePostInstallScripts } from "./disabled-node-post-install-scripts/check.js";
 import { check as lockfileLint } from "./lockfile-lint/check.js";
-import { check as envGitignored } from "./env-gitignored/check.js";
 import { check as devcontainer } from "./devcontainer/check.js";
 import { check as ciLockfile } from "./ci-lockfile/check.js";
 
@@ -16,7 +15,6 @@ export { loadContext } from "./context.js";
 export const checks = [
   disabledNodePostInstallScripts,
   lockfileLint,
-  envGitignored,
   devcontainer,
   ciLockfile,
 ];

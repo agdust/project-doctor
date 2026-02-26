@@ -28,10 +28,6 @@ import { loadContext as loadDocsContext, checks as docsChecks } from "./checks/d
 import { loadContext as loadDepsContext, checks as depsChecks } from "./checks/deps/index.js";
 import { loadContext as loadEnvContext, checks as envChecks } from "./checks/env/index.js";
 import {
-  loadContext as loadTestingContext,
-  checks as testingChecks,
-} from "./checks/testing/index.js";
-import {
   loadContext as loadBundleSizeContext,
   checks as bundleSizeChecks,
 } from "./checks/bundle-size/index.js";
@@ -63,7 +59,6 @@ export const checkGroups = [
   createGroup("docs", loadDocsContext, docsChecks),
   createGroup("deps", loadDepsContext, depsChecks),
   createGroup("env", loadEnvContext, envChecks),
-  createGroup("testing", loadTestingContext, testingChecks),
   createGroup("bundle-size", loadBundleSizeContext, bundleSizeChecks),
   createGroup("docker", loadDockerContext, dockerChecks),
   createGroup("npm-security", loadNpmSecurityContext, npmSecurityChecks),

@@ -22,7 +22,7 @@ export const fixChains: string[][] = [
   ["npm-nvmrc-exists", "npm-nvmrc-valid-format", "npm-nvmrc-modern-version"],
 
   // engines: add field → valid format → modern version
-  ["npm-engines-exists", "npm-engines-valid", "npm-engines-modern"],
+  ["package-json-has-engines", "npm-engines-valid", "npm-engines-modern"],
 
   // editorconfig: create file → add settings
   ["editorconfig-exists", "editorconfig-has-root"],

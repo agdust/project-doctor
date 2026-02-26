@@ -4,7 +4,7 @@ import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { readFileWithLineEnding, atomicWriteFile } from "../../../utils/safe-fs.js";
 
-const name = "gitignore-no-secrets-committed";
+const name = "gitignore-no-secrets-in-git";
 
 // Files that are always secret and should be gitignored
 const SECRET_FILES = [".env", ".env.local", "credentials.json", "secrets.json"];
@@ -28,7 +28,7 @@ function npmrcHasAuthTokens(content: string): boolean {
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check that common secret files are ignored",
-  tags: [TAG.universal, TAG.required, TAG.effort.medium],
+  tags: [TAG.universal, TAG.required, TAG.effort.medium, TAG.security, TAG.source["lirantal-npm-security"]],
   run: async (global, { raw, gitignore }) => {
     if (raw === null || gitignore === null) {
       return skip(name, "No .gitignore");

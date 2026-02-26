@@ -8,7 +8,6 @@ import {
 } from "../../test/fix-test-utils.js";
 import { check as exists } from "./exists/check.js";
 import { check as strictEnabled } from "./strict-enabled/check.js";
-import { check as noAnyEnabled } from "./no-any-enabled/check.js";
 import { check as hasOutdir } from "./has-outdir/check.js";
 import { check as pathsValid } from "./paths-valid/check.js";
 
@@ -150,48 +149,6 @@ describe("tsconfig fixes", () => {
       const ctx = await loadContext(global);
 
       const checkResult = await strictEnabled.run(global, ctx);
-      expect(checkResult.status).toBe("pass");
-    });
-  });
-
-  describe("no-any-enabled fix", () => {
-    it("should enable noImplicitAny using fixable fixture", async () => {
-      tempFixture = await copyFixtureToTemp("fixable");
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      // Verify check fails
-      const checkResult = await noAnyEnabled.run(global, ctx);
-      expect(checkResult.status).toBe("fail");
-
-      // Run fix
-      const fix = noAnyEnabled.fix;
-      expect(fix).toBeDefined();
-      if (!fix || "options" in fix) throw new Error("Expected simple fix");
-
-      const fixResult = await fix.run(global, ctx);
-      expect(fixResult.success).toBe(true);
-
-      // Verify tsconfig.json was updated
-      const tsconfig = await tempFixture.readJson<Record<string, unknown>>("tsconfig.json");
-      expect((tsconfig.compilerOptions as Record<string, unknown>).noImplicitAny).toBe(true);
-
-      // Verify check now passes
-      const global2 = await createGlobalContext(tempFixture.path);
-      const ctx2 = await loadContext(global2);
-      const checkResult2 = await noAnyEnabled.run(global2, ctx2);
-      expect(checkResult2.status).toBe("pass");
-    });
-
-    it("should pass for healthy project (no fix needed - has strict)", async () => {
-      tempFixture = await copyFixtureToTemp("healthy");
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      // Healthy project has strict: true which implies noImplicitAny
-      const checkResult = await noAnyEnabled.run(global, ctx);
       expect(checkResult.status).toBe("pass");
     });
   });

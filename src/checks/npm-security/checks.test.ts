@@ -4,7 +4,6 @@ import { loadContext, type NpmSecurityContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
 import { check as disabledNodePostInstallScripts } from "./disabled-node-post-install-scripts/check.js";
 import { check as lockfileLint } from "./lockfile-lint/check.js";
-import { check as envGitignored } from "./env-gitignored/check.js";
 import { check as devcontainer } from "./devcontainer/check.js";
 import { check as ciLockfile } from "./ci-lockfile/check.js";
 import { parseGitignore } from "../../utils/gitignore.js";
@@ -173,56 +172,6 @@ describe("npm-security checks", () => {
         scripts: { ci: "npm run test && lockfile-lint --path package-lock.json" },
       });
       const result = await lockfileLint.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-  });
-
-  describe("env-gitignored", () => {
-    it("should pass when .env is in .gitignore", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = await loadContext(global);
-      const result = await envGitignored.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-
-    it("should fail when .gitignore is missing", async () => {
-      const global = await createGlobalContext(fixtures.empty);
-      const ctx = await loadContext(global);
-      const result = await envGitignored.run(global, ctx);
-
-      expect(result.status).toBe("fail");
-      expect(result.message).toContain(".gitignore not found");
-    });
-
-    it("should fail when .env is not in .gitignore", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        gitignore: "node_modules\ndist\n",
-      });
-      const result = await envGitignored.run(global, ctx);
-
-      expect(result.status).toBe("fail");
-      expect(result.message).toContain("not ignored");
-    });
-
-    it("should pass when .env.* pattern is in .gitignore", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        gitignore: "node_modules\n.env.*\n",
-      });
-      const result = await envGitignored.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-
-    it("should pass when .env.local is in .gitignore", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = createMockContext({
-        gitignore: "node_modules\n.env.local\n",
-      });
-      const result = await envGitignored.run(global, ctx);
 
       expect(result.status).toBe("pass");
     });

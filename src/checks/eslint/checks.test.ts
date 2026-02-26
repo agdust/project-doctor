@@ -4,7 +4,6 @@ import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
 import { check as configExists } from "./config-exists/check.js";
 import { check as flatConfig } from "./flat-config/check.js";
-import { check as noLegacyConfig } from "./no-legacy-config/check.js";
 
 describe("eslint checks", () => {
   describe("context loading", () => {
@@ -57,23 +56,4 @@ describe("eslint checks", () => {
     });
   });
 
-  describe("noLegacyConfig", () => {
-    it("should pass when no legacy config exists", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      global.detected.hasEslint = true;
-      const ctx = await loadContext(global);
-      const result = await noLegacyConfig.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-
-    it("should fail when legacy config exists", async () => {
-      const global = await createGlobalContext(fixtures.broken);
-      global.detected.hasEslint = true;
-      const ctx = await loadContext(global);
-      const result = await noLegacyConfig.run(global, ctx);
-
-      expect(result.status).toBe("fail");
-    });
-  });
 });

@@ -1,4 +1,4 @@
-# gitignore-no-secrets-committed
+# gitignore-no-secrets-in-git
 
 Verifies that files containing secrets are properly ignored.
 

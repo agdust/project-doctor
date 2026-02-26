@@ -93,7 +93,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       blank();
     },
 
-    onEsc: (ctx, screenId) => {
+    onEsc: (_ctx, screenId) => {
       // ESC on home exits
       if (screenId === "home") {
         return "exit";

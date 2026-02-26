@@ -7,7 +7,7 @@ import {
   type TempFixture,
 } from "../../test/fix-test-utils.js";
 import { check as noDuplicates } from "./no-duplicates/check.js";
-import { check as noSecretsCommitted } from "./no-secrets-committed/check.js";
+import { check as noSecretsCommitted } from "./no-secrets-in-git/check.js";
 import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
 
 describe("gitignore fixes", () => {
@@ -116,7 +116,7 @@ dist
     });
   });
 
-  describe("no-secrets-committed fix", () => {
+  describe("no-secrets-in-git fix", () => {
     it("should add missing secret files to gitignore using fixable fixture", async () => {
       tempFixture = await copyFixtureToTemp("fixable");
 
