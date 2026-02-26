@@ -44,59 +44,26 @@ export const overviewScreen: Screen<AppContext> = {
     const opts: Option<AppContext>[] = [];
 
     // Group by importance
-    const required = checks.filter((c) => c.tags.includes(TAG.required));
-    const recommended = checks.filter((c) => c.tags.includes(TAG.recommended));
-    const opinionated = checks.filter(
-      (c) => !c.tags.includes(TAG.required) && !c.tags.includes(TAG.recommended),
-    );
+    const sections: { label: string; items: FailedCheck[] }[] = [
+      { label: "Required", items: checks.filter((c) => c.tags.includes(TAG.required)) },
+      { label: "Recommended", items: checks.filter((c) => c.tags.includes(TAG.recommended)) },
+      {
+        label: "Opinionated",
+        items: checks.filter(
+          (c) => !c.tags.includes(TAG.required) && !c.tags.includes(TAG.recommended),
+        ),
+      },
+    ];
 
     // Find max name length for alignment
     const maxNameLen = Math.max(...checks.map((c) => c.name.length));
 
-    // Add required checks
-    if (required.length > 0) {
-      opts.push(separator(`Required (${required.length})`));
-      for (const check of required) {
-        const { name, description } = formatCheckOption(check, maxNameLen);
-        const index = checks.indexOf(check);
-        opts.push(
-          action(
-            `check-${index}`,
-            name,
-            (c) => {
-              c.selectedOverviewIndex = index;
-              return "overview-detail";
-            },
-            description,
-          ),
-        );
+    for (const { label, items } of sections) {
+      if (items.length === 0) {
+        continue;
       }
-    }
-
-    // Add recommended checks
-    if (recommended.length > 0) {
-      opts.push(separator(`Recommended (${recommended.length})`));
-      for (const check of recommended) {
-        const { name, description } = formatCheckOption(check, maxNameLen);
-        const index = checks.indexOf(check);
-        opts.push(
-          action(
-            `check-${index}`,
-            name,
-            (c) => {
-              c.selectedOverviewIndex = index;
-              return "overview-detail";
-            },
-            description,
-          ),
-        );
-      }
-    }
-
-    // Add opinionated checks
-    if (opinionated.length > 0) {
-      opts.push(separator(`Opinionated (${opinionated.length})`));
-      for (const check of opinionated) {
+      opts.push(separator(`${label} (${items.length})`));
+      for (const check of items) {
         const { name, description } = formatCheckOption(check, maxNameLen);
         const index = checks.indexOf(check);
         opts.push(
