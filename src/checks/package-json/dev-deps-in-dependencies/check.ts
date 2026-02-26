@@ -2,6 +2,7 @@ import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, skip } from "../../helpers.js";
 import { extractCheckOptions } from "../../../config/types.js";
+import { bold } from "../../../utils/colors.js";
 
 const name = "package-json-dev-deps-in-dependencies";
 
@@ -113,11 +114,16 @@ export const check: Check<PackageJsonContext> = {
       return pass(name, "No dev-only packages in dependencies");
     }
 
+    const lines = [
+      `${misplaced.length} dev-only package(s) found in dependencies:`,
+      "",
+      ...misplaced.map((m) => `  - ${bold(m.name)}: ${m.reason}`),
+    ];
+
     return {
       name,
       status: "fail",
-      message: `${misplaced.length} dev-only package(s) in dependencies: ${misplaced.map((m) => m.name).join(", ")}`,
-      details: misplaced.map((m) => `${m.name}: ${m.reason}`),
+      message: lines.join("\n"),
     };
   },
 };
