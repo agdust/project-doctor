@@ -5,6 +5,9 @@
  * For CLI usage, run `npx project-doctor` or install globally.
  */
 
+// Public API — barrel re-exports are intentional here
+/* eslint-disable no-barrel-files/no-barrel-files */
+
 // Core types
 export type {
   Check,

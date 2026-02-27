@@ -26,6 +26,9 @@
  * ```
  */
 
+// Public API — barrel re-exports are intentional here
+/* eslint-disable no-barrel-files/no-barrel-files */
+
 // Types
 export { type MatchResult } from "./types.js";
 

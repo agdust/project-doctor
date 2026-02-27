@@ -30,6 +30,9 @@
  * ```
  */
 
+// Public API — barrel re-exports are intentional here
+/* eslint-disable no-barrel-files/no-barrel-files */
+
 // Core types
 export type {
   ActionOption,

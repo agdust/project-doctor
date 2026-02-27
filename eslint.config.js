@@ -5,6 +5,7 @@ import importX from "eslint-plugin-import-x";
 import nodePlugin from "eslint-plugin-n";
 import regexp from "eslint-plugin-regexp";
 import promise from "eslint-plugin-promise";
+import noBarrelFiles from "eslint-plugin-no-barrel-files";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig(
@@ -44,6 +45,9 @@ export default defineConfig(
 
   // Promise recommended
   promise.configs["flat/recommended"],
+
+  // No barrel files
+  noBarrelFiles.flat,
 
   // TypeScript parser options
   {
@@ -183,5 +187,11 @@ export default defineConfig(
       // false positive
       'n/hashbang': 'off',
     }
+  },
+  {
+    files: ["src/checks/*/index.ts"],
+    rules: {
+      "no-barrel-files/no-barrel-files": "off",
+    },
   }
 );
