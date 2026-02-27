@@ -4,31 +4,80 @@
  * Uses `marked` for markdown parsing.
  */
 
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import fs from "node:fs/promises";
+import path from "node:path";
+import url from "node:url";
 import { marked } from "marked";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const checksDir = join(__dirname, "..", "src", "checks");
-const outputDir = join(__dirname, "..", "dist");
-const outputFile = join(outputDir, "docs-manifest.json");
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const checksDir = path.join(__dirname, "..", "src", "checks");
+const outputDir = path.join(__dirname, "..", "dist");
+const outputFile = path.join(outputDir, "docs-manifest.json");
+
+/**
+ * Extract tokens belonging to the "## Why" section using marked's lexer
+ */
+function getWhyTokens(markdown) {
+  const tokens = marked.lexer(markdown);
+  let inWhy = false;
+  const whyTokens = [];
+
+  for (const token of tokens) {
+    if (token.type === "heading" && token.depth === 2) {
+      if (token.text === "Why") {
+        inWhy = true;
+        continue;
+      }
+      if (inWhy) break;
+    }
+    if (inWhy) whyTokens.push(token);
+  }
+
+  return whyTokens.length > 0 ? whyTokens : null;
+}
 
 /**
  * Extract plain text from the "## Why" section
  */
 function extractWhyText(markdown) {
-  const match = /## Why\n\n([\s\S]*?)(?=\n## |$)/.exec(markdown);
-  return match ? match[1].trim() : null;
+  const tokens = getWhyTokens(markdown);
+  if (!tokens) return null;
+  return tokens.map((t) => t.raw).join("").trim();
 }
 
 /**
  * Extract plain text from the "## Why" section and convert to HTML
  */
 function extractWhyHtml(markdown) {
-  const whyText = extractWhyText(markdown);
-  if (!whyText) return null;
-  return marked.parse(whyText);
+  const tokens = getWhyTokens(markdown);
+  if (!tokens) return null;
+  const list = Object.assign(tokens, { links: {} });
+  return marked.parser(list);
+}
+
+/**
+ * Extract name (first h1) and description (first paragraph after h1) using marked's lexer
+ */
+function extractNameAndDescription(markdown, fallbackName) {
+  const tokens = marked.lexer(markdown);
+  let name = fallbackName;
+  let description = "";
+  let foundH1 = false;
+
+  for (const token of tokens) {
+    if (!foundH1 && token.type === "heading" && token.depth === 1) {
+      name = token.text;
+      foundH1 = true;
+      continue;
+    }
+    if (foundH1 && token.type === "paragraph") {
+      description = token.text;
+      break;
+    }
+    if (foundH1 && token.type === "heading") break;
+  }
+
+  return { name, description };
 }
 
 /**
@@ -40,32 +89,30 @@ async function compileAllDocs() {
     checks: {},
   };
 
-  const groups = await readdir(checksDir);
+  const groups = await fs.readdir(checksDir);
 
   for (const group of groups) {
-    const groupPath = join(checksDir, group);
+    const groupPath = path.join(checksDir, group);
 
     try {
-      const items = await readdir(groupPath);
+      const items = await fs.readdir(groupPath);
 
       for (const item of items) {
-        const itemPath = join(groupPath, item);
-        const docsPath = join(itemPath, "docs.md");
-        const checkPath = join(itemPath, "check.ts");
+        const itemPath = path.join(groupPath, item);
+        const docsPath = path.join(itemPath, "docs.md");
+        const checkPath = path.join(itemPath, "check.ts");
 
         try {
           const [docsContent, checkContent] = await Promise.all([
-            readFile(docsPath, "utf-8"),
-            readFile(checkPath, "utf-8"),
+            fs.readFile(docsPath, "utf-8"),
+            fs.readFile(checkPath, "utf-8"),
           ]);
 
-          // Extract name from first h1 (# heading)
-          const nameMatch = /^# (.+)$/m.exec(docsContent);
-          const name = nameMatch ? nameMatch[1].trim() : `${group}-${item}`;
-
-          // Extract description (first paragraph after h1)
-          const descMatch = /^# .+\n\n(.+?)(\n\n|$)/m.exec(docsContent);
-          const description = descMatch ? descMatch[1].trim() : "";
+          // Use marked's lexer for structured markdown parsing
+          const { name, description } = extractNameAndDescription(
+            docsContent,
+            `${group}-${item}`,
+          );
 
           // Extract tags from check.ts
           const tagsMatch = /tags:\s*\[([^\]]+)\]/.exec(checkContent);
@@ -112,10 +159,10 @@ async function main() {
   console.log(`Found ${checkCount} checks with documentation`);
 
   // Ensure output directory exists
-  await mkdir(outputDir, { recursive: true });
+  await fs.mkdir(outputDir, { recursive: true });
 
   // Write manifest
-  await writeFile(outputFile, JSON.stringify(manifest, null, 2));
+  await fs.writeFile(outputFile, JSON.stringify(manifest, null, 2));
   console.log(`Written to ${outputFile}`);
 }
 

@@ -5,11 +5,11 @@
  * On Windows: no-op (not needed)
  */
 
-import { chmodSync, existsSync } from "node:fs";
+import fs from "node:fs";
 
 const file = "dist/cli.js";
 
-if (!existsSync(file)) {
+if (!fs.existsSync(file)) {
   console.error(`Error: ${file} does not exist`);
   process.exit(1);
 }
@@ -17,7 +17,7 @@ if (!existsSync(file)) {
 // chmod is only meaningful on Unix systems
 // On Windows, this is effectively a no-op
 try {
-  chmodSync(file, 0o755);
+  fs.chmodSync(file, 0o755);
   console.log(`Made ${file} executable`);
 } catch {
   // Silently ignore on Windows where chmod may not work as expected

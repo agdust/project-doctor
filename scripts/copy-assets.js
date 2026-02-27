@@ -4,16 +4,16 @@
  * Copies license templates to dist folder
  */
 
-import { cpSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import fs from "node:fs";
+import path from "node:path";
 
 const src = "src/checks/docs/license-exists/licenses";
 const dest = "dist/checks/docs/license-exists/licenses";
 
 // Ensure destination directory exists
-mkdirSync(dirname(dest), { recursive: true });
+fs.mkdirSync(path.dirname(dest), { recursive: true });
 
 // Copy recursively
-cpSync(src, dest, { recursive: true });
+fs.cpSync(src, dest, { recursive: true });
 
 console.log(`Copied ${src} -> ${dest}`);
