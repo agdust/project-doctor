@@ -164,4 +164,89 @@ describe("config loader", () => {
       expect(resolved.projectTypeSource).toBe("config");
     });
   });
+
+  describe("malformed config handling", () => {
+    it("should return null for malformed JSON config", async () => {
+      const configDir = path.join(tempDir, ".project-doctor");
+      await mkdir(configDir, { recursive: true });
+      await writeFile(path.join(configDir, "config.json"), "not-valid-json{{{");
+
+      const config = await loadConfig(tempDir);
+      expect(config).toBeNull();
+    });
+
+    it("should return null for malformed JSON5 config", async () => {
+      const configDir = path.join(tempDir, ".project-doctor");
+      await mkdir(configDir, { recursive: true });
+      await writeFile(path.join(configDir, "config.json5"), "{{invalid json5");
+
+      const config = await loadConfig(tempDir);
+      expect(config).toBeNull();
+    });
+
+    it("should use defaults when config file is malformed", async () => {
+      const configDir = path.join(tempDir, ".project-doctor");
+      await mkdir(configDir, { recursive: true });
+      await writeFile(path.join(configDir, "config.json5"), "invalid content");
+
+      const resolved = await loadAndResolveConfig(tempDir);
+      expect(resolved.checks).toEqual({});
+      expect(resolved.tags).toEqual({});
+      expect(resolved.groups).toEqual({});
+    });
+  });
+
+  describe("isTagOff / isGroupOff helpers", () => {
+    it("isTagOff should report off tag as off", async () => {
+      await updateConfig(tempDir, { tags: { opinionated: "off" } });
+      const resolved = await loadAndResolveConfig(tempDir);
+      const { isTagOff, isGroupOff } = await import("./loader.js");
+      expect(isTagOff(resolved, "opinionated")).toBe(true);
+      expect(isTagOff(resolved, "required")).toBe(false);
+    });
+
+    it("isGroupOff should report off group as off", async () => {
+      await updateConfig(tempDir, { groups: { eslint: "off" } });
+      const resolved = await loadAndResolveConfig(tempDir);
+      const { isGroupOff } = await import("./loader.js");
+      expect(isGroupOff(resolved, "eslint")).toBe(true);
+      expect(isGroupOff(resolved, "docs")).toBe(false);
+    });
+  });
+
+  describe("config with all field types", () => {
+    it("should persist checks, tags, and groups simultaneously", async () => {
+      await updateConfig(tempDir, {
+        checks: { "some-check": "off" },
+        tags: { opinionated: "off" },
+        groups: { eslint: "off" },
+      });
+
+      const config = await loadConfig(tempDir);
+      expect(config).not.toBeNull();
+      expect(config!.checks?.["some-check"]).toBe("off");
+      expect(config!.tags?.["opinionated"]).toBe("off");
+      expect(config!.groups?.["eslint"]).toBe("off");
+    });
+  });
+
+  describe("skip-until config entries", () => {
+    it("should persist skip-until values", async () => {
+      await updateConfig(tempDir, {
+        checks: { "some-check": "skip-until-2025-06-01" },
+      });
+
+      const config = await loadConfig(tempDir);
+      expect(config?.checks?.["some-check"]).toBe("skip-until-2025-06-01");
+    });
+
+    it("should resolve skip-until correctly", async () => {
+      await updateConfig(tempDir, {
+        checks: { "some-check": "skip-until-2025-06-01" },
+      });
+
+      const resolved = await loadAndResolveConfig(tempDir);
+      expect(resolved.checks["some-check"]).toBe("skip-until-2025-06-01");
+    });
+  });
 });
