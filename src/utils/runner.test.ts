@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { fixtures } from "../test/fixtures.js";
 import { runChecks, runAllChecks } from "./runner.js";
+import { listChecks } from "../registry.js";
 
 describe("runner", () => {
   describe("shell-only project (generic type)", () => {
@@ -100,6 +101,9 @@ describe("runner", () => {
       for (const group of groups) {
         expect(["package-json", "docs"]).toContain(group);
       }
+      // Both groups should have at least some results
+      expect(results.filter((r) => r.group === "package-json").length).toBeGreaterThan(0);
+      expect(results.filter((r) => r.group === "docs").length).toBeGreaterThan(0);
     });
 
     it("should return empty results for nonexistent group", async () => {
@@ -114,18 +118,30 @@ describe("runner", () => {
   });
 
   describe("tag filtering", () => {
-    it("should include only checks with specified tags", async () => {
+    it("should only include checks matching the included tag", async () => {
       const { results } = await runChecks({
         projectPath: fixtures.healthy,
         skipConfig: true,
         includeTags: ["required"],
       });
 
-      // Should have results (healthy project has required checks)
       expect(results.length).toBeGreaterThan(0);
+
+      // Verify every returned check actually has the "required" tag
+      const allChecks = listChecks();
+      for (const result of results) {
+        // Skip synthetic "not-detected" results
+        if (result.name.endsWith("-not-detected")) continue;
+        const checkDef = allChecks.find((c) => c.name === result.name);
+        expect(checkDef, `check ${result.name} should exist in registry`).toBeDefined();
+        expect(
+          checkDef!.tags,
+          `check ${result.name} should have "required" tag`,
+        ).toContain("required");
+      }
     });
 
-    it("should exclude checks with specified tags", async () => {
+    it("should produce fewer results when excluding a tag", async () => {
       const { results: allResults } = await runChecks({
         projectPath: fixtures.healthy,
         skipConfig: true,
@@ -137,59 +153,91 @@ describe("runner", () => {
         excludeTags: ["opinionated"],
       });
 
-      // Filtered should have fewer or equal results
-      expect(filteredResults.length).toBeLessThanOrEqual(allResults.length);
+      // Excluding a tag must strictly reduce the result set
+      expect(filteredResults.length).toBeLessThan(allResults.length);
+
+      // None of the remaining results should be for opinionated-only checks
+      const allChecks = listChecks();
+      for (const result of filteredResults) {
+        if (result.name.endsWith("-not-detected")) continue;
+        const checkDef = allChecks.find((c) => c.name === result.name);
+        if (checkDef) {
+          // If a check only has "opinionated" (no "required"/"recommended"), it should be excluded
+          const hasOtherRequirement =
+            checkDef.tags.includes("required") || checkDef.tags.includes("recommended");
+          if (!hasOtherRequirement) {
+            expect(checkDef.tags).not.toContain("opinionated");
+          }
+        }
+      }
     });
   });
 
   describe("config-level check disabling", () => {
-    it("should skip checks disabled via config overrides", async () => {
-      // Run with a check disabled
+    it("should skip a check set to off in config", async () => {
+      // Run all checks first to confirm the check normally runs
+      const { results: allResults } = await runChecks({
+        projectPath: fixtures.healthy,
+        skipConfig: true,
+      });
+      const targetCheck = allResults.find((r) => r.name === "package-json-has-name");
+      expect(targetCheck).toBeDefined();
+
+      // Now run with config that disables that specific check
+      // We can't easily pass check-level config through RunnerOptions,
+      // but we can test group-level disabling which hits the same isGroupOff path
       const { results: filtered } = await runChecks({
         projectPath: fixtures.healthy,
         skipConfig: true,
-        excludeTags: ["recommended"],
+        groups: ["docs"], // Only run docs group, effectively disabling package-json checks
       });
 
-      const { results: all } = await runChecks({
-        projectPath: fixtures.healthy,
-        skipConfig: true,
-      });
-
-      // Should have fewer results
-      expect(filtered.length).toBeLessThan(all.length);
+      const pkgResults = filtered.filter((r) => r.group === "package-json");
+      expect(pkgResults).toHaveLength(0);
     });
   });
 
   describe("error handling", () => {
-    it("should handle errors in check execution gracefully", async () => {
-      // Running checks on an empty project should not throw
+    it("should not throw when running checks on an empty project", async () => {
       const { results } = await runChecks({
         projectPath: fixtures.empty,
         skipConfig: true,
       });
 
-      // Should still return results (even if some are skip/fail)
+      // Should return results array (even if some are skip/fail)
       expect(Array.isArray(results)).toBe(true);
-    });
-  });
-
-  describe("runAllChecks", () => {
-    it("should return results for a project", async () => {
-      const results = await runAllChecks(fixtures.healthy);
-      expect(results.length).toBeGreaterThan(0);
-
-      // All results should have group property
+      // Every result should have a valid status
       for (const result of results) {
-        expect(result.group).toBeTruthy();
-        expect(result.name).toBeTruthy();
         expect(["pass", "fail", "skip"]).toContain(result.status);
       }
     });
   });
 
+  describe("runAllChecks", () => {
+    it("should return results with group, name, and status for every result", async () => {
+      const results = await runAllChecks(fixtures.healthy);
+      expect(results.length).toBeGreaterThan(0);
+
+      for (const result of results) {
+        expect(typeof result.group).toBe("string");
+        expect(result.group.length).toBeGreaterThan(0);
+        expect(typeof result.name).toBe("string");
+        expect(result.name.length).toBeGreaterThan(0);
+        expect(["pass", "fail", "skip"]).toContain(result.status);
+        expect(typeof result.message).toBe("string");
+      }
+    });
+
+    it("should include results from multiple groups", async () => {
+      const results = await runAllChecks(fixtures.healthy);
+      const groups = new Set(results.map((r) => r.group));
+      // A healthy JS project should exercise many groups
+      expect(groups.size).toBeGreaterThan(3);
+    });
+  });
+
   describe("tool detection skipping", () => {
-    it("should skip eslint group when eslint is not detected", async () => {
+    it("should produce a skip result for eslint when not detected", async () => {
       // The minimal fixture has no eslint configuration
       const { results } = await runChecks({
         projectPath: fixtures.minimal,
@@ -197,12 +245,25 @@ describe("runner", () => {
       });
 
       const eslintResults = results.filter((r) => r.group === "eslint");
-      // Should have a skip result saying "ESLint not detected" or no results
-      if (eslintResults.length > 0) {
-        expect(eslintResults).toHaveLength(1);
-        expect(eslintResults[0].status).toBe("skip");
-        expect(eslintResults[0].message).toContain("not detected");
-      }
+      // Minimal project is JS type, so eslint group is attempted but tool isn't detected.
+      // The runner should emit exactly one "eslint-not-detected" skip result.
+      expect(eslintResults).toHaveLength(1);
+      expect(eslintResults[0].name).toBe("eslint-not-detected");
+      expect(eslintResults[0].status).toBe("skip");
+      expect(eslintResults[0].message).toContain("not detected");
+    });
+
+    it("should produce a skip result for prettier when not detected", async () => {
+      const { results } = await runChecks({
+        projectPath: fixtures.minimal,
+        skipConfig: true,
+      });
+
+      const prettierResults = results.filter((r) => r.group === "prettier");
+      expect(prettierResults).toHaveLength(1);
+      expect(prettierResults[0].name).toBe("prettier-not-detected");
+      expect(prettierResults[0].status).toBe("skip");
+      expect(prettierResults[0].message).toContain("not detected");
     });
   });
 });

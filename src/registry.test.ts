@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   checkGroups,
+  manualChecks,
   getAllChecks,
   getChecksByGroup,
   listGroups,
@@ -43,14 +44,17 @@ describe("registry", () => {
       expect(unique.size).toBe(names.length);
     });
 
-    it("should have checks array for every group", () => {
+    it("should have a non-empty checks array for every group", () => {
       for (const group of checkGroups) {
         expect(Array.isArray(group.checks)).toBe(true);
-        expect(group.checks.length).toBeGreaterThan(0);
+        expect(
+          group.checks.length,
+          `group "${group.name}" should have at least one check`,
+        ).toBeGreaterThan(0);
       }
     });
 
-    it("should have loadContext function for every group", () => {
+    it("should have a loadContext function for every group", () => {
       for (const group of checkGroups) {
         expect(typeof group.loadContext).toBe("function");
       }
@@ -69,15 +73,18 @@ describe("registry", () => {
       expect(unique.size).toBe(allNames.length);
     });
 
-    it("every check should have name, description, and tags", () => {
+    it("every check should have a non-empty name, description, and at least one tag", () => {
       for (const group of checkGroups) {
         for (const check of group.checks) {
-          expect(check.name).toBeTruthy();
-          expect(typeof check.name).toBe("string");
-          expect(check.description).toBeTruthy();
-          expect(typeof check.description).toBe("string");
-          expect(Array.isArray(check.tags)).toBe(true);
-          expect(check.tags.length).toBeGreaterThan(0);
+          expect(check.name.length, `check in ${group.name} has empty name`).toBeGreaterThan(0);
+          expect(
+            check.description.length,
+            `check "${check.name}" has empty description`,
+          ).toBeGreaterThan(0);
+          expect(
+            check.tags.length,
+            `check "${check.name}" has no tags`,
+          ).toBeGreaterThan(0);
         }
       }
     });
@@ -85,33 +92,86 @@ describe("registry", () => {
     it("every check should have a run function", () => {
       for (const group of checkGroups) {
         for (const check of group.checks) {
-          expect(typeof check.run).toBe("function");
+          expect(typeof check.run, `check "${check.name}" missing run()`).toBe("function");
+        }
+      }
+    });
+
+    it("every check with a fix should have a fix description", () => {
+      for (const group of checkGroups) {
+        for (const check of group.checks) {
+          if (check.fix) {
+            expect(
+              check.fix.description,
+              `check "${check.name}" has fix without description`,
+            ).toBeTruthy();
+          }
         }
       }
     });
   });
 
-  describe("getAllChecks", () => {
-    it("should return a flat array of all checks", () => {
-      const allChecks = getAllChecks();
-      expect(allChecks.length).toBeGreaterThan(0);
+  describe("manualChecks", () => {
+    it("should be a non-empty array", () => {
+      expect(Array.isArray(manualChecks)).toBe(true);
+      expect(manualChecks.length).toBeGreaterThan(0);
+    });
 
-      // Sum of all group check counts should equal total
+    it("every manual check should have name, description, details, and tags", () => {
+      for (const check of manualChecks) {
+        expect(check.name).toBeTruthy();
+        expect(check.description).toBeTruthy();
+        expect(check.details).toBeTruthy();
+        expect(Array.isArray(check.tags)).toBe(true);
+        expect(check.tags.length).toBeGreaterThan(0);
+      }
+    });
+
+    it("should not overlap with automated check names", () => {
+      const automatedNames = new Set(getAllChecks().map((c) => c.name));
+      for (const manual of manualChecks) {
+        expect(
+          automatedNames.has(manual.name),
+          `manual check "${manual.name}" conflicts with an automated check`,
+        ).toBe(false);
+      }
+    });
+  });
+
+  describe("getAllChecks", () => {
+    it("should return a flat array whose length matches the sum of all group check counts", () => {
+      const allChecks = getAllChecks();
       const totalFromGroups = checkGroups.reduce((sum, g) => sum + g.checks.length, 0);
       expect(allChecks).toHaveLength(totalFromGroups);
+    });
+
+    it("should contain checks from every group", () => {
+      const allChecks = getAllChecks();
+      const checkNames = new Set(allChecks.map((c) => c.name));
+
+      for (const group of checkGroups) {
+        for (const check of group.checks) {
+          expect(
+            checkNames.has(check.name),
+            `getAllChecks missing "${check.name}" from group "${group.name}"`,
+          ).toBe(true);
+        }
+      }
     });
   });
 
   describe("getChecksByGroup", () => {
-    it("should return checks for an existing group", () => {
+    it("should return all checks for an existing group", () => {
       const checks = getChecksByGroup("package-json");
-      expect(checks.length).toBeGreaterThan(0);
-      // All returned checks should belong to that group
-      const allNames = checkGroups
-        .find((g) => g.name === "package-json")!
-        .checks.map((c) => c.name);
+      const group = checkGroups.find((g) => g.name === "package-json")!;
+
+      // Count should match
+      expect(checks).toHaveLength(group.checks.length);
+
+      // Names should match
+      const expectedNames = group.checks.map((c) => c.name);
       for (const check of checks) {
-        expect(allNames).toContain(check.name);
+        expect(expectedNames).toContain(check.name);
       }
     });
 
@@ -122,7 +182,7 @@ describe("registry", () => {
   });
 
   describe("listGroups", () => {
-    it("should return all group names", () => {
+    it("should return all group names matching EXPECTED_GROUPS", () => {
       const groups = listGroups();
       expect(groups).toHaveLength(EXPECTED_GROUPS.length);
       for (const name of EXPECTED_GROUPS) {
@@ -132,24 +192,35 @@ describe("registry", () => {
   });
 
   describe("listChecks", () => {
-    it("should return metadata for each check", () => {
+    it("should return metadata for each check with group, name, description, tags", () => {
       const checks = listChecks();
       expect(checks.length).toBeGreaterThan(0);
 
       for (const check of checks) {
-        expect(check).toHaveProperty("group");
-        expect(check).toHaveProperty("name");
-        expect(check).toHaveProperty("description");
-        expect(check).toHaveProperty("tags");
         expect(typeof check.group).toBe("string");
+        expect(check.group.length).toBeGreaterThan(0);
         expect(typeof check.name).toBe("string");
+        expect(check.name.length).toBeGreaterThan(0);
         expect(typeof check.description).toBe("string");
+        expect(check.description.length).toBeGreaterThan(0);
         expect(Array.isArray(check.tags)).toBe(true);
+        expect(check.tags.length).toBeGreaterThan(0);
       }
     });
 
     it("should have same count as getAllChecks", () => {
       expect(listChecks()).toHaveLength(getAllChecks().length);
+    });
+
+    it("should include checks from every group", () => {
+      const checks = listChecks();
+      const groupsInOutput = new Set(checks.map((c) => c.group));
+      for (const name of EXPECTED_GROUPS) {
+        expect(
+          groupsInOutput.has(name),
+          `listChecks() missing checks from group "${name}"`,
+        ).toBe(true);
+      }
     });
   });
 });

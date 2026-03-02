@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TAG } from "../types.js";
-import type { CheckTag } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
 import { DEFAULT_CONFIG } from "../config/types.js";
 import {
@@ -97,16 +96,17 @@ describe("checks utilities", () => {
     });
 
     it("should use rootTags for effort when provided", () => {
-      // Tags say recommended, but rootTags override effort to low
+      // Tags say recommended + high, but rootTags override effort to low
       expect(getFixPriority([TAG.recommended, TAG.effort.high], [TAG.effort.low])).toBe(3);
     });
   });
 
   describe("getCheckStatus", () => {
-    it("should return enabled by default", () => {
+    it("should return enabled by default when no config overrides", () => {
       const config = makeConfig();
       const result = getCheckStatus("some-check", [TAG.required], "package-json", config);
       expect(result.status).toBe("enabled");
+      expect(result.mutedUntil).toBeUndefined();
     });
 
     it("should return disabled when check is set to off", () => {
@@ -117,13 +117,35 @@ describe("checks utilities", () => {
       expect(result.status).toBe("disabled");
     });
 
-    it("should return disabled when a tag is off", () => {
+    it("should return disabled when check is set to off as tuple", () => {
       const config = makeConfig({
+        checks: { "some-check": ["off", { exceptions: [] }] },
+      });
+      const result = getCheckStatus("some-check", [TAG.required], "package-json", config);
+      expect(result.status).toBe("disabled");
+    });
+
+    it("should return disabled when a tag is off, even if check is explicitly error", () => {
+      const config = makeConfig({
+        checks: { "some-check": "error" },
         tags: { opinionated: "off" },
       });
       const result = getCheckStatus(
         "some-check",
         [TAG.opinionated, TAG.effort.low],
+        "package-json",
+        config,
+      );
+      expect(result.status).toBe("disabled");
+    });
+
+    it("should return disabled when only one of multiple tags is off", () => {
+      const config = makeConfig({
+        tags: { "effort:low": "off" },
+      });
+      const result = getCheckStatus(
+        "some-check",
+        [TAG.required, TAG.effort.low],
         "package-json",
         config,
       );
@@ -138,6 +160,22 @@ describe("checks utilities", () => {
       expect(result.status).toBe("disabled");
     });
 
+    it("should return enabled when a different check is off", () => {
+      const config = makeConfig({
+        checks: { "other-check": "off" },
+      });
+      const result = getCheckStatus("some-check", [TAG.required], "package-json", config);
+      expect(result.status).toBe("enabled");
+    });
+
+    it("should return enabled when a different group is off", () => {
+      const config = makeConfig({
+        groups: { eslint: "off" },
+      });
+      const result = getCheckStatus("some-check", [TAG.required], "package-json", config);
+      expect(result.status).toBe("enabled");
+    });
+
     describe("skip-until", () => {
       beforeEach(() => {
         vi.useFakeTimers();
@@ -147,7 +185,7 @@ describe("checks utilities", () => {
         vi.useRealTimers();
       });
 
-      it("should return muted when skip-until is active", () => {
+      it("should return muted with date when skip-until is active", () => {
         vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
         const config = makeConfig({
           checks: { "some-check": "skip-until-2025-06-01" },
@@ -169,14 +207,23 @@ describe("checks utilities", () => {
   });
 
   describe("getValidCheckNames", () => {
-    it("should return a non-empty Set", () => {
+    it("should return a non-empty Set of strings", () => {
       const names = getValidCheckNames();
       expect(names.size).toBeGreaterThan(0);
+      for (const name of names) {
+        expect(typeof name).toBe("string");
+      }
     });
 
     it("should contain known check names", () => {
       const names = getValidCheckNames();
       expect(names.has("package-json-has-name")).toBe(true);
+      expect(names.has("gitignore-has-node-modules")).toBe(true);
+    });
+
+    it("should not contain empty or undefined values", () => {
+      const names = getValidCheckNames();
+      expect(names.has("")).toBe(false);
     });
   });
 
@@ -186,11 +233,13 @@ describe("checks utilities", () => {
       expect(names.size).toBeGreaterThan(0);
     });
 
-    it("should contain known group names", () => {
+    it("should contain all known group names", () => {
       const names = getValidGroupNames();
       expect(names.has("package-json")).toBe(true);
       expect(names.has("gitignore")).toBe(true);
       expect(names.has("docs")).toBe(true);
+      expect(names.has("eslint")).toBe(true);
+      expect(names.has("bundle-size")).toBe(true);
     });
   });
 
@@ -200,24 +249,39 @@ describe("checks utilities", () => {
       expect(tags.size).toBeGreaterThan(0);
     });
 
-    it("should contain known tag values", () => {
+    it("should contain expected tag values from both simple and grouped tags", () => {
       const tags = getValidTagNames();
       expect(tags.has("required")).toBe(true);
       expect(tags.has("recommended")).toBe(true);
       expect(tags.has("effort:low")).toBe(true);
+      expect(tags.has("effort:medium")).toBe(true);
+      expect(tags.has("node")).toBe(true);
     });
   });
 
   describe("findCheck", () => {
-    it("should find an existing check", () => {
+    it("should find an existing check and return its group", () => {
       const found = findCheck("package-json-has-name");
       expect(found).not.toBeNull();
       expect(found!.check.name).toBe("package-json-has-name");
       expect(found!.group).toBe("package-json");
     });
 
+    it("should return a check with all required properties", () => {
+      const found = findCheck("package-json-has-name");
+      expect(found).not.toBeNull();
+      expect(found!.check.description).toBeTruthy();
+      expect(Array.isArray(found!.check.tags)).toBe(true);
+      expect(found!.check.tags.length).toBeGreaterThan(0);
+      expect(typeof found!.check.run).toBe("function");
+    });
+
     it("should return null for unknown check", () => {
       expect(findCheck("nonexistent-check-xyz")).toBeNull();
+    });
+
+    it("should return null for empty string", () => {
+      expect(findCheck("")).toBeNull();
     });
   });
 
@@ -225,12 +289,18 @@ describe("checks utilities", () => {
     it("should return true for fix with options array", () => {
       const fix = {
         description: "Fix something",
-        options: [{ id: "a", label: "Option A", run: async () => ({ success: true, message: "" }) }],
+        options: [
+          {
+            id: "a",
+            label: "Option A",
+            run: async () => ({ success: true, message: "" }),
+          },
+        ],
       };
       expect(isFixWithOptions(fix)).toBe(true);
     });
 
-    it("should return false for simple fix", () => {
+    it("should return false for simple fix (has run, no options)", () => {
       const fix = {
         description: "Fix something",
         run: async () => ({ success: true, message: "" }),
@@ -241,6 +311,16 @@ describe("checks utilities", () => {
     it("should return false for null/undefined", () => {
       expect(isFixWithOptions(null)).toBe(false);
       expect(isFixWithOptions(undefined)).toBe(false);
+    });
+
+    it("should return false for object without options property", () => {
+      expect(isFixWithOptions({ description: "foo" })).toBe(false);
+      expect(isFixWithOptions({})).toBe(false);
+    });
+
+    it("should return false for object with non-array options", () => {
+      expect(isFixWithOptions({ options: "not-an-array" })).toBe(false);
+      expect(isFixWithOptions({ options: 42 })).toBe(false);
     });
   });
 
@@ -255,6 +335,16 @@ describe("checks utilities", () => {
 
     it("should return 0 for empty config", () => {
       const config = makeConfig();
+      expect(countMutedChecks(config)).toBe(0);
+    });
+
+    it("should return 0 for config with only off and error entries", () => {
+      const config = makeConfig({
+        checks: {
+          "check-a": "off",
+          "check-b": "error",
+        },
+      });
       expect(countMutedChecks(config)).toBe(0);
     });
 
@@ -281,7 +371,7 @@ describe("checks utilities", () => {
       expect(countMutedChecks(config)).toBe(0);
     });
 
-    it("should handle tuple entries", () => {
+    it("should handle tuple entries with skip-until severity", () => {
       vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
       const config = makeConfig({
         checks: {
@@ -293,37 +383,52 @@ describe("checks utilities", () => {
   });
 
   describe("buildFixableMap", () => {
-    it("should return a Map with entries for all checks", () => {
+    it("should return a Map with entries for all registered checks", () => {
       const map = buildFixableMap();
-      expect(map.size).toBeGreaterThan(0);
+      const validNames = getValidCheckNames();
+      expect(map.size).toBe(validNames.size);
     });
 
-    it("should have boolean values", () => {
+    it("should mark checks that have fixes as true", () => {
       const map = buildFixableMap();
-      for (const value of map.values()) {
-        expect(typeof value).toBe("boolean");
-      }
+      // tsconfig-exists has a fix (creates tsconfig.json)
+      const found = findCheck("tsconfig-exists");
+      expect(found).not.toBeNull();
+      expect(found!.check.fix).toBeDefined();
+      expect(map.get("tsconfig-exists")).toBe(true);
+    });
+
+    it("should mark checks without fixes as false", () => {
+      const map = buildFixableMap();
+      // size-limit-installed has no fix
+      const found = findCheck("size-limit-installed");
+      expect(found).not.toBeNull();
+      expect(found!.check.fix).toBeUndefined();
+      expect(map.get("size-limit-installed")).toBe(false);
     });
   });
 
   describe("buildTagsMap", () => {
-    it("should return a Map with entries for all checks", () => {
+    it("should return a Map with entries for all registered checks", () => {
       const map = buildTagsMap();
-      expect(map.size).toBeGreaterThan(0);
+      const validNames = getValidCheckNames();
+      expect(map.size).toBe(validNames.size);
     });
 
-    it("should have arrays of tags as values", () => {
+    it("should return the actual tags for a known check", () => {
       const map = buildTagsMap();
-      for (const tags of map.values()) {
-        expect(Array.isArray(tags)).toBe(true);
-        expect(tags.length).toBeGreaterThan(0);
+      const tags = map.get("size-limit-installed");
+      expect(tags).toBeDefined();
+      expect(tags).toContain(TAG.node);
+      expect(tags).toContain(TAG.recommended);
+      expect(tags).toContain(TAG.tool["size-limit"]);
+    });
+
+    it("should have non-empty tag arrays for every check", () => {
+      const map = buildTagsMap();
+      for (const [name, tags] of map) {
+        expect(tags.length, `check "${name}" should have at least one tag`).toBeGreaterThan(0);
       }
-    });
-
-    it("should match buildFixableMap in size", () => {
-      const fixable = buildFixableMap();
-      const tags = buildTagsMap();
-      expect(tags.size).toBe(fixable.size);
     });
   });
 });

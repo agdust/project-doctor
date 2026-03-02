@@ -9,6 +9,9 @@ import {
   updateConfig,
   resolveConfig,
   detectProjectTypeWithCause,
+  isCheckOff,
+  isTagOff,
+  isGroupOff,
 } from "./loader.js";
 
 describe("config loader", () => {
@@ -196,19 +199,28 @@ describe("config loader", () => {
     });
   });
 
-  describe("isTagOff / isGroupOff helpers", () => {
-    it("isTagOff should report off tag as off", async () => {
+  describe("isCheckOff / isTagOff / isGroupOff helpers", () => {
+    it("isCheckOff should return true for off checks and false otherwise", async () => {
+      await updateConfig(tempDir, { checks: { "disabled-check": "off", "enabled-check": "error" } });
+      const resolved = await loadAndResolveConfig(tempDir);
+
+      expect(isCheckOff(resolved, "disabled-check")).toBe(true);
+      expect(isCheckOff(resolved, "enabled-check")).toBe(false);
+      expect(isCheckOff(resolved, "unconfigured-check")).toBe(false);
+    });
+
+    it("isTagOff should return true for off tags and false otherwise", async () => {
       await updateConfig(tempDir, { tags: { opinionated: "off" } });
       const resolved = await loadAndResolveConfig(tempDir);
-      const { isTagOff, isGroupOff } = await import("./loader.js");
+
       expect(isTagOff(resolved, "opinionated")).toBe(true);
       expect(isTagOff(resolved, "required")).toBe(false);
     });
 
-    it("isGroupOff should report off group as off", async () => {
+    it("isGroupOff should return true for off groups and false otherwise", async () => {
       await updateConfig(tempDir, { groups: { eslint: "off" } });
       const resolved = await loadAndResolveConfig(tempDir);
-      const { isGroupOff } = await import("./loader.js");
+
       expect(isGroupOff(resolved, "eslint")).toBe(true);
       expect(isGroupOff(resolved, "docs")).toBe(false);
     });
@@ -240,13 +252,29 @@ describe("config loader", () => {
       expect(config?.checks?.["some-check"]).toBe("skip-until-2025-06-01");
     });
 
-    it("should resolve skip-until correctly", async () => {
-      await updateConfig(tempDir, {
-        checks: { "some-check": "skip-until-2025-06-01" },
-      });
+    it("isCheckOff should treat active skip-until as off (muted)", async () => {
+      // Use a date in the near future (within the 3-year max window)
+      const futureDate = new Date();
+      futureDate.setFullYear(futureDate.getFullYear() + 1);
+      const dateStr = futureDate.toISOString().split("T")[0];
 
+      await updateConfig(tempDir, {
+        checks: { "muted-check": `skip-until-${dateStr}` },
+      });
       const resolved = await loadAndResolveConfig(tempDir);
-      expect(resolved.checks["some-check"]).toBe("skip-until-2025-06-01");
+
+      // Active skip-until is treated as "off" by isSeverityOff
+      expect(isCheckOff(resolved, "muted-check")).toBe(true);
+    });
+
+    it("isCheckOff should treat expired skip-until as not off", async () => {
+      await updateConfig(tempDir, {
+        checks: { "expired-check": "skip-until-2020-01-01" },
+      });
+      const resolved = await loadAndResolveConfig(tempDir);
+
+      // Expired skip-until should NOT be treated as off — check re-enables
+      expect(isCheckOff(resolved, "expired-check")).toBe(false);
     });
   });
 });
