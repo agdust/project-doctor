@@ -19,6 +19,7 @@ interface SnapshotEntry {
 const HISTORY_DIR = ".project-doctor";
 const HISTORY_FILE = "history.json";
 
+// AGENT: seems like this code is used somewhere else, maybe it's worth to put it into the util?
 function getToday(): string {
   return new Date().toISOString().split("T")[0];
 }
@@ -45,6 +46,7 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
   const global = await createGlobalContext(projectPath);
 
   // Run all checks
+  // AGENT: shouldnt here project configuration be respected? Why we call Raw here?
   const checkResults = await runAllChecksRaw(global);
 
   const failingChecks = checkResults.filter((r) => r.status === "fail").map((r) => r.name);

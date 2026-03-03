@@ -23,7 +23,10 @@ import {
   loadContext as loadEditorconfigContext,
   checks as editorconfigChecks,
 } from "./checks/editorconfig/index.js";
-import { loadContext as loadNodeVersionContext, checks as nodeVersionChecks } from "./checks/node-version/index.js";
+import {
+  loadContext as loadNodeVersionContext,
+  checks as nodeVersionChecks,
+} from "./checks/node-version/index.js";
 import { loadContext as loadDocsContext, checks as docsChecks } from "./checks/docs/index.js";
 import { loadContext as loadDepsContext, checks as depsChecks } from "./checks/deps/index.js";
 import { loadContext as loadEnvContext, checks as envChecks } from "./checks/env/index.js";
@@ -63,11 +66,6 @@ export const manualChecks: ManualCheck[] = manualChecksList;
 
 export function getAllChecks(): Check[] {
   return checkGroups.flatMap((group) => group.checks as Check[]);
-}
-
-export function getChecksByGroup(groupName: string): Check[] {
-  const group = checkGroups.find((g) => g.name === groupName);
-  return (group?.checks as Check[]) ?? [];
 }
 
 export function listGroups(): string[] {

@@ -38,7 +38,7 @@ describe("fix-chains", () => {
     it("returns the first element of the chain for dependent checks", () => {
       expect(getChainRoot("size-limit-configured")).toBe("size-limit-installed");
       expect(getChainRoot("size-limit-script")).toBe("size-limit-installed");
-      expect(getChainRoot("readme-has-title")).toBe("readme-exists");
+      expect(getChainRoot("env-example-not-empty")).toBe("env-example-exists");
       expect(getChainRoot("tsconfig-strict-enabled")).toBe("tsconfig-exists");
     });
   });
@@ -46,12 +46,12 @@ describe("fix-chains", () => {
   describe("compareByChain", () => {
     it("returns -1 when first check must come before second", () => {
       expect(compareByChain("size-limit-installed", "size-limit-configured")).toBe(-1);
-      expect(compareByChain("readme-exists", "readme-has-title")).toBe(-1);
+      expect(compareByChain("env-example-not-empty", "env-example-exists")).toBe(-1);
     });
 
     it("returns 1 when second check must come before first", () => {
       expect(compareByChain("size-limit-configured", "size-limit-installed")).toBe(1);
-      expect(compareByChain("readme-has-title", "readme-exists")).toBe(1);
+      expect(compareByChain("env-example-not-empty", "env-example-exists")).toBe(1);
     });
 
     it("returns 0 when checks have no dependency relationship", () => {

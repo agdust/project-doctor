@@ -125,6 +125,8 @@ export interface AppState<TCtx> {
 // Helpers for creating options (reduces boilerplate)
 // ============================================================================
 
+// AGENT: refacotr this file to either have only types or change its name to something else, to avoid confusion
+
 /** Create an action option */
 export function action<TCtx>(
   value: string,

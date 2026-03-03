@@ -70,6 +70,7 @@ export async function loadConfig(projectPath: string): Promise<Config | null> {
     console.warn(`Warning: Could not parse ${json5Path} - using defaults`);
   }
 
+  // AGENT: make sure that if we read file as json, we write it as json too. If user wants to define it as json for their own needs -- we do not overwrite with json5
   // Try legacy .project-doctor/config.json
   const jsonPath = path.join(projectPath, ".project-doctor", "config.json");
   const jsonResult = await readJsonFile<Config>(jsonPath);
@@ -80,6 +81,7 @@ export async function loadConfig(projectPath: string): Promise<Config | null> {
     console.warn(`Warning: Could not parse ${jsonPath} - using defaults`);
   }
 
+  // AGENT: remove all code belonging to the `doctor` field in package json. We not gonna support this
   // Try package.json#doctor
   const packagePath = path.join(projectPath, "package.json");
   const packageResult = await readJsonFile<PackageJson>(packagePath);
@@ -126,7 +128,6 @@ async function fileExists(path: string): Promise<boolean> {
     await access(path);
     return true;
   } catch {
-    // File doesn't exist or isn't accessible
     return false;
   }
 }

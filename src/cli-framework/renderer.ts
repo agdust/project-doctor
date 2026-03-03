@@ -18,6 +18,7 @@ export function divider(width = 45): void {
  * Print a blank line
  */
 export function blank(): void {
+  // AGENT: make sure all empty strings renderings use this function
   console.log();
 }
 
@@ -127,6 +128,7 @@ export function status(
 ): void {
   const prefix = " ".repeat(indent);
   const icons = {
+    // AGENT: unify usage of symbols of success/error/warning/arrow/circle icons. Right now these are scattered across project
     pass: green("✓"),
     fail: red("✗"),
     warn: yellow("⚠"),

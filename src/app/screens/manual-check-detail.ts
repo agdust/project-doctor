@@ -21,6 +21,7 @@ function statusDisplay(item: ManualCheckItem): { icon: string; label: string } {
       return { icon: dim("□"), label: dim("Not verified") };
     }
     case "muted": {
+      // AGENT: unify usage if these icons too. Do not use them directly, only via enumish object
       return { icon: yellow("⏲"), label: yellow("Muted") };
     }
     case "disabled": {

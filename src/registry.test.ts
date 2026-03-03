@@ -1,12 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  checkGroups,
-  manualChecks,
-  getAllChecks,
-  getChecksByGroup,
-  listGroups,
-  listChecks,
-} from "./registry.js";
+import { checkGroups, manualChecks, getAllChecks, listGroups, listChecks } from "./registry.js";
 
 describe("registry", () => {
   const EXPECTED_GROUPS = [
@@ -81,10 +74,7 @@ describe("registry", () => {
             check.description.length,
             `check "${check.name}" has empty description`,
           ).toBeGreaterThan(0);
-          expect(
-            check.tags.length,
-            `check "${check.name}" has no tags`,
-          ).toBeGreaterThan(0);
+          expect(check.tags.length, `check "${check.name}" has no tags`).toBeGreaterThan(0);
         }
       }
     });
@@ -160,27 +150,6 @@ describe("registry", () => {
     });
   });
 
-  describe("getChecksByGroup", () => {
-    it("should return all checks for an existing group", () => {
-      const checks = getChecksByGroup("package-json");
-      const group = checkGroups.find((g) => g.name === "package-json")!;
-
-      // Count should match
-      expect(checks).toHaveLength(group.checks.length);
-
-      // Names should match
-      const expectedNames = group.checks.map((c) => c.name);
-      for (const check of checks) {
-        expect(expectedNames).toContain(check.name);
-      }
-    });
-
-    it("should return empty array for unknown group", () => {
-      const checks = getChecksByGroup("nonexistent-group");
-      expect(checks).toEqual([]);
-    });
-  });
-
   describe("listGroups", () => {
     it("should return all group names matching EXPECTED_GROUPS", () => {
       const groups = listGroups();
@@ -216,10 +185,9 @@ describe("registry", () => {
       const checks = listChecks();
       const groupsInOutput = new Set(checks.map((c) => c.group));
       for (const name of EXPECTED_GROUPS) {
-        expect(
-          groupsInOutput.has(name),
-          `listChecks() missing checks from group "${name}"`,
-        ).toBe(true);
+        expect(groupsInOutput.has(name), `listChecks() missing checks from group "${name}"`).toBe(
+          true,
+        );
       }
     });
   });

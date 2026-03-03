@@ -37,6 +37,7 @@ export interface PrintOptions {
 }
 
 export function printResults(results: CheckResult[], options: PrintOptions = {}): void {
+  // AGENT: is color-enabled support built in picocolors? Also isTTY has description in docks that it's always true
   const useColor = process.stdout.isTTY ?? false;
   const grouped = groupResults(results);
   const { fullReport = false } = options;

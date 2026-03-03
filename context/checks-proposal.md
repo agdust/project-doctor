@@ -52,9 +52,6 @@ Read file + basic validation.
 | `gitignore-has-node-modules` | Deps excluded |
 | `gitignore-has-dist` | Build excluded |
 | `gitignore-has-env` | Secrets excluded |
-| `readme-has-title` | Minimal docs |
-| `readme-has-install-section` | Setup instructions |
-| `readme-has-usage-section` | Usage docs |
 
 ---
 

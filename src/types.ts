@@ -32,7 +32,7 @@ export type CheckResult = CheckResultBase & {
 /** Helper: auto-generates `{ key: "prefix:key" }` from keys */
 function tagGroup<const P extends string, const K extends string>(
   prefix: P,
-  ...keys: K[]
+  keys: K[],
 ): { readonly [V in K]: `${P}:${V}` } {
   const result = {} as Record<string, string>;
   for (const key of keys) {
@@ -52,9 +52,9 @@ export const TAG = {
   security: "security",
 
   // Grouped tags (colon-separated, 2-level)
-  tool: tagGroup("tool", "eslint", "prettier", "knip", "jscpd", "size-limit"),
-  effort: tagGroup("effort", "low", "medium", "high"),
-  source: tagGroup("source", "lirantal-npm-security"),
+  tool: tagGroup("tool", ["eslint", "prettier", "knip", "jscpd", "size-limit"]),
+  effort: tagGroup("effort", ["low", "medium", "high"]),
+  source: tagGroup("source", ["lirantal-npm-security"]),
 } as const;
 
 type TagValues<T> = T extends string ? T : T extends Record<string, infer V> ? V : never;

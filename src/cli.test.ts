@@ -122,6 +122,7 @@ describe("CLI", () => {
   });
 
   describe("snapshot command", () => {
+    // AGENT: this tmp file path is not cross-platform?
     const testDir = "/tmp/test-snapshot-project";
 
     beforeEach(async () => {

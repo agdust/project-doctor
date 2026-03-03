@@ -21,6 +21,7 @@ const matchesChallenge = createMatcher(CHALLENGE_PHRASE);
  * Check if project has a git repository
  */
 export function hasGitRepo(projectPath: string): boolean {
+  // AGENT: does this check that cwd can be inside if git repo, and not be root of it?
   const gitDir = path.join(projectPath, ".git");
   return existsSync(gitDir);
 }

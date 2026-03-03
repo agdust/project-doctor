@@ -39,6 +39,7 @@ function shouldIncludeCheck(
   config: ResolvedConfig,
   options: FixFilterOptions,
 ): boolean {
+  // AGENT: I see this logoc with resolving check whether it's enabled or not is implemented deveral times. Feels like it can be refactored and put in one place
   // Check if this check is turned off in config
   if (isCheckOff(config, checkName)) {
     return false;
@@ -120,6 +121,7 @@ async function collectFixableChecks(
           optionIds,
           runFix: async (pickOption?: string) => {
             if (hasOptions) {
+              // AGENT: if check has multiple fix options, like `license-exists`, then do not include it into autofix at any place. Only checks with one canonical fix can be run like that
               const optionToUse = pickOption ?? fix.options[0]?.id;
               const option = fix.options.find((o) => o.id === optionToUse);
               if (!option) {

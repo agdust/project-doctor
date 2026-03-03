@@ -54,6 +54,8 @@ export async function copyFixtureToTemp(fixtureName: FixtureName): Promise<TempF
   };
 }
 
+// AGENT: this 2 functions seems vary overlapping. Can we reduce duplicativeness?
+
 /**
  * Create an empty temporary directory for testing.
  */

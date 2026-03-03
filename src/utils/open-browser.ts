@@ -6,6 +6,8 @@
 
 import { execFile } from "node:child_process";
 
+// AGENT: I changed my mind oavout this functionality. We won't be  opening browser at all. In all such cases, just show user a link, and action should only copy this url ot the clipboard, with short "Copied" shown when it's done. We won't call open, powershell or xdg-open at all, anywhere in the project
+
 /**
  * Safely open a URL in the default browser.
  * Uses execFile with arguments array to prevent shell injection.

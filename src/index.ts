@@ -32,7 +32,7 @@ export type {
 } from "./types.js";
 
 // Registry - access to all checks
-export { listChecks, listGroups, checkGroups, getAllChecks, getChecksByGroup } from "./registry.js";
+export { listChecks, listGroups, checkGroups, getAllChecks } from "./registry.js";
 
 // Runner - execute checks programmatically
 export { runChecks, runAllChecks, type RunnerOptions, type RunnerResult } from "./utils/runner.js";

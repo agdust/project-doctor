@@ -15,6 +15,8 @@
  * ```
  */
 
+// AGENT: seems like this file is not about types only, so maube renaming/splitting or refactroring required. Cause `types.test.ts` looks weird
+
 import type { ManualCheckState } from "../types.js";
 
 /**

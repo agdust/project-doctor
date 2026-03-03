@@ -101,7 +101,6 @@ async function main(): Promise<void> {
   }
 
   // Handle special commands
-
   if (command === "config") {
     await handleConfigCommand(args);
     return;
@@ -217,6 +216,7 @@ async function main(): Promise<void> {
   }
 
   // Default: launch interactive wizard
+  // AGENT: launch wizard only if strictly 0 args is passed, otherwise show an error that command or options are not recognized
   await runProjectDoctorApp(projectPath);
 }
 

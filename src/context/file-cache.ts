@@ -23,6 +23,7 @@ async function validateRelativePath(
   // Path escapes project directory if:
   // 1. It starts with ".." (goes up from project root)
   // 2. It's an absolute path (e.g., /etc/passwd on Unix, C:\... on Windows)
+  // AGENT: what if path does not start with .., bit has it in the middle?
   if (resolvedRelative.startsWith("..") || path.isAbsolute(resolvedRelative)) {
     throw new Error(`Path traversal not allowed: ${relativePath}`);
   }

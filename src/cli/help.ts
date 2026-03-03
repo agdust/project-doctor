@@ -10,25 +10,32 @@ project-doctor - Project health checks and maintenance tools
 
 Usage:
   project-doctor [path]
+  project-doctor init [path]
+
   project-doctor check [options] [path]
+
   project-doctor fix [path]
   project-doctor fix all [options] [path]
   project-doctor fix <check-name> [options] [path]
+
   project-doctor config [path]
   project-doctor config set project-type <js|generic> [path]
+
   project-doctor disable <check|tag|group> <name> [path]
   project-doctor enable <check|tag|group> <name> [path]
   project-doctor mute <check-name> [options] [path]
   project-doctor unmute <check-name> [path]
+
   project-doctor list [options] [path]
   project-doctor info <check-name> [options] [path]
   project-doctor overview [path]
   project-doctor snapshot [path]
   project-doctor history [path]
-  project-doctor init [path]
+
 
 Commands:
   (default)    Interactive wizard to fix issues
+  init         Create .project-doctor/config.json5
   check        Run all checks and report details
   fix          List fixable issues
   fix all      Fix all issues automatically
@@ -43,7 +50,6 @@ Commands:
   overview     Show project health summary
   snapshot     Save current status to history
   history      View progress over time
-  init         Create .project-doctor/config.json5
 
 Check Options:
   -f, --full-report       Show all checks (default: only failures)

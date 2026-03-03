@@ -19,7 +19,11 @@ export const fixChains: string[][] = [
   ["knip-installed", "knip-config"],
 
   // nvmrc: create file → valid format → modern version
-  ["node-version-nvmrc-exists", "node-version-nvmrc-valid-format", "node-version-nvmrc-modern-version"],
+  [
+    "node-version-nvmrc-exists",
+    "node-version-nvmrc-valid-format",
+    "node-version-nvmrc-modern-version",
+  ],
 
   // engines: add field → valid format → modern version
   ["package-json-has-engines", "node-version-engines-valid", "node-version-engines-modern"],
@@ -27,11 +31,6 @@ export const fixChains: string[][] = [
   // editorconfig: create file → add settings
   ["editorconfig-exists", "editorconfig-has-root"],
   ["editorconfig-exists", "editorconfig-has-indent"],
-
-  // README: create file → add sections
-  ["readme-exists", "readme-has-title"],
-  ["readme-exists", "readme-has-install-section"],
-  ["readme-exists", "readme-has-usage-section"],
 
   // env: create file → add content
   ["env-example-exists", "env-example-not-empty"],

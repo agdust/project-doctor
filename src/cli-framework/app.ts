@@ -22,10 +22,11 @@ export class App<TCtx> {
     this.config = config;
     this.screenMap = new Map(config.screens.map((s) => [s.id, s]));
 
-    const initialScreen = config.initialScreen ?? config.screens[0]?.id;
-    if (!initialScreen) {
+    if (!Array.isArray(config.screens) || config.screens.length === 0) {
       throw new Error("No screens defined");
     }
+
+    const initialScreen = config.initialScreen ?? config.screens[0].id;
 
     this.state = {
       current: initialScreen,
@@ -86,7 +87,7 @@ export class App<TCtx> {
     const choices = this.buildChoices(options);
 
     // Set up ESC and Ctrl+C handling with raw stdin for immediate response
-    const ac = new AbortController();
+    const abortController = new AbortController();
     let escPressed = false;
     let ctrlCPressed = false;
 
@@ -97,12 +98,12 @@ export class App<TCtx> {
       // ESC key is 0x1b (27)
       if (data[0] === 0x1b && data.length === 1) {
         escPressed = true;
-        ac.abort();
+        abortController.abort();
       }
       // Ctrl+C is 0x03
       if (data[0] === 0x03) {
         ctrlCPressed = true;
-        ac.abort();
+        abortController.abort();
       }
     };
 
@@ -121,7 +122,7 @@ export class App<TCtx> {
         theme: { prefix: "", keybindings: ["vim"] },
         default: defaultValue,
       },
-      { signal: ac.signal },
+      { signal: abortController.signal },
     );
 
     // Add ESC listener after inquirer has set up its keyboard handling
@@ -214,6 +215,7 @@ export class App<TCtx> {
       await this.navigate(screen, option.to);
     } else if (option.type === "action") {
       const nextScreen = await option.run(this.state.context);
+      // AGENT: `__exit__` should be put in constant
       if (nextScreen === "__exit__") {
         this.state.shouldExit = true;
       } else if (nextScreen !== undefined) {
@@ -227,6 +229,7 @@ export class App<TCtx> {
    * Handle ESC key
    */
   private async handleEscape(screen: Screen<TCtx>): Promise<void> {
+    // AGENT: back, exit and stay should be key/values of enumish object
     const behavior = this.config.onEsc?.(this.state.context, screen.id) ?? "back";
 
     switch (behavior) {

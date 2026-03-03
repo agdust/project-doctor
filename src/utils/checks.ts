@@ -41,6 +41,7 @@ export const JS_GROUPS = new Set([
  */
 export function isGroupForProjectType(groupName: string, projectType: ProjectType): boolean {
   if (projectType === "js") {
+    // NOTE: for now project-doctor has no checks that are not applicable to js projects
     return true;
   }
   // For "generic" projects, skip JS-specific groups
@@ -156,6 +157,7 @@ export function getValidGroupNames(): Set<string> {
 }
 
 /** Get all valid tag names from checks */
+// AGENT: since we have all tags defined as typescript, we dont need to extract tags from checks anymore
 export function getValidTagNames(): Set<string> {
   const checks = listChecks();
   const tags = new Set<string>();
@@ -168,6 +170,7 @@ export function getValidTagNames(): Set<string> {
 }
 
 /** Find a check by name, returns the check and its group */
+// AGENT: maybe we construct a flat map one time and just reuse it everywhere instead of making launching `find` every time? This also applies to other places in app
 export function findCheck(checkName: string): { check: Check; group: string } | null {
   for (const group of checkGroups) {
     const check = group.checks.find((c) => c.name === checkName);
@@ -179,6 +182,7 @@ export function findCheck(checkName: string): { check: Check; group: string } | 
 }
 
 /** Check if a fix has options (vs simple fix) */
+// AGENT: maybe here in type giard type name can be reused instead of defining whole type inline?
 export function isFixWithOptions<T>(fix: unknown): fix is {
   description: string;
   options: {
@@ -297,8 +301,8 @@ export async function loadWhyFromDocs(_group: string, checkName: string): Promis
  */
 export function countMutedChecks(config: ResolvedConfig): number {
   let count = 0;
-  for (const entry of Object.values(config.checks)) {
-    const severity = extractSeverity(entry);
+  for (const check of Object.values(config.checks)) {
+    const severity = extractSeverity(check);
     if (severity !== undefined && isSkipUntil(severity) && isSkipUntilActive(severity)) {
       count++;
     }

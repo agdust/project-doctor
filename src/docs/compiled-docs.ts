@@ -46,6 +46,7 @@ export async function loadDocsManifest(): Promise<DocsManifest> {
 
   try {
     const content = await readFile(MANIFEST_PATH, "utf8");
+    // AGENT: safe json parse maybe?
     cachedManifest = JSON.parse(content) as DocsManifest;
     return cachedManifest;
   } catch {
