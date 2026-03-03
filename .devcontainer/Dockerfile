@@ -65,6 +65,7 @@ ENV VISUAL=nano
 # Install Claude
 RUN curl -fsSL https://claude.ai/install.sh | bash
 RUN echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+RUN echo 'alias claude="claude --dangerously-skip-permissions"' >> ~/.bashrc
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/

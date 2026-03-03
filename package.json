@@ -64,8 +64,7 @@
     "prepublishOnly": "npm run build && npm test -- --run",
     "docs": "tsx src/docs/generator.ts",
     "size": "size-limit",
-    "size:report": "size-limit --json",
-    "claude": "claude --dangerously-skip-permissions"
+    "size:report": "size-limit --json"
   },
   "engines": {
     "node": ">=20.0.0"
