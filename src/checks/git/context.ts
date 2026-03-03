@@ -1,6 +1,6 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
-import type { GlobalContext } from "../../types.js";
+import type { GlobalContext, FileCache } from "../../types.js";
 
 export interface GitContext {
   isRepo: boolean;
@@ -8,19 +8,18 @@ export interface GitContext {
   ciWorkflows: string[];
 }
 
-async function loadCIWorkflows(projectPath: string): Promise<string[]> {
+async function loadCIWorkflows(projectPath: string, files: FileCache): Promise<string[]> {
   const workflowDir = path.join(projectPath, ".github", "workflows");
   const workflows: string[] = [];
 
   try {
-    const files = await readdir(workflowDir);
-    for (const file of files) {
+    const dirFiles = await readdir(workflowDir);
+    for (const file of dirFiles) {
       if (file.endsWith(".yml") || file.endsWith(".yaml")) {
-        try {
-          const content = await readFile(path.join(workflowDir, file), "utf8");
+        const relativePath = path.join(".github", "workflows", file);
+        const content = await files.readText(relativePath);
+        if (content !== null) {
           workflows.push(content);
-        } catch {
-          // Skip unreadable files
         }
       }
     }
@@ -34,7 +33,7 @@ async function loadCIWorkflows(projectPath: string): Promise<string[]> {
 export async function loadContext(global: GlobalContext): Promise<GitContext> {
   const [isRepo, ciWorkflows] = await Promise.all([
     global.files.exists(".git"),
-    loadCIWorkflows(global.projectPath),
+    loadCIWorkflows(global.projectPath, global.files),
   ]);
   return { isRepo, ciWorkflows };
 }

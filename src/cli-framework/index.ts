@@ -45,13 +45,14 @@ export type {
 } from "./types.js";
 
 // Helper functions for creating options
-export { action, nav, separator, back } from "./types.js";
+export { action, nav, separator, back } from "./helpers.js";
 
 // App runtime
-export { App, runApp } from "./app.js";
+export { App, runApp, EXIT_VALUE, ESC_BEHAVIOR } from "./app.js";
 
 // Renderer utilities
 export {
+  ICONS,
   divider,
   blank,
   text,

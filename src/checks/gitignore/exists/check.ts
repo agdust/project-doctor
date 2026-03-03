@@ -1,6 +1,6 @@
-import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG, type Check } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
 
@@ -28,7 +28,7 @@ export const check: Check<GitignoreContext> = {
     description: "Create .gitignore with common defaults",
     run: async (global) => {
       const gitignorePath = path.join(global.projectPath, ".gitignore");
-      await writeFile(gitignorePath, DEFAULT_GITIGNORE, "utf8");
+      await atomicWriteFile(gitignorePath, DEFAULT_GITIGNORE, "utf8");
       return { success: true, message: "Created .gitignore" };
     },
   },

@@ -1,11 +1,4 @@
-import type { GlobalContext } from "../../types.js";
-
-interface PackageJson {
-  engines?: {
-    node?: string;
-    npm?: string;
-  };
-}
+import type { GlobalContext, PackageJson } from "../../types.js";
 
 export interface NodeVersionContext {
   nvmrc: {

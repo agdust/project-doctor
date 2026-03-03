@@ -1,22 +1,5 @@
-import type { GlobalContext } from "../../types.js";
+import type { GlobalContext, PackageJson } from "../../types.js";
 import { safeJsonParse } from "../../utils/safe-json.js";
-
-export interface PackageJson {
-  name?: string;
-  version?: string;
-  description?: string;
-  license?: string;
-  type?: "module" | "commonjs";
-  main?: string;
-  exports?: unknown;
-  engines?: { node?: string };
-  scripts?: Record<string, string>;
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  peerDependencies?: Record<string, string>;
-  workspaces?: string[] | { packages: string[] };
-  packageManager?: string;
-}
 
 export interface PackageJsonContext {
   raw: string | null;

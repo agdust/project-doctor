@@ -11,6 +11,7 @@ import * as readline from "node:readline";
 import { loadConfig, updateConfig } from "../config/loader.js";
 import { createMatcher } from "../typing-challenge/typing-challenge.js";
 import { bold, dim, yellow, red, green, cyan } from "./colors.js";
+import { blank } from "../cli-framework/renderer.js";
 
 const CHALLENGE_PHRASE = "i understand the risks";
 
@@ -81,47 +82,47 @@ export async function ensureGitSafety(projectPath: string): Promise<boolean> {
   }
 
   // Show warning
-  console.log();
-  console.log();
+  blank();
+  blank();
   console.log(`  ${yellow(`┌${"─".repeat(58)}┐`)}`);
   console.log(
     `  ${yellow("│")}  ${bold(yellow("WARNING: No Git Repository Detected"))}${" ".repeat(21)}${yellow("│")}`,
   );
   console.log(`  ${yellow(`└${"─".repeat(58)}┘`)}`);
-  console.log();
+  blank();
   console.log(`  ${dim("This project is not under version control.")}`);
   console.log(`  ${dim("Project Doctor can modify files as part of auto-fixes.")}`);
   console.log(`  ${dim("Without git, you cannot easily undo these changes.")}`);
-  console.log();
+  blank();
   console.log(`  ${bold("Recommended:")} Run ${cyan("git init")} before proceeding.`);
-  console.log();
+  blank();
   console.log(`  ${dim("To continue anyway, type:")} ${cyan(CHALLENGE_PHRASE)}`);
-  console.log();
+  blank();
 
   const answer = await promptInput("Type to confirm (or press ESC/Enter to cancel)");
 
   if (answer === null || !answer.trim()) {
-    console.log();
+    blank();
     console.log(`  ${red("Cancelled.")} Initialize git with: ${cyan("git init")}`);
-    console.log();
+    blank();
     return false;
   }
 
   if (!matchesChallenge(answer)) {
-    console.log();
+    blank();
     console.log(`  ${red("Confirmation did not match.")} Operation cancelled.`);
-    console.log();
+    blank();
     return false;
   }
 
   // Save confirmation to config
   await updateConfig(projectPath, { noGitConfirmed: true });
 
-  console.log();
+  blank();
   console.log(
     `  ${green("Confirmed.")} ${dim("This warning won't appear again for this project.")}`,
   );
-  console.log();
+  blank();
 
   return true;
 }

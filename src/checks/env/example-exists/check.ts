@@ -1,6 +1,6 @@
-import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { EnvContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -24,10 +24,9 @@ export const check: Check<EnvContext> = {
   fix: {
     description: "Create .env.example from .env (with values removed)",
     run: async (global) => {
-      const envPath = path.join(global.projectPath, ".env");
       const envExamplePath = path.join(global.projectPath, ".env.example");
 
-      const envContent = await readFile(envPath, "utf8");
+      const envContent = (await global.files.readText(".env")) ?? "";
 
       // Convert .env to .env.example by removing values
       const exampleContent = envContent
@@ -45,7 +44,7 @@ export const check: Check<EnvContext> = {
         })
         .join("\n");
 
-      await writeFile(envExamplePath, exampleContent, "utf8");
+      await atomicWriteFile(envExamplePath, exampleContent, "utf8");
       return { success: true, message: "Created .env.example from .env" };
     },
   },

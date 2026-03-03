@@ -1,5 +1,30 @@
 import type { ResolvedConfig } from "./config/types.js";
 
+// ============================================================================
+// PackageJson — unified type used across all check groups and detection
+// ============================================================================
+
+export interface PackageJson {
+  name?: string;
+  version?: string;
+  description?: string;
+  license?: string;
+  type?: "module" | "commonjs";
+  main?: string;
+  exports?: unknown;
+  engines?: {
+    node?: string;
+    npm?: string;
+  };
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  workspaces?: string[] | { packages: string[] };
+  packageManager?: string;
+  "size-limit"?: unknown[];
+}
+
 export type CheckStatus = "pass" | "fail" | "skip";
 
 export interface CheckResultBase {

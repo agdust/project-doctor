@@ -1,5 +1,6 @@
 import type { GlobalContext } from "../types.js";
-import { DEFAULT_CONFIG, type ResolvedConfig } from "../config/types.js";
+import type { ResolvedConfig } from "../config/types.js";
+import { DEFAULT_CONFIG } from "../config/severity.js";
 import { createFileCache } from "./file-cache.js";
 import { detectTools } from "./detect.js";
 import { loadAndResolveConfig, detectProjectTypeWithCause } from "../config/loader.js";

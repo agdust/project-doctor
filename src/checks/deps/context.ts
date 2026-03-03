@@ -1,10 +1,5 @@
-import type { GlobalContext } from "../../types.js";
+import type { GlobalContext, PackageJson } from "../../types.js";
 import { isIgnored } from "../../utils/gitignore.js";
-
-interface PackageJson {
-  devDependencies?: Record<string, string>;
-  scripts?: Record<string, string>;
-}
 
 export interface DepsContext {
   hasPackageLock: boolean;

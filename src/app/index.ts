@@ -4,11 +4,12 @@
  * Multi-screen CLI app for project health checking and fixing.
  */
 
-import { runApp, type AppConfig } from "../cli-framework/index.js";
+import { runApp, ESC_BEHAVIOR, ICONS, type AppConfig } from "../cli-framework/index.js";
 import { blank, text, muted, divider, colors } from "../cli-framework/index.js";
 import type { AppContext } from "./types.js";
 import { createAppContext } from "./loader.js";
 import { ensureGitSafety } from "../utils/git-safety.js";
+import { SCREEN } from "./screen-ids.js";
 import { homeScreen } from "./screens/home.js";
 import { issuesScreen } from "./screens/issues.js";
 import { overviewScreen } from "./screens/overview.js";
@@ -68,7 +69,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       manualMutedScreen,
       manualDisabledScreen,
     ],
-    initialScreen: "home",
+    initialScreen: SCREEN.home,
 
     onExit: (ctx) => {
       // Show exit summary if any work was done
@@ -78,16 +79,16 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
         divider();
         blank();
         if (fixed > 0) {
-          text(`${colors.green("✓")} ${fixed} fixed`);
+          text(`${colors.green(ICONS.pass)} ${fixed} fixed`);
         }
         if (mutedCount > 0) {
-          text(`${colors.yellow("⏸")} ${mutedCount} muted`);
+          text(`${colors.yellow(ICONS.paused)} ${mutedCount} muted`);
         }
         if (disabled > 0) {
-          text(`${colors.yellow("⊘")} ${disabled} disabled`);
+          text(`${colors.yellow(ICONS.noEntry)} ${disabled} disabled`);
         }
         if (skipped > 0) {
-          text(`${colors.dim("→")} ${skipped} skipped`);
+          text(`${colors.dim(ICONS.info)} ${skipped} skipped`);
         }
       }
       blank();
@@ -95,14 +96,11 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
 
     onEsc: (_ctx, screenId) => {
       // ESC on home exits
-      if (screenId === "home") {
-        return "exit";
+      if (screenId === SCREEN.home) {
+        return ESC_BEHAVIOR.exit;
       }
-      // ESC on issue-detail goes back to issues list
-      if (screenId === "issue-detail" || screenId === "why") {
-        return "back";
-      }
-      return "back";
+      // Default: go back
+      return ESC_BEHAVIOR.back;
     },
   };
 

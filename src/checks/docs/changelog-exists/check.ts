@@ -1,6 +1,6 @@
-import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -37,7 +37,7 @@ export const check: Check<DocsContext> = {
     description: "Create CHANGELOG.md template",
     run: async (global) => {
       const changelogPath = path.join(global.projectPath, "CHANGELOG.md");
-      await writeFile(changelogPath, DEFAULT_CHANGELOG, "utf8");
+      await atomicWriteFile(changelogPath, DEFAULT_CHANGELOG, "utf8");
       return { success: true, message: "Created CHANGELOG.md" };
     },
   },

@@ -7,9 +7,9 @@
  * Source: https://github.com/lirantal/npm-security-best-practices
  */
 
-import { writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { DepsContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -49,13 +49,7 @@ export const check: Check<DepsContext> = {
     description: "Add ignore-scripts=true to .npmrc",
     run: async (global) => {
       const npmrcPath = path.join(global.projectPath, ".npmrc");
-      let content = "";
-
-      try {
-        content = await readFile(npmrcPath, "utf8");
-      } catch {
-        // File doesn't exist
-      }
+      let content = (await global.files.readText(".npmrc")) ?? "";
 
       // Add ignore-scripts=true
       if (content && !content.endsWith("\n")) {
@@ -63,7 +57,7 @@ export const check: Check<DepsContext> = {
       }
       content += "ignore-scripts=true\n";
 
-      await writeFile(npmrcPath, content, "utf8");
+      await atomicWriteFile(npmrcPath, content, "utf8");
 
       return {
         success: true,

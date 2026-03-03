@@ -1,6 +1,6 @@
-import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { PrettierContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -30,7 +30,7 @@ export const check: Check<PrettierContext> = {
     description: "Create .prettierignore with defaults",
     run: async (global) => {
       const prettierignorePath = path.join(global.projectPath, ".prettierignore");
-      await writeFile(prettierignorePath, DEFAULT_PRETTIERIGNORE, "utf8");
+      await atomicWriteFile(prettierignorePath, DEFAULT_PRETTIERIGNORE, "utf8");
       return { success: true, message: "Created .prettierignore" };
     },
   },

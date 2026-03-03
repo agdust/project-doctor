@@ -9,6 +9,7 @@ import type { Screen } from "../../cli-framework/index.js";
 import { clear, bigTitle, blank, muted, colors } from "../../cli-framework/index.js";
 import { updateConfig, isTagOff } from "../../config/loader.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 import { TAG } from "../../types.js";
 
 const CATEGORIES = [
@@ -18,8 +19,8 @@ const CATEGORIES = [
 ] as const;
 
 export const categoriesScreen: Screen<AppContext> = {
-  id: "categories",
-  parent: "config",
+  id: SCREEN.categories,
+  parent: SCREEN.config,
 
   render: () => {},
   options: () => [],
@@ -86,6 +87,6 @@ export const categoriesScreen: Screen<AppContext> = {
     }
 
     // Return to config screen
-    return "config";
+    return SCREEN.config;
   },
 };

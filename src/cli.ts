@@ -20,6 +20,7 @@ import { runInit } from "./utils/init.js";
 import { runProjectDoctorApp } from "./app/index.js";
 import { printCheckResultsAsJson } from "./commands/check.js";
 import { bold, dim, red, yellow } from "./utils/colors.js";
+import { blank } from "./cli-framework/renderer.js";
 import { safeJsonParse } from "./utils/safe-json.js";
 import {
   printHelp,
@@ -72,7 +73,7 @@ function printCheckList(): void {
     console.log(`    ${check.description}`);
     console.log(`    ${tags}`);
   }
-  console.log("");
+  blank();
 }
 
 async function main(): Promise<void> {

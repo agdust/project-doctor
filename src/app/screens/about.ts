@@ -8,10 +8,11 @@ import { bold, dim } from "../../utils/colors.js";
 import type { Screen } from "../../cli-framework/index.js";
 import { blank, text, muted } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 export const aboutScreen: Screen<AppContext> = {
-  id: "about",
-  parent: "home",
+  id: SCREEN.about,
+  parent: SCREEN.home,
 
   render: () => {
     text(bold("Project Doctor"));

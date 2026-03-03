@@ -1,7 +1,7 @@
 import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, skip } from "../../helpers.js";
-import { extractCheckOptions } from "../../../config/types.js";
+import { extractCheckOptions } from "../../../config/severity.js";
 import { bold } from "../../../utils/colors.js";
 
 const name = "package-json-dev-deps-in-dependencies";

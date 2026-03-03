@@ -6,33 +6,34 @@
 
 import { bold, dim, green, yellow, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, blank, text, success, error, muted } from "../../cli-framework/index.js";
+import { action, blank, text, success, error, ICONS } from "../../cli-framework/index.js";
 import { setManualCheckState, setCheckSeverity } from "../../config/loader.js";
-import { createSkipUntil } from "../../config/types.js";
+import { getErrorMessage } from "../../utils/errors.js";
 import type { AppContext, ManualCheckItem } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
+import { createMuteDisableActions } from "./shared.js";
 
 /** Icon and label for each display state */
 function statusDisplay(item: ManualCheckItem): { icon: string; label: string } {
   switch (item.displayState) {
     case "done": {
-      return { icon: green("✓"), label: green("Verified") };
+      return { icon: green(ICONS.pass), label: green("Verified") };
     }
     case "not-done": {
-      return { icon: dim("□"), label: dim("Not verified") };
+      return { icon: dim(ICONS.unchecked), label: dim("Not verified") };
     }
     case "muted": {
-      // AGENT: unify usage if these icons too. Do not use them directly, only via enumish object
-      return { icon: yellow("⏲"), label: yellow("Muted") };
+      return { icon: yellow(ICONS.muted), label: yellow("Muted") };
     }
     case "disabled": {
-      return { icon: dim("–"), label: dim("Disabled") };
+      return { icon: dim(ICONS.disabled), label: dim("Disabled") };
     }
   }
 }
 
 export const manualCheckDetailScreen: Screen<AppContext> = {
-  id: "manual-check-detail",
-  parent: "manual-checklist",
+  id: SCREEN.manualCheckDetail,
+  parent: SCREEN.manualChecklist,
 
   render: (ctx) => {
     const item = ctx.manualCheckItems[ctx.selectedManualCheckIndex];
@@ -81,10 +82,10 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             blank();
             success("Marked as done", 3);
           } catch (error_) {
-            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+            error(getErrorMessage(error_), 3);
           }
           blank();
-          return "manual-checklist";
+          return SCREEN.manualChecklist;
         }),
       );
     } else if (item.displayState === "done") {
@@ -97,10 +98,10 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             blank();
             success("Marked as not done", 3);
           } catch (error_) {
-            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+            error(getErrorMessage(error_), 3);
           }
           blank();
-          return "manual-checklist";
+          return SCREEN.manualChecklist;
         }),
       );
     }
@@ -115,60 +116,32 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
             blank();
             success("Re-enabled", 3);
           } catch (error_) {
-            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+            error(getErrorMessage(error_), 3);
           }
           blank();
-          return "manual-checklist";
+          return SCREEN.manualChecklist;
         }),
       );
     }
 
     // Mute/disable only for active checks (not already muted/disabled)
     if (item.displayState === "done" || item.displayState === "not-done") {
-      // Mute for 2 weeks, Mute for 2 months, Disable permanently
       opts.push(
-        action("mute-2w", "Mute for 2 weeks", async (c) => {
-          try {
-            const muteDate = new Date();
-            muteDate.setDate(muteDate.getDate() + 14);
-            await setCheckSeverity(c.projectPath, item.check.name, createSkipUntil(muteDate));
-            item.displayState = "muted";
-            c.stats.muted++;
-            blank();
-            muted("Muted for 2 weeks", 3);
-          } catch (error_) {
-            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
-          }
-          blank();
-          return "manual-checklist";
-        }),
-        action("mute-2m", "Mute for 2 months", async (c) => {
-          try {
-            const muteDate = new Date();
-            muteDate.setMonth(muteDate.getMonth() + 2);
-            await setCheckSeverity(c.projectPath, item.check.name, createSkipUntil(muteDate));
-            item.displayState = "muted";
-            c.stats.muted++;
-            blank();
-            muted("Muted for 2 months", 3);
-          } catch (error_) {
-            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
-          }
-          blank();
-          return "manual-checklist";
-        }),
-        action("disable", "Disable", async (c) => {
-          try {
-            await setCheckSeverity(c.projectPath, item.check.name, "off");
-            item.displayState = "disabled";
-            c.stats.disabled++;
-            blank();
-            muted("Disabled permanently", 3);
-          } catch (error_) {
-            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
-          }
-          blank();
-          return "manual-checklist";
+        ...createMuteDisableActions({
+          getCheckName: () => item.check.name,
+          onComplete: () => SCREEN.manualChecklist,
+          extraOnMute: (c) => {
+            const currentItem = c.manualCheckItems[c.selectedManualCheckIndex];
+            if (currentItem !== undefined) {
+              currentItem.displayState = "muted";
+            }
+          },
+          extraOnDisable: (c) => {
+            const currentItem = c.manualCheckItems[c.selectedManualCheckIndex];
+            if (currentItem !== undefined) {
+              currentItem.displayState = "disabled";
+            }
+          },
         }),
       );
     }

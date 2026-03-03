@@ -16,13 +16,14 @@ import {
   success,
   error,
 } from "../../cli-framework/index.js";
-import { setCheckSeverity } from "../../config/loader.js";
-import { createSkipUntil } from "../../config/types.js";
+import { getErrorMessage } from "../../utils/errors.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
+import { moveToNextIssue, createMuteDisableActions } from "./shared.js";
 
 export const issueDetailScreen: Screen<AppContext> = {
-  id: "issue-detail",
-  parent: "issues",
+  id: SCREEN.issueDetail,
+  parent: SCREEN.issues,
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
@@ -50,7 +51,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     if (issue === undefined) {
       return [
         action("done", "Done", () => {
-          return "home";
+          return SCREEN.home;
         }),
       ];
     }
@@ -61,7 +62,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     if (issue.fixOptions && issue.fixOptions.length > 0) {
       // Navigate to fix options submenu
       opts.push(
-        nav("fix-options", "Fix...", "fix-options", {
+        nav("fix-options", "Fix...", SCREEN.fixOptions, {
           description: "Choose from available fix options",
         }),
       );
@@ -80,7 +81,7 @@ export const issueDetailScreen: Screen<AppContext> = {
               error(result.message, 3);
             }
           } catch (error_) {
-            error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+            error(getErrorMessage(error_), 3);
           }
           blank();
 
@@ -96,76 +97,25 @@ export const issueDetailScreen: Screen<AppContext> = {
           "why",
           "Why?",
           () => {
-            return "why";
+            return SCREEN.why;
           },
           "Learn why this check matters",
         ),
       );
     }
 
-    // Next (skip without tracking), Mute options, Disable
+    // Next (skip without tracking)
     opts.push(
       action("next", "Next", (c) => {
         c.stats.skipped++;
         return moveToNextIssue(c);
       }),
-      action("mute-2w", "Mute for 2 weeks", async (c) => {
-        try {
-          const muteDate = new Date();
-          muteDate.setDate(muteDate.getDate() + 14);
-          await setCheckSeverity(c.projectPath, issue.name, createSkipUntil(muteDate));
-          blank();
-          muted("Muted for 2 weeks", 3);
-          c.stats.muted++;
-        } catch (error_) {
-          error(error_ instanceof Error ? error_.message : "Unknown error", 3);
-        }
-        blank();
-
-        return moveToNextIssue(c);
-      }),
-      action("mute-2m", "Mute for 2 months", async (c) => {
-        try {
-          const muteDate = new Date();
-          muteDate.setMonth(muteDate.getMonth() + 2);
-          await setCheckSeverity(c.projectPath, issue.name, createSkipUntil(muteDate));
-          blank();
-          muted("Muted for 2 months", 3);
-          c.stats.muted++;
-        } catch (error_) {
-          error(error_ instanceof Error ? error_.message : "Unknown error", 3);
-        }
-        blank();
-
-        return moveToNextIssue(c);
-      }),
-      action("disable", "Disable", async (c) => {
-        try {
-          await setCheckSeverity(c.projectPath, issue.name, "off");
-          blank();
-          muted("Disabled permanently", 3);
-          c.stats.disabled++;
-        } catch (error_) {
-          error(error_ instanceof Error ? error_.message : "Unknown error", 3);
-        }
-        blank();
-
-        return moveToNextIssue(c);
+      ...createMuteDisableActions({
+        getCheckName: (c) => c.issues[c.currentIssueIndex].name,
+        onComplete: (c) => moveToNextIssue(c),
       }),
     );
 
     return opts;
   },
 };
-
-function moveToNextIssue(ctx: AppContext): string | undefined {
-  ctx.currentIssueIndex++;
-
-  if (ctx.currentIssueIndex >= ctx.issues.length) {
-    // All done - show summary and go home
-    return "summary";
-  }
-
-  // Stay on issue-detail for next issue (re-render)
-  return undefined;
-}

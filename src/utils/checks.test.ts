@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TAG } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
-import { DEFAULT_CONFIG } from "../config/types.js";
+import { DEFAULT_CONFIG } from "../config/severity.js";
 import {
   isGroupForProjectType,
   getFixPriority,

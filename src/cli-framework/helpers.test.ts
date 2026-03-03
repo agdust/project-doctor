@@ -1,11 +1,11 @@
 /**
- * CLI Framework Types Tests
+ * CLI Framework Helpers Tests
  */
 
 import { describe, it, expect } from "vitest";
-import { action, nav, separator, back } from "./types.js";
+import { action, nav, separator, back } from "./helpers.js";
 
-describe("cli-framework/types", () => {
+describe("cli-framework/helpers", () => {
   describe("action()", () => {
     it("creates an action option with required fields", () => {
       const run = async () => {};

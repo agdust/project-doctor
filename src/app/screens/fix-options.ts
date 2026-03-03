@@ -7,11 +7,13 @@
 import { bold, dim } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, blank, text, success, error } from "../../cli-framework/index.js";
+import { getErrorMessage } from "../../utils/errors.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 export const fixOptionsScreen: Screen<AppContext> = {
-  id: "fix-options",
-  parent: "issue-detail",
+  id: SCREEN.fixOptions,
+  parent: SCREEN.issueDetail,
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];
@@ -50,11 +52,16 @@ export const fixOptionsScreen: Screen<AppContext> = {
                 error(result.message, 3);
               }
             } catch (error_) {
-              error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+              error(getErrorMessage(error_), 3);
             }
             blank();
 
-            return moveToNextIssue(c);
+            // After fixing, advance to next issue but navigate back to issue-detail
+            c.currentIssueIndex++;
+            if (c.currentIssueIndex >= c.issues.length) {
+              return SCREEN.summary;
+            }
+            return SCREEN.issueDetail;
           },
           opt.description,
         ),
@@ -64,13 +71,3 @@ export const fixOptionsScreen: Screen<AppContext> = {
     return opts;
   },
 };
-
-function moveToNextIssue(ctx: AppContext): string | undefined {
-  ctx.currentIssueIndex++;
-
-  if (ctx.currentIssueIndex >= ctx.issues.length) {
-    return "summary";
-  }
-
-  return "issue-detail";
-}

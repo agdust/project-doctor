@@ -7,10 +7,11 @@
 import type { Screen } from "../../cli-framework/index.js";
 import { blank, title, muted, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 export const whyScreen: Screen<AppContext> = {
-  id: "why",
-  parent: "issue-detail",
+  id: SCREEN.why,
+  parent: SCREEN.issueDetail,
 
   render: (ctx) => {
     const issue = ctx.issues[ctx.currentIssueIndex];

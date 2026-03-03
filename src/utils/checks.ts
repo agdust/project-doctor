@@ -5,6 +5,7 @@
  */
 
 import { TAG, type CheckTag, type Check, type FixResult, type GlobalContext } from "../types.js";
+import { toDateString } from "./dates.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isTagOff, isGroupOff } from "../config/loader.js";
 import {
@@ -12,7 +13,7 @@ import {
   parseSkipUntil,
   isSkipUntilActive,
   extractSeverity,
-} from "../config/types.js";
+} from "../config/severity.js";
 import { checkGroups, listChecks } from "../registry.js";
 import { getWhyText as getWhyTextFromDocs } from "../docs/compiled-docs.js";
 
@@ -122,7 +123,7 @@ export function getCheckStatus(
       const date = parseSkipUntil(checkSeverity);
       return {
         status: "muted",
-        mutedUntil: date ? date.toISOString().split("T")[0] : undefined,
+        mutedUntil: date ? toDateString(date) : undefined,
       };
     }
   }
@@ -146,39 +147,57 @@ export function getCheckStatus(
 // Check Lookup
 // ============================================================================
 
+// Cached lookup structures (built lazily on first access)
+let _validCheckNames: Set<string> | null = null;
+let _validGroupNames: Set<string> | null = null;
+let _validTagNames: Set<string> | null = null;
+let _checkMap: Map<string, { check: Check; group: string }> | null = null;
+
+function ensureCheckMap(): Map<string, { check: Check; group: string }> {
+  if (_checkMap === null) {
+    _checkMap = new Map();
+    for (const group of checkGroups) {
+      for (const check of group.checks) {
+        _checkMap.set(check.name, { check: check as Check, group: group.name });
+      }
+    }
+  }
+  return _checkMap;
+}
+
 /** Get valid check names as a set */
 export function getValidCheckNames(): Set<string> {
-  return new Set(listChecks().map((c) => c.name));
+  if (_validCheckNames === null) {
+    _validCheckNames = new Set(listChecks().map((c) => c.name));
+  }
+  return _validCheckNames;
 }
 
 /** Get valid group names as a set */
 export function getValidGroupNames(): Set<string> {
-  return new Set(checkGroups.map((g) => g.name));
+  if (_validGroupNames === null) {
+    _validGroupNames = new Set(checkGroups.map((g) => g.name));
+  }
+  return _validGroupNames;
 }
 
 /** Get all valid tag names from checks */
-// AGENT: since we have all tags defined as typescript, we dont need to extract tags from checks anymore
 export function getValidTagNames(): Set<string> {
-  const checks = listChecks();
-  const tags = new Set<string>();
-  for (const check of checks) {
-    for (const tag of check.tags) {
-      tags.add(tag);
+  if (_validTagNames === null) {
+    const checks = listChecks();
+    _validTagNames = new Set<string>();
+    for (const check of checks) {
+      for (const tag of check.tags) {
+        _validTagNames.add(tag);
+      }
     }
   }
-  return tags;
+  return _validTagNames;
 }
 
 /** Find a check by name, returns the check and its group */
-// AGENT: maybe we construct a flat map one time and just reuse it everywhere instead of making launching `find` every time? This also applies to other places in app
 export function findCheck(checkName: string): { check: Check; group: string } | null {
-  for (const group of checkGroups) {
-    const check = group.checks.find((c) => c.name === checkName);
-    if (check) {
-      return { check: check as Check, group: group.name };
-    }
-  }
-  return null;
+  return ensureCheckMap().get(checkName) ?? null;
 }
 
 /** Check if a fix has options (vs simple fix) */

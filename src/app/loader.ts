@@ -4,7 +4,6 @@
  * Scans project, runs checks, and populates app context.
  */
 
-import path from "node:path";
 import {
   TAG,
   type CheckResult,
@@ -19,7 +18,9 @@ import { checkGroups, manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
-import { isSkipUntilActive, extractSeverity } from "../config/types.js";
+import { getErrorMessage } from "../utils/errors.js";
+import { isSkipUntilActive, extractSeverity } from "../config/severity.js";
+import { getProjectName } from "../utils/project-name.js";
 import type {
   ManualCheckDisplayState,
   AppContext,
@@ -28,21 +29,6 @@ import type {
   FailedByCategory,
   ManualCheckItem,
 } from "./types.js";
-import { safeJsonParse } from "../utils/safe-json.js";
-
-/**
- * Get project name from package.json or folder
- */
-async function getProjectName(global: GlobalContext, projectPath: string): Promise<string> {
-  const pkgContent = await global.files.readText("package.json");
-  if (pkgContent !== null) {
-    const pkg = safeJsonParse<{ name?: string }>(pkgContent);
-    if (pkg && typeof pkg.name === "string") {
-      return pkg.name;
-    }
-  }
-  return path.basename(projectPath) || "project";
-}
 
 /**
  * Determine display state for a manual check based on config severity.
@@ -105,7 +91,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
           name: check.name,
           group: group.name,
           status: "fail",
-          message: `Group context error: ${error instanceof Error ? error.message : "Unknown error"}`,
+          message: `Group context error: ${getErrorMessage(error)}`,
         };
         allResults.push(result);
       }
@@ -123,7 +109,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         baseResult = {
           name: check.name,
           status: "fail",
-          message: `Check error: ${error instanceof Error ? error.message : "Unknown error"}`,
+          message: `Check error: ${getErrorMessage(error)}`,
         };
       }
 

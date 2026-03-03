@@ -7,6 +7,7 @@
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, blank, title, muted } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 import { setProjectType } from "../../config/loader.js";
 import { rescanProject } from "../loader.js";
 
@@ -24,8 +25,8 @@ const PROJECT_TYPES = [
 ];
 
 export const projectTypeScreen: Screen<AppContext> = {
-  id: "project-type",
-  parent: "config",
+  id: SCREEN.projectType,
+  parent: SCREEN.config,
 
   render: () => {
     title("Project Type");
@@ -54,7 +55,7 @@ export const projectTypeScreen: Screen<AppContext> = {
             await setProjectType(c.projectPath, pt.type);
             await rescanProject(c);
           }
-          return "config";
+          return SCREEN.config;
         },
         pt.description,
       );

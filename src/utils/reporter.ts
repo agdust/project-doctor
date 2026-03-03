@@ -1,10 +1,11 @@
 import type { CheckResult, CheckStatus } from "../types.js";
 import { green, red, dim, bold } from "./colors.js";
+import { ICONS, blank } from "../cli-framework/renderer.js";
 
 const STATUS_ICONS: Record<CheckStatus, string> = {
-  pass: "\u2713",
-  fail: "\u2717",
-  skip: "\u2014",
+  pass: ICONS.pass,
+  fail: ICONS.fail,
+  skip: "—",
 };
 
 const STATUS_FORMATTERS: Record<CheckStatus, (s: string) => string> = {
@@ -57,7 +58,7 @@ export function printResults(results: CheckResult[], options: PrintOptions = {})
       console.log(`  ${formatResult(result, useColor)}`);
     }
 
-    console.log("");
+    blank();
   }
 
   printSummary(results);

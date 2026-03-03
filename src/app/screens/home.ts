@@ -6,11 +6,12 @@
 
 import { dim, red, green } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, action, separator, blank, text } from "../../cli-framework/index.js";
+import { nav, action, separator, blank, text, EXIT_VALUE } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 export const homeScreen: Screen<AppContext> = {
-  id: "home",
+  id: SCREEN.home,
   // Root screen - no parent
 
   render: (ctx) => {
@@ -67,26 +68,26 @@ export const homeScreen: Screen<AppContext> = {
     // Current issues
     if (failedCount > 0) {
       const badge = fixableCount > 0 ? `${fixableCount} auto-fixable` : `${failedCount} failed`;
-      opts.push(nav("issues", "Current issues", "issues", { badge }));
+      opts.push(nav("issues", "Current issues", SCREEN.issues, { badge }));
     } else {
-      opts.push(nav("issues", "Current issues", "issues", { badge: "all passing" }));
+      opts.push(nav("issues", "Current issues", SCREEN.issues, { badge: "all passing" }));
     }
 
     // Manual checklist, Config, Run checks again, About, separator, Exit
     const uncheckedCount = ctx.manualCheckItems.filter((i) => i.displayState === "not-done").length;
     const manualBadge = uncheckedCount === 0 ? "all done" : `${uncheckedCount} unchecked`;
     opts.push(
-      nav("manual-checklist", "Manual checklist", "manual-checklist", { badge: manualBadge }),
-      nav("config", "Config", "config", {
+      nav("manual-checklist", "Manual checklist", SCREEN.manualChecklist, { badge: manualBadge }),
+      nav("config", "Config", SCREEN.config, {
         description: "Manage categories and checks",
       }),
       action("rescan", "Run checks again", () => {
-        return "scanning";
+        return SCREEN.scanning;
       }),
-      nav("about", "About Project Doctor", "about"),
+      nav("about", "About Project Doctor", SCREEN.about),
       separator(),
       action("exit", "Exit", () => {
-        return "__exit__";
+        return EXIT_VALUE;
       }),
     );
 

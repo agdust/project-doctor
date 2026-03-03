@@ -8,6 +8,7 @@ import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, separator, blank, title, muted } from "../../cli-framework/index.js";
 import type { AppContext, FailedCheck } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 import { TAG } from "../../types.js";
 
 function formatCheckOption(
@@ -22,8 +23,8 @@ function formatCheckOption(
 }
 
 export const overviewScreen: Screen<AppContext> = {
-  id: "overview",
-  parent: "issues",
+  id: SCREEN.overview,
+  parent: SCREEN.issues,
 
   render: (ctx) => {
     title("Failed Checks Overview");
@@ -72,7 +73,7 @@ export const overviewScreen: Screen<AppContext> = {
             name,
             (c) => {
               c.selectedOverviewIndex = index;
-              return "overview-detail";
+              return SCREEN.overviewDetail;
             },
             description,
           ),

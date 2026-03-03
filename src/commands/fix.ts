@@ -20,6 +20,7 @@ import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import { isGroupForProjectType, isFixWithOptions, getValidCheckNames } from "../utils/checks.js";
 import type { ResolvedConfig } from "../config/types.js";
 import { bold, dim, green, red, yellow } from "../utils/colors.js";
+import { blank } from "../cli-framework/renderer.js";
 
 interface FixableCheck {
   name: string;
@@ -155,20 +156,20 @@ export async function runFixList(
   projectPath: string,
   options: FixFilterOptions = {},
 ): Promise<void> {
-  console.log();
+  blank();
   console.log(dim("Scanning for fixable issues..."));
-  console.log();
+  blank();
 
   const { checks } = await collectFixableChecks(projectPath, options);
 
   if (checks.length === 0) {
     console.log(green("No fixable issues found"));
-    console.log();
+    blank();
     return;
   }
 
   console.log(`Found ${bold(String(checks.length))} fixable issue${checks.length > 1 ? "s" : ""}:`);
-  console.log();
+  blank();
 
   for (const check of checks) {
     const optionInfo =
@@ -179,10 +180,10 @@ export async function runFixList(
     console.log(`    ${dim(check.message)}`);
   }
 
-  console.log();
+  blank();
   console.log(`Run ${bold("project-doctor fix all")} to fix all issues`);
   console.log(`Run ${bold("project-doctor fix <check-name>")} to fix a specific issue`);
-  console.log();
+  blank();
 }
 
 export type FixRunOptions = FixFilterOptions & {
@@ -200,20 +201,20 @@ export type FixRunOptions = FixFilterOptions & {
  * @returns Exit code: 0 if all fixes succeeded, 1 if any failed
  */
 export async function runFixAll(projectPath: string, options: FixRunOptions = {}): Promise<number> {
-  console.log();
+  blank();
   console.log(dim("Scanning for fixable issues..."));
-  console.log();
+  blank();
 
   const { checks } = await collectFixableChecks(projectPath, options);
 
   if (checks.length === 0) {
     console.log(green("No fixable issues found"));
-    console.log();
+    blank();
     return 0;
   }
 
   console.log(`Fixing ${bold(String(checks.length))} issue${checks.length > 1 ? "s" : ""}...`);
-  console.log();
+  blank();
 
   let fixed = 0;
   let failed = 0;
@@ -237,13 +238,13 @@ export async function runFixAll(projectPath: string, options: FixRunOptions = {}
     }
   }
 
-  console.log();
+  blank();
   if (failed > 0) {
     console.log(`${green(`✓ ${fixed} fixed`)}, ${red(`✗ ${failed} failed`)}`);
   } else {
     console.log(green(`✓ ${fixed} fixed`));
   }
-  console.log();
+  blank();
 
   return failed > 0 ? 1 : 0;
 }
@@ -272,9 +273,9 @@ export async function runFixOne(
     return 2;
   }
 
-  console.log();
+  blank();
   console.log(dim(`Checking ${checkName}...`));
-  console.log();
+  blank();
 
   const { checks } = await collectFixableChecks(projectPath, {});
 
@@ -282,7 +283,7 @@ export async function runFixOne(
 
   if (!check) {
     console.log(green(`Check "${checkName}" is passing or not fixable`));
-    console.log();
+    blank();
     return 0;
   }
 
@@ -292,16 +293,16 @@ export async function runFixOne(
     const fixResult = await check.runFix(options.pick);
     if (fixResult.success) {
       console.log(`  ${green(`✓ ${fixResult.message}`)}`);
-      console.log();
+      blank();
       return 0;
     } else {
       console.log(`  ${red(`✗ ${fixResult.message}`)}`);
-      console.log();
+      blank();
       return 1;
     }
   } catch (error) {
     console.log(`  ${red(`✗ Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`);
-    console.log();
+    blank();
     return 1;
   }
 }

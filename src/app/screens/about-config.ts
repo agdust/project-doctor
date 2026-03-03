@@ -8,10 +8,11 @@ import { bold, dim, red, yellow, cyan } from "../../utils/colors.js";
 import type { Screen } from "../../cli-framework/index.js";
 import { blank, title, text, muted } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 export const aboutConfigScreen: Screen<AppContext> = {
-  id: "about-config",
-  parent: "config",
+  id: SCREEN.aboutConfig,
+  parent: SCREEN.config,
 
   render: () => {
     title("About Configuration");

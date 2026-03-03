@@ -3,14 +3,14 @@ import path from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType } from "./types.js";
 import type { ManualCheckState } from "../types.js";
-import { DEFAULT_CONFIG, isSkipUntilActive, extractSeverity } from "./types.js";
+import { DEFAULT_CONFIG, isSkipUntilActive, extractSeverity } from "./severity.js";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "./constants.js";
 import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
 import { atomicWriteFile } from "../utils/safe-fs.js";
+import { getErrorMessage } from "../utils/errors.js";
 
-interface PackageJson {
-  doctor?: Config;
-}
+/** Config format: json5 (default) or json (if user chose .json) */
+type ConfigFormat = "json5" | "json";
 
 interface ReadResult<T> {
   data: T | null;
@@ -44,8 +44,7 @@ async function readFileWithParser<T>(
     }
     // Other read errors (permissions, etc.)
     if (process.env.DEBUG !== undefined) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error(`[DEBUG] Error reading ${path}: ${msg}`);
+      console.error(`[DEBUG] Error reading ${path}: ${getErrorMessage(error)}`);
     }
     return { data: null, exists: true, parseError: true };
   }
@@ -59,37 +58,36 @@ async function readJsonFile<T>(path: string): Promise<ReadResult<T>> {
   return readFileWithParser(path, safeJsonParse<T>);
 }
 
-export async function loadConfig(projectPath: string): Promise<Config | null> {
+/** Load config and return the format it was stored in */
+export async function loadConfigWithFormat(
+  projectPath: string,
+): Promise<{ config: Config | null; format: ConfigFormat }> {
   // Try .project-doctor/config.json5 first
   const json5Path = path.join(projectPath, ".project-doctor", "config.json5");
   const json5Result = await readJson5File<Config>(json5Path);
   if (json5Result.data) {
-    return json5Result.data;
+    return { config: json5Result.data, format: "json5" };
   }
   if (json5Result.exists && json5Result.parseError) {
     console.warn(`Warning: Could not parse ${json5Path} - using defaults`);
   }
 
-  // AGENT: make sure that if we read file as json, we write it as json too. If user wants to define it as json for their own needs -- we do not overwrite with json5
-  // Try legacy .project-doctor/config.json
+  // Try .project-doctor/config.json (preserve user's format choice)
   const jsonPath = path.join(projectPath, ".project-doctor", "config.json");
   const jsonResult = await readJsonFile<Config>(jsonPath);
   if (jsonResult.data) {
-    return jsonResult.data;
+    return { config: jsonResult.data, format: "json" };
   }
   if (jsonResult.exists && jsonResult.parseError) {
     console.warn(`Warning: Could not parse ${jsonPath} - using defaults`);
   }
 
-  // AGENT: remove all code belonging to the `doctor` field in package json. We not gonna support this
-  // Try package.json#doctor
-  const packagePath = path.join(projectPath, "package.json");
-  const packageResult = await readJsonFile<PackageJson>(packagePath);
-  if (packageResult.data?.doctor) {
-    return packageResult.data.doctor;
-  }
+  return { config: null, format: "json5" };
+}
 
-  return null;
+export async function loadConfig(projectPath: string): Promise<Config | null> {
+  const { config } = await loadConfigWithFormat(projectPath);
+  return config;
 }
 
 export function resolveConfig(
@@ -257,10 +255,9 @@ async function withConfigLock<T>(projectPath: string, fn: () => Promise<T>): Pro
 export async function updateConfig(projectPath: string, updates: Partial<Config>): Promise<void> {
   return withConfigLock(projectPath, async () => {
     const configDir = path.join(projectPath, CONFIG_DIR);
-    const configPath = path.join(configDir, CONFIG_FILE);
 
-    // Load existing config (if any)
-    const existing = await loadConfig(projectPath);
+    // Load existing config with format detection
+    const { config: existing, format } = await loadConfigWithFormat(projectPath);
 
     // Deep merge objects using safe merge to prevent prototype pollution
     const mergedChecks = safeMergeRecords(existing?.checks, updates.checks);
@@ -278,11 +275,18 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
       manualChecks: Object.keys(mergedManualChecks).length > 0 ? mergedManualChecks : undefined,
     };
 
-    // Ensure config directory exists with .gitignore
+    // Ensure config directory exists
     await ensureConfigDir(projectPath);
 
-    // Write merged config atomically as JSON5
-    await atomicWriteFile(configPath, JSON5.stringify(merged, null, 2) + "\n");
+    // Write in the same format as the existing config file
+    const fileName = format === "json" ? "config.json" : "config.json5";
+    const configPath = path.join(configDir, fileName);
+    const content =
+      format === "json"
+        ? JSON.stringify(merged, null, 2) + "\n"
+        : JSON5.stringify(merged, null, 2) + "\n";
+
+    await atomicWriteFile(configPath, content);
   });
 }
 

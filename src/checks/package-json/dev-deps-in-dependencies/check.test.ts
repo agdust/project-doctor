@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { check } from "./check.js";
 import type { PackageJsonContext } from "../context.js";
 import type { GlobalContext } from "../../../types.js";
-import { DEFAULT_CONFIG } from "../../../config/types.js";
+import { DEFAULT_CONFIG } from "../../../config/severity.js";
 import type { ResolvedConfig } from "../../../config/types.js";
 
 function makeGlobal(configOverrides?: Partial<ResolvedConfig>): GlobalContext {

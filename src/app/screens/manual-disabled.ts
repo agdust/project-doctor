@@ -6,13 +6,15 @@
 
 import { dim } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, text, success, error } from "../../cli-framework/index.js";
+import { action, separator, blank, text, success, error, ICONS } from "../../cli-framework/index.js";
 import { setCheckSeverity } from "../../config/loader.js";
+import { getErrorMessage } from "../../utils/errors.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 export const manualDisabledScreen: Screen<AppContext> = {
-  id: "manual-disabled",
-  parent: "manual-checklist",
+  id: SCREEN.manualDisabled,
+  parent: SCREEN.manualChecklist,
 
   render: (ctx) => {
     const count = ctx.manualCheckItems.filter((i) => i.displayState === "disabled").length;
@@ -27,11 +29,11 @@ export const manualDisabledScreen: Screen<AppContext> = {
       if (item.displayState !== "disabled") {
         continue;
       }
-      const label = `${dim("–")}  ${item.check.description}`;
+      const label = `${dim(ICONS.disabled)}  ${item.check.description}`;
       opts.push(
         action(`manual-${index}`, label, (c) => {
           c.selectedManualCheckIndex = index;
-          return "manual-check-detail";
+          return SCREEN.manualCheckDetail;
         }),
       );
     }
@@ -50,13 +52,13 @@ export const manualDisabledScreen: Screen<AppContext> = {
               item.displayState = item.state === "done" ? "done" : "not-done";
               count++;
             } catch (error_) {
-              error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+              error(getErrorMessage(error_), 3);
             }
           }
           blank();
           success(`Enabled ${count} item${count === 1 ? "" : "s"}`, 3);
           blank();
-          return "manual-checklist";
+          return SCREEN.manualChecklist;
         }),
       );
     }

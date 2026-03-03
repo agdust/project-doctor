@@ -6,7 +6,7 @@ import {
   parseSkipUntil,
   isSkipUntilActive,
   createSkipUntil,
-} from "./types.js";
+} from "./severity.js";
 
 describe("config types", () => {
   describe("extractSeverity", () => {

@@ -12,9 +12,10 @@
  */
 
 import { setCheckSeverity } from "../config/loader.js";
-import { createSkipUntil } from "../config/types.js";
+import { createSkipUntil } from "../config/severity.js";
 import { getValidCheckNames } from "../utils/checks.js";
 import { red } from "../utils/colors.js";
+import { parseISODate, toDateString } from "../utils/dates.js";
 
 function addWeeks(date: Date, weeks: number): Date {
   const result = new Date(date);
@@ -29,27 +30,7 @@ function addMonths(date: Date, months: number): Date {
 }
 
 function parseDate(dateStr: string): Date | null {
-  // Validate ISO date format YYYY-MM-DD
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return null;
-  }
-
-  // Parse and validate the date components
-  const [year, month, day] = dateStr.split("-").map(Number);
-  // Use UTC to ensure consistent behavior across timezones
-  const date = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
-
-  // Check if the date is valid (e.g., reject "2025-02-30")
-  if (
-    Number.isNaN(date.getTime()) ||
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== month - 1 ||
-    date.getUTCDate() !== day
-  ) {
-    return null;
-  }
-
-  return date;
+  return parseISODate(dateStr);
 }
 
 export interface MuteOptions {
@@ -116,8 +97,7 @@ export async function runMute(
   const severity = createSkipUntil(muteUntil);
   await setCheckSeverity(projectPath, checkName, severity);
 
-  const dateStr = muteUntil.toISOString().split("T")[0];
-  console.log(`Muted check "${checkName}" until ${dateStr}`);
+  console.log(`Muted check "${checkName}" until ${toDateString(muteUntil)}`);
 }
 
 /**

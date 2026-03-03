@@ -1,7 +1,9 @@
-import { writeFile, access } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import path from "node:path";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "../config/constants.js";
+import { atomicWriteFile } from "./safe-fs.js";
 import { green, yellow } from "./colors.js";
+import { blank } from "../cli-framework/renderer.js";
 
 const DEFAULT_CONFIG = `{
   // Disable specific checks
@@ -22,21 +24,21 @@ export async function runInit(projectPath: string): Promise<void> {
   const configDir = path.join(projectPath, CONFIG_DIR);
   const configPath = path.join(configDir, CONFIG_FILE);
 
-  console.log();
+  blank();
 
   // Check if config already exists
   try {
     await access(configPath);
     console.log(`  ${yellow("!")} Config already exists at ${CONFIG_DIR}/${CONFIG_FILE}`);
-    console.log();
+    blank();
     return;
   } catch {
     // Config doesn't exist, continue
   }
 
   await ensureConfigDir(projectPath);
-  await writeFile(configPath, DEFAULT_CONFIG, "utf8");
+  await atomicWriteFile(configPath, DEFAULT_CONFIG, "utf8");
 
   console.log(`  ${green("✓")} Created ${CONFIG_DIR}/${CONFIG_FILE}`);
-  console.log();
+  blank();
 }

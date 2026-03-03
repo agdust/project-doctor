@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { mkdir, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fixtures } from "./test/fixtures.js";
 
@@ -92,7 +93,7 @@ describe("CLI", () => {
   });
 
   describe("init command", () => {
-    const testDir = "/tmp/test-init-project";
+    const testDir = path.join(os.tmpdir(), "test-init-project");
 
     beforeEach(async () => {
       await mkdir(testDir, { recursive: true });
@@ -122,8 +123,7 @@ describe("CLI", () => {
   });
 
   describe("snapshot command", () => {
-    // AGENT: this tmp file path is not cross-platform?
-    const testDir = "/tmp/test-snapshot-project";
+    const testDir = path.join(os.tmpdir(), "test-snapshot-project");
 
     beforeEach(async () => {
       await mkdir(testDir, { recursive: true });
@@ -144,7 +144,7 @@ describe("CLI", () => {
 
   describe("history command", () => {
     it("should show no history message for new project", async () => {
-      const testDir = "/tmp/test-history-project";
+      const testDir = path.join(os.tmpdir(), "test-history-project");
       await mkdir(testDir, { recursive: true });
 
       const { stdout, code } = await runCli(`history ${testDir}`);

@@ -16,6 +16,7 @@ import { loadAndResolveConfig } from "../config/loader.js";
 import { listChecks } from "../registry.js";
 import { getCheckStatus, buildFixableMap, type CheckStatus } from "../utils/checks.js";
 import { bold, dim, green, yellow } from "../utils/colors.js";
+import { blank } from "../cli-framework/renderer.js";
 
 export interface ListOptions {
   groups?: string[];
@@ -121,7 +122,7 @@ export async function runList(projectPath: string, options: ListOptions): Promis
   const groupWidth = Math.max(5, ...checks.map((c) => c.group.length));
 
   // Print header
-  console.log();
+  blank();
   console.log(
     `${bold("Check Name".padEnd(nameWidth))}  ` +
       `${bold("Group".padEnd(groupWidth))}  ` +
@@ -145,6 +146,6 @@ export async function runList(projectPath: string, options: ListOptions): Promis
     );
   }
 
-  console.log();
+  blank();
   console.log(`Total: ${checks.length} checks`);
 }

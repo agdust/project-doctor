@@ -1,6 +1,6 @@
-import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { TsConfigContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -37,7 +37,7 @@ export const check: Check<TsConfigContext> = {
     run: async (global) => {
       const tsconfigPath = path.join(global.projectPath, "tsconfig.json");
       const content = JSON.stringify(DEFAULT_TSCONFIG, null, 2) + "\n";
-      await writeFile(tsconfigPath, content, "utf8");
+      await atomicWriteFile(tsconfigPath, content, "utf8");
       return { success: true, message: "Created tsconfig.json" };
     },
   },

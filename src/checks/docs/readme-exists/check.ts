@@ -1,10 +1,9 @@
-import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
-import { safeJsonParse } from "../../../utils/safe-json.js";
 
 const name = "readme-exists";
 
@@ -22,15 +21,9 @@ export const check: Check<DocsContext> = {
     description: "Create README.md template",
     run: async (global) => {
       let projectName = "Project";
-      try {
-        const pkgPath = path.join(global.projectPath, "package.json");
-        const pkgContent = await readFile(pkgPath, "utf8");
-        const pkg = safeJsonParse<{ name?: string }>(pkgContent);
-        if (pkg && typeof pkg.name === "string") {
-          projectName = pkg.name;
-        }
-      } catch {
-        // package.json doesn't exist, use default name
+      const pkg = await global.files.readJson<{ name?: string }>("package.json");
+      if (pkg && typeof pkg.name === "string") {
+        projectName = pkg.name;
       }
       const content = `# ${projectName}
 
@@ -44,7 +37,7 @@ npm install
 
 `;
       const readmePath = path.join(global.projectPath, "README.md");
-      await writeFile(readmePath, content, "utf8");
+      await atomicWriteFile(readmePath, content, "utf8");
       return { success: true, message: "Created README.md" };
     },
   },

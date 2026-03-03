@@ -1,8 +1,8 @@
-import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG, type Check } from "../../../types.js";
 import type { GitignoreContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
+import { readFileWithLineEnding, atomicWriteFile } from "../../../utils/safe-fs.js";
 
 const name = "gitignore-has-dist";
 
@@ -25,9 +25,12 @@ export const check: Check<GitignoreContext> = {
     description: "Add dist/ to .gitignore",
     run: async (global) => {
       const gitignorePath = path.join(global.projectPath, ".gitignore");
-      const content = await readFile(gitignorePath, "utf8");
-      const newContent = content.endsWith("\n") ? content + "dist/\n" : content + "\ndist/\n";
-      await writeFile(gitignorePath, newContent, "utf8");
+      const { content, lineEnding } = await readFileWithLineEnding(gitignorePath);
+      const newContent =
+        content.endsWith("\n") || content.endsWith("\r\n")
+          ? content + `dist/${lineEnding}`
+          : content + `${lineEnding}dist/${lineEnding}`;
+      await atomicWriteFile(gitignorePath, newContent);
       return { success: true, message: "Added dist/ to .gitignore" };
     },
   },

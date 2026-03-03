@@ -1,6 +1,6 @@
-import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { EditorconfigContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
@@ -32,7 +32,7 @@ export const check: Check<EditorconfigContext> = {
     description: "Create .editorconfig with defaults",
     run: async (global) => {
       const editorconfigPath = path.join(global.projectPath, ".editorconfig");
-      await writeFile(editorconfigPath, DEFAULT_EDITORCONFIG, "utf8");
+      await atomicWriteFile(editorconfigPath, DEFAULT_EDITORCONFIG, "utf8");
       return { success: true, message: "Created .editorconfig" };
     },
   },

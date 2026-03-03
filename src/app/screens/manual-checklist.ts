@@ -6,30 +6,31 @@
 
 import { dim, green, yellow } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, nav, separator, blank, text } from "../../cli-framework/index.js";
+import { action, nav, separator, blank, text, ICONS } from "../../cli-framework/index.js";
 import type { AppContext, ManualCheckItem } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 /** Icon for each display state */
 function checkIcon(item: ManualCheckItem): string {
   switch (item.displayState) {
     case "done": {
-      return green("✓");
+      return green(ICONS.pass);
     }
     case "not-done": {
-      return dim("□");
+      return dim(ICONS.unchecked);
     }
     case "muted": {
-      return yellow("⏲");
+      return yellow(ICONS.muted);
     }
     case "disabled": {
-      return dim("–");
+      return dim(ICONS.disabled);
     }
   }
 }
 
 export const manualChecklistScreen: Screen<AppContext> = {
-  id: "manual-checklist",
-  parent: "home",
+  id: SCREEN.manualChecklist,
+  parent: SCREEN.home,
 
   render: (ctx) => {
     const items = ctx.manualCheckItems;
@@ -60,7 +61,7 @@ export const manualChecklistScreen: Screen<AppContext> = {
       opts.push(
         action(`manual-${index}`, label, (c) => {
           c.selectedManualCheckIndex = index;
-          return "manual-check-detail";
+          return SCREEN.manualCheckDetail;
         }),
       );
     }
@@ -76,7 +77,7 @@ export const manualChecklistScreen: Screen<AppContext> = {
 
     if (doneCount > 0) {
       opts.push(
-        nav("view-done", "View checked", "manual-done", {
+        nav("view-done", "View checked", SCREEN.manualDone, {
           badge: `${doneCount}`,
         }),
       );
@@ -84,7 +85,7 @@ export const manualChecklistScreen: Screen<AppContext> = {
 
     if (mutedCount > 0) {
       opts.push(
-        nav("view-muted", "View muted", "manual-muted", {
+        nav("view-muted", "View muted", SCREEN.manualMuted, {
           badge: `${mutedCount}`,
         }),
       );
@@ -92,7 +93,7 @@ export const manualChecklistScreen: Screen<AppContext> = {
 
     if (disabledCount > 0) {
       opts.push(
-        nav("view-disabled", "View disabled", "manual-disabled", {
+        nav("view-disabled", "View disabled", SCREEN.manualDisabled, {
           badge: `${disabledCount}`,
         }),
       );

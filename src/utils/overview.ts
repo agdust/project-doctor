@@ -1,8 +1,8 @@
-import path from "node:path";
 import { createGlobalContext } from "../context/global.js";
 import { runAllChecksRaw } from "./runner.js";
-import { safeJsonParse } from "./safe-json.js";
+import { getProjectName } from "./project-name.js";
 import { bold, dim, red, green } from "./colors.js";
+import { blank } from "../cli-framework/renderer.js";
 
 interface OverviewResult {
   projectName: string;
@@ -15,16 +15,7 @@ interface OverviewResult {
 
 export async function getOverview(projectPath: string): Promise<OverviewResult> {
   const global = await createGlobalContext(projectPath);
-
-  // Get project name
-  let projectName = path.basename(projectPath) || "project";
-  const pkgContent = await global.files.readText("package.json");
-  if (pkgContent !== null) {
-    const pkg = safeJsonParse<{ name?: string }>(pkgContent);
-    if (pkg && typeof pkg.name === "string") {
-      projectName = pkg.name;
-    }
-  }
+  const projectName = await getProjectName(global, projectPath);
 
   // Run all checks
   const checkResults = await runAllChecksRaw(global);
@@ -40,9 +31,9 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
 }
 
 export function printOverview(result: OverviewResult): void {
-  console.log();
+  blank();
   console.log(`  ${bold(result.projectName)}`);
-  console.log();
+  blank();
 
   // Health checks line
   const { checks } = result;
@@ -52,10 +43,10 @@ export function printOverview(result: OverviewResult): void {
     console.log(`  ${green("✓")} All checks passing`);
   }
 
-  console.log();
+  blank();
   console.log(`  ${dim("Run 'project-doctor check' for details")}`);
   console.log(`  ${dim("Run 'project-doctor fix' to fix issues")}`);
-  console.log();
+  blank();
 }
 
 export async function runOverview(projectPath: string): Promise<void> {

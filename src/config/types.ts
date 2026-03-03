@@ -15,8 +15,6 @@
  * ```
  */
 
-// AGENT: seems like this file is not about types only, so maube renaming/splitting or refactroring required. Cause `types.test.ts` looks weird
-
 import type { ManualCheckState } from "../types.js";
 
 /**
@@ -32,97 +30,6 @@ export type CheckOptions = Record<string, unknown>;
 
 /** A check config entry: plain severity or [severity, options] tuple */
 export type CheckEntry = Severity | [Severity, CheckOptions];
-
-/** Extract the severity from a CheckEntry */
-export function extractSeverity(entry: CheckEntry | undefined): Severity | undefined {
-  if (entry === undefined) {
-    return undefined;
-  }
-  if (Array.isArray(entry)) {
-    return entry[0];
-  }
-  return entry;
-}
-
-/** Extract per-check options from a CheckEntry (undefined if plain severity) */
-export function extractCheckOptions(entry: CheckEntry | undefined): CheckOptions | undefined {
-  if (Array.isArray(entry)) {
-    return entry[1];
-  }
-  return undefined;
-}
-
-/** Check if a severity value is a skip-until pattern */
-export function isSkipUntil(value: string): value is `skip-until-${string}` {
-  return value.startsWith("skip-until-");
-}
-
-/** Parse skip-until date, returns null if invalid or expired */
-export function parseSkipUntil(value: string): Date | null {
-  if (!isSkipUntil(value)) {
-    return null;
-  }
-
-  const dateStr = value.slice("skip-until-".length);
-  // Validate ISO date format YYYY-MM-DD
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return null;
-  }
-
-  // Parse and validate the date components
-  const [year, month, day] = dateStr.split("-").map(Number);
-  // Use UTC to ensure consistent behavior across timezones
-  // End of day in UTC (23:59:59.999)
-  const date = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
-
-  // Check if the date is valid (e.g., reject "2025-02-30")
-  if (
-    Number.isNaN(date.getTime()) ||
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== month - 1 ||
-    date.getUTCDate() !== day
-  ) {
-    return null;
-  }
-
-  return date;
-}
-
-/** Maximum allowed skip duration: 3 years */
-const MAX_SKIP_YEARS = 3;
-
-/**
- * Check if skip-until is still active (date not passed)
- * Returns false (treats as "error") if:
- * - Date is invalid
- * - Date is more than 3 years in the future
- * - Date has already passed
- */
-export function isSkipUntilActive(value: string): boolean {
-  const date = parseSkipUntil(value);
-  if (!date) {
-    return false;
-  }
-
-  const now = new Date();
-
-  // Check if date is too far in the future (more than 3 years)
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + MAX_SKIP_YEARS);
-  if (date > maxDate) {
-    return false;
-  }
-
-  return now <= date;
-}
-
-/** Create a skip-until value for a given date */
-export function createSkipUntil(date: Date): Severity {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `skip-until-${year}-${month}-${day}`;
-}
 
 /** Project type - determines which check groups are enabled */
 export type ProjectType = "js" | "generic";
@@ -163,15 +70,3 @@ export interface ResolvedConfig {
   noGitConfirmed: boolean;
   manualChecks: Record<string, ManualCheckState>;
 }
-
-export const DEFAULT_CONFIG: ResolvedConfig = {
-  projectType: "js", // Default to js, will be auto-detected if not set
-  projectTypeSource: "detected",
-  projectTypeDetectedFrom: undefined,
-  checks: {},
-  tags: {},
-  groups: {},
-  eslintOverwriteConfirmed: false,
-  noGitConfirmed: false,
-  manualChecks: {},
-};

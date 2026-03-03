@@ -46,7 +46,7 @@ describe("fix-chains", () => {
   describe("compareByChain", () => {
     it("returns -1 when first check must come before second", () => {
       expect(compareByChain("size-limit-installed", "size-limit-configured")).toBe(-1);
-      expect(compareByChain("env-example-not-empty", "env-example-exists")).toBe(-1);
+      expect(compareByChain("env-example-exists", "env-example-not-empty")).toBe(-1);
     });
 
     it("returns 1 when second check must come before first", () => {

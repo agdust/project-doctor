@@ -1,6 +1,6 @@
-import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { EditorconfigContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -30,9 +30,9 @@ export const check: Check<EditorconfigContext> = {
     description: "Add indent settings to .editorconfig",
     run: async (global) => {
       const editorconfigPath = path.join(global.projectPath, ".editorconfig");
-      const content = await readFile(editorconfigPath, "utf8");
+      const content = (await global.files.readText(".editorconfig")) ?? "";
       const newContent = content.trimEnd() + "\n" + INDENT_SETTINGS;
-      await writeFile(editorconfigPath, newContent, "utf8");
+      await atomicWriteFile(editorconfigPath, newContent, "utf8");
       return { success: true, message: "Added indent settings" };
     },
   },

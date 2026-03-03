@@ -1,12 +1,13 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import { input } from "@inquirer/prompts";
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { DocsContext } from "../context.js";
 import { pass, fail } from "../../helpers.js";
-import { openBrowser } from "../../../utils/open-browser.js";
+import { copyToClipboard } from "../../../utils/clipboard.js";
 
 const name = "license-exists";
 
@@ -49,7 +50,7 @@ export const check: Check<DocsContext> = {
             message: "Copyright holder (e.g., Your Name or Company):",
           });
           const licensePath = path.join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("mit.txt", copyrightHolder), "utf8");
+          await atomicWriteFile(licensePath, await loadLicense("mit.txt", copyrightHolder), "utf8");
           return { success: true, message: "Created MIT LICENSE" };
         },
       },
@@ -59,7 +60,7 @@ export const check: Check<DocsContext> = {
         description: "Copyleft license, requires derivative works to be open source",
         run: async (global) => {
           const licensePath = path.join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("gpl3.txt"), "utf8");
+          await atomicWriteFile(licensePath, await loadLicense("gpl3.txt"), "utf8");
           return { success: true, message: "Created GPL-3.0 LICENSE" };
         },
       },
@@ -69,7 +70,7 @@ export const check: Check<DocsContext> = {
         description: "Dedicate to public domain, no restrictions",
         run: async (global) => {
           const licensePath = path.join(global.projectPath, "LICENSE");
-          await writeFile(licensePath, await loadLicense("cc0.txt"), "utf8");
+          await atomicWriteFile(licensePath, await loadLicense("cc0.txt"), "utf8");
           return { success: true, message: "Created CC0 LICENSE" };
         },
       },
@@ -82,7 +83,7 @@ export const check: Check<DocsContext> = {
             message: "Copyright holder (e.g., Your Name or Company):",
           });
           const licensePath = path.join(global.projectPath, "LICENSE");
-          await writeFile(
+          await atomicWriteFile(
             licensePath,
             await loadLicense("proprietary.txt", copyrightHolder),
             "utf8",
@@ -93,12 +94,15 @@ export const check: Check<DocsContext> = {
       {
         id: "browse",
         label: "Browse licenses...",
-        description: "Open choosealicense.com to compare options",
+        description: "Copy choosealicense.com URL to clipboard",
         run: async () => {
-          await openBrowser("https://choosealicense.com/");
+          const url = "https://choosealicense.com/";
+          const ok = await copyToClipboard(url);
           return {
             success: false,
-            message: "Opened browser - choose a license and add it manually",
+            message: ok
+              ? `Copied ${url} to clipboard - choose a license and add it manually`
+              : `Visit ${url} to compare options, then add a LICENSE file manually`,
           };
         },
       },

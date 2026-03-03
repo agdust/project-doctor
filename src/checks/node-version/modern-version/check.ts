@@ -1,6 +1,6 @@
-import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { NodeVersionContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -54,7 +54,7 @@ export const check: Check<NodeVersionContext> = {
     description: `Update .nvmrc to Node ${CURRENT_LTS_MAJOR} (current LTS)`,
     run: async (global) => {
       const nvmrcPath = path.join(global.projectPath, ".nvmrc");
-      await writeFile(nvmrcPath, `${CURRENT_LTS_MAJOR}\n`, "utf8");
+      await atomicWriteFile(nvmrcPath, `${CURRENT_LTS_MAJOR}\n`, "utf8");
       return {
         success: true,
         message: `Updated .nvmrc to Node ${CURRENT_LTS_MAJOR}`,

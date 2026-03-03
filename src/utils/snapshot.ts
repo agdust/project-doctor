@@ -1,10 +1,13 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createGlobalContext } from "../context/global.js";
 import { ensureConfigDir } from "../config/constants.js";
 import { runAllChecksRaw } from "./runner.js";
 import { safeJsonParse } from "./safe-json.js";
 import { bold, dim, red, green } from "./colors.js";
+import { blank } from "../cli-framework/renderer.js";
+import { atomicWriteFile } from "./safe-fs.js";
+import { toDateString } from "./dates.js";
 
 interface SnapshotEntry {
   date: string;
@@ -19,9 +22,8 @@ interface SnapshotEntry {
 const HISTORY_DIR = ".project-doctor";
 const HISTORY_FILE = "history.json";
 
-// AGENT: seems like this code is used somewhere else, maybe it's worth to put it into the util?
 function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  return toDateString(new Date());
 }
 
 async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
@@ -39,7 +41,7 @@ async function saveHistory(projectPath: string, history: SnapshotEntry[]): Promi
   const historyPath = path.join(projectPath, HISTORY_DIR, HISTORY_FILE);
 
   await ensureConfigDir(projectPath);
-  await writeFile(historyPath, JSON.stringify(history, null, 2) + "\n", "utf8");
+  await atomicWriteFile(historyPath, JSON.stringify(history, null, 2) + "\n");
 }
 
 export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> {
@@ -63,7 +65,7 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
 }
 
 export async function runSnapshot(projectPath: string): Promise<void> {
-  console.log();
+  blank();
   console.log(`  ${dim("Taking snapshot...")}`);
 
   const snapshot = await takeSnapshot(projectPath);
@@ -82,27 +84,27 @@ export async function runSnapshot(projectPath: string): Promise<void> {
 
   await saveHistory(projectPath, history);
 
-  console.log();
+  blank();
   console.log(`  ${green("✓")} Snapshot saved for ${snapshot.date}`);
   console.log(`    ${snapshot.checks.passed}/${snapshot.checks.total} checks passing`);
-  console.log();
+  blank();
   console.log(`  ${dim(`Saved to ${HISTORY_DIR}/${HISTORY_FILE}`)}`);
-  console.log();
+  blank();
 }
 
 export async function runHistory(projectPath: string): Promise<void> {
   const history = await loadHistory(projectPath);
 
-  console.log();
+  blank();
 
   if (history.length === 0) {
     console.log(`  ${dim("No snapshots yet. Run 'project-doctor snapshot' to create one.")}`);
-    console.log();
+    blank();
     return;
   }
 
   console.log(`  ${bold("Project Health History")}`);
-  console.log();
+  blank();
   console.log(`  ${dim("Date          Checks")}`);
   console.log(`  ${dim("─────────────────────────")}`);
 
@@ -120,7 +122,7 @@ export async function runHistory(projectPath: string): Promise<void> {
     const last = history.at(-1)!;
     const checkDiff = last.checks.failed - first.checks.failed;
 
-    console.log();
+    blank();
     if (checkDiff < 0) {
       console.log(
         `  ${green(`↑ Fixed ${Math.abs(checkDiff)} issue${Math.abs(checkDiff) > 1 ? "s" : ""} since ${first.date}`)}`,
@@ -134,5 +136,5 @@ export async function runHistory(projectPath: string): Promise<void> {
     }
   }
 
-  console.log();
+  blank();
 }

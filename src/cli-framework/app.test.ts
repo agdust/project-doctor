@@ -5,7 +5,7 @@
 import { describe, it, expect } from "vitest";
 import { App } from "./app.js";
 import type { AppConfig, Screen } from "./types.js";
-import { action, nav, separator } from "./types.js";
+import { action, nav, separator } from "./helpers.js";
 
 // Simple test context
 interface TestContext {

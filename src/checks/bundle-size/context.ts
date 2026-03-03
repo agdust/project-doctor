@@ -1,9 +1,4 @@
-import type { GlobalContext } from "../../types.js";
-
-interface PackageJson {
-  "size-limit"?: unknown[];
-  scripts?: Record<string, string>;
-}
+import type { GlobalContext, PackageJson } from "../../types.js";
 
 export interface BundleSizeContext {
   hasSizeLimitConfig: boolean;

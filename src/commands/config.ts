@@ -8,8 +8,10 @@
 
 import { loadAndResolveConfig, setProjectType } from "../config/loader.js";
 import type { ProjectType, Severity } from "../config/types.js";
-import { isSkipUntil, parseSkipUntil, extractSeverity } from "../config/types.js";
+import { isSkipUntil, parseSkipUntil, extractSeverity } from "../config/severity.js";
 import { bold, dim, green, yellow, red } from "../utils/colors.js";
+import { toDateString } from "../utils/dates.js";
+import { blank } from "../cli-framework/renderer.js";
 
 function formatSeverity(severity: Severity): string {
   if (severity === "off") {
@@ -18,7 +20,7 @@ function formatSeverity(severity: Severity): string {
   if (isSkipUntil(severity)) {
     const date = parseSkipUntil(severity);
     if (date) {
-      return yellow(`skip-until-${date.toISOString().split("T")[0]}`);
+      return yellow(`skip-until-${toDateString(date)}`);
     }
     return dim(severity);
   }
@@ -46,11 +48,11 @@ function formatProjectTypeSource(source: "config" | "detected", detectedFrom?: s
 export async function runConfigShow(projectPath: string): Promise<void> {
   const resolved = await loadAndResolveConfig(projectPath);
 
-  console.log();
+  blank();
   console.log(
     `${bold("Project Type:")} ${resolved.projectType} ${formatProjectTypeSource(resolved.projectTypeSource, resolved.projectTypeDetectedFrom)}`,
   );
-  console.log();
+  blank();
 
   // Show checks configuration
   const checkEntries = Object.entries(resolved.checks);
@@ -60,10 +62,10 @@ export async function runConfigShow(projectPath: string): Promise<void> {
       const severity = extractSeverity(entry) ?? "error";
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
-    console.log();
+    blank();
   } else {
     console.log(`${bold("Checks:")} ${dim("(none configured)")}`);
-    console.log();
+    blank();
   }
 
   // Show tags configuration
@@ -73,10 +75,10 @@ export async function runConfigShow(projectPath: string): Promise<void> {
     for (const [name, severity] of tagEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
-    console.log();
+    blank();
   } else {
     console.log(`${bold("Tags:")} ${dim("(none configured)")}`);
-    console.log();
+    blank();
   }
 
   // Show groups configuration
@@ -86,10 +88,10 @@ export async function runConfigShow(projectPath: string): Promise<void> {
     for (const [name, severity] of groupEntries) {
       console.log(`  ${name}: ${formatSeverity(severity)}`);
     }
-    console.log();
+    blank();
   } else {
     console.log(`${bold("Groups:")} ${dim("(none configured)")}`);
-    console.log();
+    blank();
   }
 }
 

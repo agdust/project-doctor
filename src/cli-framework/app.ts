@@ -8,10 +8,18 @@
 import { select, Separator as InquirerSeparator } from "@inquirer/prompts";
 import { CancelPromptError } from "@inquirer/core";
 import type { AppConfig, AppState, Screen, Option } from "./types.js";
-import { back } from "./types.js";
+import { back } from "./helpers.js";
 import { clear, bigTitle, blank } from "./renderer.js";
 
-const BACK_VALUE = "__back__";
+export const BACK_VALUE = "__back__";
+export const EXIT_VALUE = "__exit__";
+
+/** ESC key behavior options */
+export const ESC_BEHAVIOR = {
+  back: "back",
+  exit: "exit",
+  stay: "stay",
+} as const;
 
 export class App<TCtx> {
   private readonly config: AppConfig<TCtx>;
@@ -215,8 +223,7 @@ export class App<TCtx> {
       await this.navigate(screen, option.to);
     } else if (option.type === "action") {
       const nextScreen = await option.run(this.state.context);
-      // AGENT: `__exit__` should be put in constant
-      if (nextScreen === "__exit__") {
+      if (nextScreen === EXIT_VALUE) {
         this.state.shouldExit = true;
       } else if (nextScreen !== undefined) {
         await this.navigate(screen, nextScreen);
@@ -229,19 +236,18 @@ export class App<TCtx> {
    * Handle ESC key
    */
   private async handleEscape(screen: Screen<TCtx>): Promise<void> {
-    // AGENT: back, exit and stay should be key/values of enumish object
-    const behavior = this.config.onEsc?.(this.state.context, screen.id) ?? "back";
+    const behavior = this.config.onEsc?.(this.state.context, screen.id) ?? ESC_BEHAVIOR.back;
 
     switch (behavior) {
-      case "back": {
+      case ESC_BEHAVIOR.back: {
         await this.goBack(screen);
         break;
       }
-      case "exit": {
+      case ESC_BEHAVIOR.exit: {
         this.state.shouldExit = true;
         break;
       }
-      case "stay": {
+      case ESC_BEHAVIOR.stay: {
         // Do nothing, screen will re-render
         break;
       }

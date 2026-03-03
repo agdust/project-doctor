@@ -1,6 +1,6 @@
-import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TAG } from "../../../types.js";
+import { atomicWriteFile } from "../../../utils/safe-fs.js";
 import type { Check } from "../../../types.js";
 import type { EnvContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
@@ -35,11 +35,10 @@ export const check: Check<EnvContext> = {
   fix: {
     description: "Add missing variables to .env.example",
     run: async (global) => {
-      const envPath = path.join(global.projectPath, ".env");
       const examplePath = path.join(global.projectPath, ".env.example");
 
-      const envContent = await readFile(envPath, "utf8");
-      let exampleContent = await readFile(examplePath, "utf8");
+      const envContent = (await global.files.readText(".env")) ?? "";
+      let exampleContent = (await global.files.readText(".env.example")) ?? "";
 
       // Parse current example vars
       const exampleVars = new Set(
@@ -78,7 +77,7 @@ export const check: Check<EnvContext> = {
           exampleContent += "\n";
         }
         exampleContent += linesToAdd.join("\n") + "\n";
-        await writeFile(examplePath, exampleContent, "utf8");
+        await atomicWriteFile(examplePath, exampleContent, "utf8");
       }
 
       return {

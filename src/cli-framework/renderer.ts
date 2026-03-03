@@ -8,6 +8,22 @@
 import { bold, dim, red, green, yellow, cyan } from "../utils/colors.js";
 
 /**
+ * Centralized icon registry — use these instead of inline symbols.
+ */
+export const ICONS = {
+  pass: "✓",
+  fail: "✗",
+  warn: "⚠",
+  info: "→",
+  skip: "○",
+  muted: "⏲",
+  disabled: "–",
+  paused: "⏸",
+  noEntry: "⊘",
+  unchecked: "□",
+} as const;
+
+/**
  * Print a horizontal divider
  */
 export function divider(width = 45): void {
@@ -128,12 +144,11 @@ export function status(
 ): void {
   const prefix = " ".repeat(indent);
   const icons = {
-    // AGENT: unify usage of symbols of success/error/warning/arrow/circle icons. Right now these are scattered across project
-    pass: green("✓"),
-    fail: red("✗"),
-    warn: yellow("⚠"),
-    info: cyan("→"),
-    skip: dim("○"),
+    pass: green(ICONS.pass),
+    fail: red(ICONS.fail),
+    warn: yellow(ICONS.warn),
+    info: cyan(ICONS.info),
+    skip: dim(ICONS.skip),
   };
 
   const iconStr = icons[icon];

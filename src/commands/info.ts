@@ -11,6 +11,7 @@
 import { loadAndResolveConfig } from "../config/loader.js";
 import { getCheckInfo, loadWhyFromDocs, type CheckInfo } from "../utils/checks.js";
 import { bold, dim, green, yellow, red } from "../utils/colors.js";
+import { blank } from "../cli-framework/renderer.js";
 
 type CheckInfoOutput = CheckInfo & {
   why?: string;
@@ -58,13 +59,13 @@ export async function runInfo(
   }
 
   // Text format
-  console.log();
+  blank();
   console.log(`${bold("Check:")} ${output.name}`);
   console.log(`${bold("Group:")} ${output.group}`);
   console.log(`${bold("Description:")} ${output.description}`);
-  console.log();
+  blank();
   console.log(`${bold("Tags:")} ${output.tags.join(", ")}`);
-  console.log();
+  blank();
 
   let statusColor = dim;
   if (output.status === "enabled") {
@@ -80,13 +81,13 @@ export async function runInfo(
   console.log(`${bold("Has Fix:")} ${output.fixable ? green("yes") : "no"}`);
 
   if (output.fixDescription !== undefined) {
-    console.log();
+    blank();
     console.log(bold("Fix Description:"));
     console.log(`  ${output.fixDescription}`);
   }
 
   if (output.fixOptions && output.fixOptions.length > 0) {
-    console.log();
+    blank();
     console.log(bold("Fix Options:"));
     for (const opt of output.fixOptions) {
       console.log(`  ${dim(`[${opt.id}]`)} ${opt.label}`);
@@ -97,11 +98,11 @@ export async function runInfo(
   }
 
   if (output.why !== undefined) {
-    console.log();
+    blank();
     console.log(bold("Why This Matters:"));
     console.log("─".repeat(60));
     console.log(output.why);
   }
 
-  console.log();
+  blank();
 }

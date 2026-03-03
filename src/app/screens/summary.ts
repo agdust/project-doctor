@@ -5,12 +5,13 @@
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, blank, title, text } from "../../cli-framework/index.js";
+import { action, blank, title, text, EXIT_VALUE } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 
 export const summaryScreen: Screen<AppContext> = {
-  id: "summary",
-  parent: "home",
+  id: SCREEN.summary,
+  parent: SCREEN.home,
 
   render: (ctx) => {
     title("Session Summary");
@@ -43,7 +44,7 @@ export const summaryScreen: Screen<AppContext> = {
   },
 
   options: (): Option<AppContext>[] => [
-    action("home", "Back to home", () => "home"),
-    action("exit", "Exit", () => "__exit__"),
+    action("home", "Back to home", () => SCREEN.home),
+    action("exit", "Exit", () => EXIT_VALUE),
   ],
 };

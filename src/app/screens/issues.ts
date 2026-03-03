@@ -8,11 +8,12 @@ import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { nav, action, blank, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 import { TAG } from "../../types.js";
 
 export const issuesScreen: Screen<AppContext> = {
-  id: "issues",
-  parent: "home",
+  id: SCREEN.issues,
+  parent: SCREEN.home,
 
   render: (ctx) => {
     // Total counts (all failed checks)
@@ -54,7 +55,7 @@ export const issuesScreen: Screen<AppContext> = {
     // Overview - detailed view of all failed checks (including non-fixable)
     const failedCount = ctx.failedChecks.length;
     opts.push(
-      nav("overview", "Overview", "overview", {
+      nav("overview", "Overview", SCREEN.overview, {
         description: `All ${failedCount} failed check${failedCount === 1 ? "" : "s"} (including non-fixable)`,
       }),
     );
@@ -67,7 +68,7 @@ export const issuesScreen: Screen<AppContext> = {
           "Fix issues",
           (c) => {
             c.currentIssueIndex = 0;
-            return "issue-detail";
+            return SCREEN.issueDetail;
           },
           `Walk through ${ctx.issues.length} issue${ctx.issues.length > 1 ? "s" : ""} one by one`,
         ),

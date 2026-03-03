@@ -16,8 +16,10 @@ import {
   error,
 } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
+import { SCREEN } from "../screen-ids.js";
 import { TAG, type CheckTag } from "../../types.js";
-import { openBrowser } from "../../utils/open-browser.js";
+import { getErrorMessage } from "../../utils/errors.js";
+import { copyToClipboard } from "../../utils/clipboard.js";
 
 // Tool documentation links
 const TOOL_DOCS: Record<string, string> = {
@@ -43,8 +45,8 @@ function getToolLink(tags: CheckTag[]): { tool: string; url: string } | null {
 }
 
 export const overviewDetailScreen: Screen<AppContext> = {
-  id: "overview-detail",
-  parent: "overview",
+  id: SCREEN.overviewDetail,
+  parent: SCREEN.overview,
 
   render: (ctx) => {
     const check = ctx.failedChecks[ctx.selectedOverviewIndex];
@@ -138,10 +140,10 @@ export const overviewDetailScreen: Screen<AppContext> = {
                   error(result.message, 3);
                 }
               } catch (error_) {
-                error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+                error(getErrorMessage(error_), 3);
               }
               blank();
-              return "overview";
+              return SCREEN.overview;
             },
             opt.description,
           ),
@@ -165,10 +167,10 @@ export const overviewDetailScreen: Screen<AppContext> = {
                 error(result.message, 3);
               }
             } catch (error_) {
-              error(error_ instanceof Error ? error_.message : "Unknown error", 3);
+              error(getErrorMessage(error_), 3);
             }
             blank();
-            return "overview";
+            return SCREEN.overview;
           },
           check.fixDescription ?? undefined,
         ),
@@ -181,16 +183,20 @@ export const overviewDetailScreen: Screen<AppContext> = {
       opts.push(
         action(
           "docs",
-          "Open tool docs",
+          "Copy docs URL",
           async () => {
-            await openBrowser(toolLink.url);
+            const ok = await copyToClipboard(toolLink.url);
             blank();
-            muted(`Opened ${toolLink.url}`, 3);
+            if (ok) {
+              success(`Copied ${toolLink.url} to clipboard`, 3);
+            } else {
+              muted(`URL: ${toolLink.url}`, 3);
+            }
             blank();
             // eslint-disable-next-line unicorn/no-useless-undefined
             return undefined;
           },
-          `Open ${toolLink.tool} documentation in browser`,
+          `Copy ${toolLink.tool} documentation URL to clipboard`,
         ),
       );
     }
