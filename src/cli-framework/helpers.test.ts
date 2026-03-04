@@ -8,7 +8,7 @@ import { action, nav, separator, back } from "./helpers.js";
 describe("cli-framework/helpers", () => {
   describe("action()", () => {
     it("creates an action option with required fields", () => {
-      const run = async () => {};
+      const run = (): undefined => undefined;
       const opt = action("test", "Test Label", run);
 
       expect(opt.type).toBe("action");
@@ -19,7 +19,7 @@ describe("cli-framework/helpers", () => {
     });
 
     it("creates an action option with description", () => {
-      const run = async () => {};
+      const run = (): undefined => undefined;
       const opt = action("test", "Test Label", run, "Test description");
 
       expect(opt.type).toBe("action");
@@ -35,7 +35,7 @@ describe("cli-framework/helpers", () => {
     });
 
     it("action can return void to stay on screen", async () => {
-      const run = async () => {};
+      const run = async () => undefined;
       const opt = action("test", "Test", run);
 
       const result = await opt.run({});

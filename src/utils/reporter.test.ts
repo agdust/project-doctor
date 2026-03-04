@@ -145,7 +145,7 @@ describe("reporter", () => {
 
       printResults(results);
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       // group-a has only passes — should not appear in compact mode
       expect(output).not.toContain("group-a");
       // group-b has a failure — should appear
@@ -161,7 +161,7 @@ describe("reporter", () => {
 
       printResults(results);
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       // Group header should appear because there's a failure
       expect(output).toContain("grp");
       // Should show the failing check
@@ -179,7 +179,7 @@ describe("reporter", () => {
 
       printResults(results, { fullReport: true });
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       expect(output).toContain("pass-check");
       expect(output).toContain("fail-check");
     });
@@ -192,7 +192,7 @@ describe("reporter", () => {
 
       printResults(results, { fullReport: true });
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       expect(output).toContain("group-a");
       expect(output).toContain("group-b");
     });
@@ -206,7 +206,7 @@ describe("reporter", () => {
 
       printResults(results);
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       // alpha should appear before beta (first seen order)
       const alphaPos = output.indexOf("alpha");
       const betaPos = output.indexOf("beta");
@@ -220,7 +220,7 @@ describe("reporter", () => {
 
       printResults(results);
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       expect(output).toContain("Summary:");
       expect(output).toContain("1 total");
     });

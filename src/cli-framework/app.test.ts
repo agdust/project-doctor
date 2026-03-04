@@ -128,7 +128,7 @@ describe("cli-framework/App", () => {
           id: "home",
           render: () => {},
           options: [
-            action("test", "Test", async () => {}),
+            action("test", "Test", () => undefined),
             nav("nav", "Navigate", "other"),
             separator("Section"),
           ],
@@ -145,7 +145,7 @@ describe("cli-framework/App", () => {
         {
           id: "home",
           render: () => {},
-          options: (ctx) => [action("test", `Count: ${ctx.counter}`, async () => {})],
+          options: (ctx) => [action("test", `Count: ${ctx.counter}`, () => undefined)],
         },
       ];
 
@@ -205,6 +205,7 @@ describe("cli-framework/App", () => {
           options: [],
           onEnter: async (ctx) => {
             ctx.visited.push("home");
+            return undefined;
           },
         },
       ];

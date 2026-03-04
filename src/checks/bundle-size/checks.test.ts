@@ -38,15 +38,15 @@ describe("bundle-size checks", () => {
   describe("size-limit-installed", () => {
     it("should pass when size-limit is detected", async () => {
       const global = mockGlobal({ hasSizeLimit: true });
-      const result = sizeLimitInstalled.run(global, mockCtx());
+      const result = await sizeLimitInstalled.run(global, mockCtx());
 
       expect(result.status).toBe("pass");
       expect(result.message).toContain("installed");
     });
 
-    it("should fail when size-limit is not detected", () => {
+    it("should fail when size-limit is not detected", async () => {
       const global = mockGlobal({ hasSizeLimit: false });
-      const result = sizeLimitInstalled.run(global, mockCtx());
+      const result = await sizeLimitInstalled.run(global, mockCtx());
 
       expect(result.status).toBe("fail");
       expect(result.message).toContain("not installed");
@@ -54,37 +54,37 @@ describe("bundle-size checks", () => {
   });
 
   describe("size-limit-configured", () => {
-    it("should pass when size-limit is installed and configured in file", () => {
+    it("should pass when size-limit is installed and configured in file", async () => {
       const global = mockGlobal({ hasSizeLimit: true });
       const ctx = mockCtx({ hasSizeLimitConfig: true, configLocation: "file" });
-      const result = sizeLimitConfigured.run(global, ctx);
+      const result = await sizeLimitConfigured.run(global, ctx);
 
       expect(result.status).toBe("pass");
       expect(result.message).toContain(".size-limit.json");
     });
 
-    it("should pass when size-limit is configured in package.json", () => {
+    it("should pass when size-limit is configured in package.json", async () => {
       const global = mockGlobal({ hasSizeLimit: true });
       const ctx = mockCtx({ hasSizeLimitConfig: true, configLocation: "package" });
-      const result = sizeLimitConfigured.run(global, ctx);
+      const result = await sizeLimitConfigured.run(global, ctx);
 
       expect(result.status).toBe("pass");
       expect(result.message).toContain("package.json");
     });
 
-    it("should fail when size-limit is installed but not configured", () => {
+    it("should fail when size-limit is installed but not configured", async () => {
       const global = mockGlobal({ hasSizeLimit: true });
       const ctx = mockCtx({ hasSizeLimitConfig: false });
-      const result = sizeLimitConfigured.run(global, ctx);
+      const result = await sizeLimitConfigured.run(global, ctx);
 
       expect(result.status).toBe("fail");
       expect(result.message).toContain("not found");
     });
 
-    it("should skip when size-limit is not installed", () => {
+    it("should skip when size-limit is not installed", async () => {
       const global = mockGlobal({ hasSizeLimit: false });
       const ctx = mockCtx();
-      const result = sizeLimitConfigured.run(global, ctx);
+      const result = await sizeLimitConfigured.run(global, ctx);
 
       expect(result.status).toBe("skip");
       expect(result.message).toContain("not installed");
@@ -92,28 +92,28 @@ describe("bundle-size checks", () => {
   });
 
   describe("size-limit-script", () => {
-    it("should pass when size-limit is installed and script exists", () => {
+    it("should pass when size-limit is installed and script exists", async () => {
       const global = mockGlobal({ hasSizeLimit: true });
       const ctx = mockCtx({ hasSizeLimitScript: true });
-      const result = sizeLimitScript.run(global, ctx);
+      const result = await sizeLimitScript.run(global, ctx);
 
       expect(result.status).toBe("pass");
       expect(result.message).toContain("script found");
     });
 
-    it("should fail when size-limit is installed but no script", () => {
+    it("should fail when size-limit is installed but no script", async () => {
       const global = mockGlobal({ hasSizeLimit: true });
       const ctx = mockCtx({ hasSizeLimitScript: false });
-      const result = sizeLimitScript.run(global, ctx);
+      const result = await sizeLimitScript.run(global, ctx);
 
       expect(result.status).toBe("fail");
       expect(result.message).toContain("no npm script");
     });
 
-    it("should skip when size-limit is not installed", () => {
+    it("should skip when size-limit is not installed", async () => {
       const global = mockGlobal({ hasSizeLimit: false });
       const ctx = mockCtx();
-      const result = sizeLimitScript.run(global, ctx);
+      const result = await sizeLimitScript.run(global, ctx);
 
       expect(result.status).toBe("skip");
       expect(result.message).toContain("not installed");

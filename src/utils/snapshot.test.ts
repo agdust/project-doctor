@@ -109,7 +109,7 @@ describe("snapshot", () => {
 
       await runSnapshot(tempDir);
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       expect(output).toContain("Snapshot saved");
       expect(output).toContain("checks passing");
     });
@@ -132,7 +132,7 @@ describe("snapshot", () => {
     it("should show 'no snapshots' message when history is empty", async () => {
       await runHistory(tempDir);
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       expect(output).toContain("No snapshots yet");
     });
 
@@ -160,7 +160,7 @@ describe("snapshot", () => {
 
       await runHistory(tempDir);
 
-      const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+      const output = consoleSpy.mock.calls.map((c: unknown[]) => c.join(" ")).join("\n");
       expect(output).toContain("Project Health History");
       expect(output).toContain("2025-01-15");
       expect(output).toContain("2025-02-15");

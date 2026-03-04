@@ -55,6 +55,7 @@
     "clean": "node scripts/clean.js",
     "dev": "tsc --watch",
     "check": "node --import tsx ./src/cli.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
     "lint": "eslint src",
     "knip": "knip",
     "jscpd": "jscpd src",
