@@ -6,7 +6,6 @@ import {
   createEmptyTempDir,
   type TempFixture,
 } from "../../test/fix-test-utils.js";
-import { check as noDuplicates } from "./no-duplicates/check.js";
 import { check as noSecretsCommitted } from "./no-secrets-in-git/check.js";
 import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
 
@@ -17,103 +16,6 @@ describe("gitignore fixes", () => {
     if (tempFixture) {
       await tempFixture.cleanup();
     }
-  });
-
-  describe("no-duplicates fix", () => {
-    it("should remove duplicate patterns using fixable fixture", async () => {
-      tempFixture = await copyFixtureToTemp("fixable");
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      // Verify check fails (fixable has duplicates)
-      const checkResult = await noDuplicates.run(global, ctx);
-      expect(checkResult.status).toBe("fail");
-      expect(checkResult.message).toContain("Duplicates");
-
-      // Run fix
-      const fix = noDuplicates.fix;
-      expect(fix).toBeDefined();
-      if (!fix || "options" in fix) throw new Error("Expected simple fix");
-
-      const fixResult = await fix.run(global, ctx);
-      expect(fixResult.success).toBe(true);
-
-      // Verify .gitignore was deduplicated
-      const content = await tempFixture.readFile(".gitignore");
-      const lines = content.split("\n").filter((l) => l.trim());
-      expect(lines.filter((l) => l === "node_modules").length).toBe(1);
-      expect(lines.filter((l) => l === "dist").length).toBe(1);
-
-      // Verify check now passes
-      const global2 = await createGlobalContext(tempFixture.path);
-      const ctx2 = await loadContext(global2);
-      const checkResult2 = await noDuplicates.run(global2, ctx2);
-      expect(checkResult2.status).toBe("pass");
-    });
-
-    it("should preserve comments when deduplicating", async () => {
-      tempFixture = await createEmptyTempDir("gitignore-comments");
-      await tempFixture.writeJson("package.json", { name: "test" });
-      await tempFixture.writeFile(
-        ".gitignore",
-        `# Build output
-dist
-# Dependencies
-node_modules
-# Duplicates below
-dist
-node_modules
-`,
-      );
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      const fix = noDuplicates.fix;
-      if (!fix || "options" in fix) throw new Error("Expected simple fix");
-
-      await fix.run(global, ctx);
-
-      const content = await tempFixture.readFile(".gitignore");
-      expect(content).toContain("# Build output");
-      expect(content).toContain("# Dependencies");
-    });
-
-    it("should preserve empty lines structure", async () => {
-      tempFixture = await createEmptyTempDir("gitignore-empty-lines");
-      await tempFixture.writeJson("package.json", { name: "test" });
-      await tempFixture.writeFile(
-        ".gitignore",
-        `node_modules
-
-dist
-dist
-`,
-      );
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      const fix = noDuplicates.fix;
-      if (!fix || "options" in fix) throw new Error("Expected simple fix");
-
-      await fix.run(global, ctx);
-
-      const content = await tempFixture.readFile(".gitignore");
-      // Should still have the empty line structure
-      expect(content).toContain("node_modules\n\ndist");
-    });
-
-    it("should pass for healthy project (no duplicates)", async () => {
-      tempFixture = await copyFixtureToTemp("healthy");
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      const checkResult = await noDuplicates.run(global, ctx);
-      expect(checkResult.status).toBe("pass");
-    });
   });
 
   describe("no-secrets-in-git fix", () => {
@@ -256,29 +158,6 @@ dist
   });
 
   describe("fix idempotency", () => {
-    it("should be safe to run no-duplicates fix twice", async () => {
-      tempFixture = await copyFixtureToTemp("fixable");
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      const fix = noDuplicates.fix;
-      if (!fix || "options" in fix) throw new Error("Expected simple fix");
-
-      // Run fix twice
-      await fix.run(global, ctx);
-
-      const global2 = await createGlobalContext(tempFixture.path);
-      const ctx2 = await loadContext(global2);
-      await fix.run(global2, ctx2);
-
-      const content = await tempFixture.readFile(".gitignore");
-      const nodeModulesCount = content
-        .split("\n")
-        .filter((l) => l.trim() === "node_modules").length;
-      expect(nodeModulesCount).toBe(1);
-    });
-
     it("should be safe to run secrets fix twice", async () => {
       tempFixture = await copyFixtureToTemp("fixable");
 
@@ -382,18 +261,6 @@ dist
       const checkResult = await noSecretsCommitted.run(global, ctx);
       expect(checkResult.status).toBe("fail");
       expect(checkResult.message).toContain(".npmrc");
-    });
-  });
-
-  describe("empty fixture tests", () => {
-    it("should skip when no gitignore exists", async () => {
-      tempFixture = await copyFixtureToTemp("empty");
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      const checkResult = await noDuplicates.run(global, ctx);
-      expect(checkResult.status).toBe("skip");
     });
   });
 

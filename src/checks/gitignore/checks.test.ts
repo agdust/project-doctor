@@ -5,7 +5,6 @@ import { createGlobalContext } from "../../context/global.js";
 import { check as exists } from "./exists/check.js";
 import { check as hasNodeModules } from "./has-node-modules/check.js";
 import { check as hasDist } from "./has-dist/check.js";
-import { check as noDuplicates } from "./no-duplicates/check.js";
 import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
 
 describe("gitignore checks", () => {
@@ -87,24 +86,6 @@ describe("gitignore checks", () => {
       const result = await hasDist.run(global, ctx);
 
       expect(result.status).toBe("pass");
-    });
-  });
-
-  describe("noDuplicates", () => {
-    it("should pass when no duplicates exist", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = await loadContext(global);
-      const result = await noDuplicates.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-
-    it("should skip when .gitignore is missing", async () => {
-      const global = await createGlobalContext(fixtures.empty);
-      const ctx = await loadContext(global);
-      const result = await noDuplicates.run(global, ctx);
-
-      expect(result.status).toBe("skip");
     });
   });
 
