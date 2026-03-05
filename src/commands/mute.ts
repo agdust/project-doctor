@@ -13,7 +13,7 @@
 
 import { setCheckSeverity } from "../config/loader.js";
 import { createSkipUntil } from "../config/severity.js";
-import { getValidCheckNames } from "../utils/checks.js";
+import { getValidCheckNames, getValidManualCheckNames } from "../utils/checks.js";
 import { red } from "../utils/colors.js";
 import { parseISODate, toDateString } from "../utils/dates.js";
 
@@ -55,10 +55,11 @@ export async function runMute(
   options: MuteOptions,
 ): Promise<void> {
   const validChecks = getValidCheckNames();
+  const validManualChecks = getValidManualCheckNames();
 
-  if (!validChecks.has(checkName)) {
+  if (!validChecks.has(checkName) && !validManualChecks.has(checkName)) {
     console.error(red(`Error: Unknown check "${checkName}".`));
-    console.error('Run "project-doctor list" to see available checks.');
+    console.error('Run "project-doctor list" or "project-doctor manual" to see available checks.');
     process.exit(2);
   }
 
@@ -108,10 +109,11 @@ export async function runMute(
  */
 export async function runUnmute(projectPath: string, checkName: string): Promise<void> {
   const validChecks = getValidCheckNames();
+  const validManualChecks = getValidManualCheckNames();
 
-  if (!validChecks.has(checkName)) {
+  if (!validChecks.has(checkName) && !validManualChecks.has(checkName)) {
     console.error(red(`Error: Unknown check "${checkName}".`));
-    console.error('Run "project-doctor list" to see available checks.');
+    console.error('Run "project-doctor list" or "project-doctor manual" to see available checks.');
     process.exit(2);
   }
 

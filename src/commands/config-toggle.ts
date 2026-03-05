@@ -3,7 +3,7 @@
  */
 
 import { setCheckSeverity, setTagSeverity, setGroupSeverity } from "../config/loader.js";
-import { getValidCheckNames, getValidGroupNames, getValidTagNames } from "../utils/checks.js";
+import { getValidCheckNames, getValidGroupNames, getValidTagNames, getValidManualCheckNames } from "../utils/checks.js";
 import { red } from "../utils/colors.js";
 import type { Severity } from "../config/types.js";
 
@@ -23,10 +23,11 @@ export async function toggleCheck(
   action: ToggleAction,
 ): Promise<void> {
   const validChecks = getValidCheckNames();
+  const validManualChecks = getValidManualCheckNames();
 
-  if (!validChecks.has(checkName)) {
+  if (!validChecks.has(checkName) && !validManualChecks.has(checkName)) {
     console.error(red(`Error: Unknown check "${checkName}".`));
-    console.error('Run "project-doctor list" to see available checks.');
+    console.error('Run "project-doctor list" or "project-doctor manual" to see available checks.');
     process.exit(2);
   }
 

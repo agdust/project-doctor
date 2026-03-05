@@ -11,56 +11,25 @@ import {
   type GlobalContext,
   type CheckTag,
   type FixResult,
-  type ManualCheck,
-  type ManualCheckState,
 } from "../types.js";
 import { checkGroups, manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
-import { getFixPriority, isGroupForProjectType, loadWhyFromDocs } from "../utils/checks.js";
+import {
+  getFixPriority,
+  isGroupForProjectType,
+  loadWhyFromDocs,
+  getManualCheckDisplayState,
+} from "../utils/checks.js";
 import { getErrorMessage } from "../utils/errors.js";
-import { isSkipUntilActive, extractSeverity } from "../config/severity.js";
 import { getProjectName } from "../utils/project-name.js";
 import type {
-  ManualCheckDisplayState,
   AppContext,
   FixableIssue,
   FailedCheck,
   FailedByCategory,
   ManualCheckItem,
 } from "./types.js";
-
-/**
- * Determine display state for a manual check based on config severity.
- * Disabled ("off") and muted ("skip-until-*") override the persisted state.
- */
-function getManualCheckDisplayState(
-  check: ManualCheck,
-  config: GlobalContext["config"],
-  state: ManualCheckState,
-): ManualCheckDisplayState {
-  // Check-level severity
-  const checkSeverity = extractSeverity(config.checks[check.name]);
-  if (checkSeverity === "off") {
-    return "disabled";
-  }
-  if (checkSeverity !== undefined && isSkipUntilActive(checkSeverity)) {
-    return "muted";
-  }
-
-  // Tag-level severity
-  for (const tag of check.tags) {
-    const tagSeverity = config.tags[tag];
-    if (tagSeverity === "off") {
-      return "disabled";
-    }
-    if (tagSeverity && isSkipUntilActive(tagSeverity)) {
-      return "muted";
-    }
-  }
-
-  return state === "done" ? "done" : "not-done";
-}
 
 /**
  * Scan project and create initial app context

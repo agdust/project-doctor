@@ -138,6 +138,24 @@ project-doctor list [options]
 project-doctor info <check> [--format json]   # Show check details
 ```
 
+### Manual Checks
+
+Manual checks require human verification and can't be auto-detected.
+
+```sh
+project-doctor manual [options] [path]              # List manual checks
+project-doctor manual done <name> [path]            # Mark as done
+project-doctor manual undone <name> [path]          # Mark as not done
+project-doctor manual info <name> [options] [path]  # Show check details
+
+# List options:
+  --status <status>       Filter: all, done, not-done, muted, disabled
+  --format <format>       Output: table, json, names
+
+# Info options:
+  --format <format>       Output: text, json
+```
+
 ### Other Commands
 
 ```sh

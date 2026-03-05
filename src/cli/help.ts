@@ -28,6 +28,12 @@ Usage:
 
   project-doctor list [options] [path]
   project-doctor info <check-name> [options] [path]
+
+  project-doctor manual [options] [path]
+  project-doctor manual done <name> [path]
+  project-doctor manual undone <name> [path]
+  project-doctor manual info <name> [options] [path]
+
   project-doctor overview [path]
   project-doctor snapshot [path]
   project-doctor history [path]
@@ -47,6 +53,10 @@ Commands:
   unmute       Remove mute from a check
   list         List all available checks
   info         Show detailed info about a check
+  manual       List manual checks (human-verified)
+  manual done  Mark a manual check as done
+  manual undone Mark a manual check as not done
+  manual info  Show detailed info about a manual check
   overview     Show project health summary
   snapshot     Save current status to history
   history      View progress over time
@@ -75,6 +85,13 @@ List Options:
   --status <status>       Filter: all, enabled, disabled, muted
   --format <format>       Output: table (default), json, names
 
+Manual Options (for 'manual'):
+  --status <status>       Filter: all (default), done, not-done, muted, disabled
+  --format <format>       Output: table (default), json, names
+
+Manual Info Options (for 'manual info'):
+  --format <format>       Output format: text (default), json
+
 Info Options:
   --format <format>       Output format: text (default), json
 
@@ -100,6 +117,11 @@ Examples:
   project-doctor list --format json
   project-doctor list --status disabled
   project-doctor info tsconfig-strict-enabled
+  project-doctor manual                      List manual checks
+  project-doctor manual --format json        JSON output for manual checks
+  project-doctor manual done publish-provenance
+  project-doctor manual undone publish-provenance
+  project-doctor manual info publish-provenance
 
 Groups:
   ${listGroups().join(", ")}

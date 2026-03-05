@@ -4,7 +4,14 @@
  * Common logic used by both CLI commands and interactive wizard.
  */
 
-import { TAG, type CheckTag, type Check, type FixWithOptions } from "../types.js";
+import {
+  TAG,
+  type CheckTag,
+  type Check,
+  type FixWithOptions,
+  type ManualCheck,
+  type ManualCheckState,
+} from "../types.js";
 import { toDateString } from "./dates.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
@@ -14,7 +21,8 @@ import {
   isSkipUntilActive,
   extractSeverity,
 } from "../config/severity.js";
-import { checkGroups, listChecks } from "../registry.js";
+import { checkGroups, listChecks, manualChecks } from "../registry.js";
+import type { ManualCheckDisplayState } from "../app/types.js";
 import { getWhyText as getWhyTextFromDocs } from "../docs/compiled-docs.js";
 
 // ============================================================================
@@ -221,6 +229,16 @@ export function getValidTagNames(): Set<string> {
   return _validTagNames;
 }
 
+/** Get valid manual check names as a set */
+export function getValidManualCheckNames(): Set<string> {
+  return new Set(manualChecks.map((c) => c.name));
+}
+
+/** Find a manual check by name */
+export function findManualCheck(checkName: string): ManualCheck | null {
+  return manualChecks.find((c) => c.name === checkName) ?? null;
+}
+
 /** Find a check by name, returns the check and its group */
 export function findCheck(checkName: string): { check: Check; group: string } | null {
   return ensureCheckMap().get(checkName) ?? null;
@@ -344,4 +362,40 @@ export function countMutedChecks(config: ResolvedConfig): number {
     }
   }
   return count;
+}
+
+// ============================================================================
+// Manual Check Display State
+// ============================================================================
+
+/**
+ * Determine display state for a manual check based on config severity.
+ * Disabled ("off") and muted ("skip-until-*") override the persisted state.
+ */
+export function getManualCheckDisplayState(
+  check: ManualCheck,
+  config: ResolvedConfig,
+  state: ManualCheckState,
+): ManualCheckDisplayState {
+  // Check-level severity
+  const checkSeverity = extractSeverity(config.checks[check.name]);
+  if (checkSeverity === "off") {
+    return "disabled";
+  }
+  if (checkSeverity !== undefined && isSkipUntilActive(checkSeverity)) {
+    return "muted";
+  }
+
+  // Tag-level severity
+  for (const tag of check.tags) {
+    const tagSeverity = config.tags[tag];
+    if (tagSeverity === "off") {
+      return "disabled";
+    }
+    if (tagSeverity && isSkipUntilActive(tagSeverity)) {
+      return "muted";
+    }
+  }
+
+  return state === "done" ? "done" : "not-done";
 }

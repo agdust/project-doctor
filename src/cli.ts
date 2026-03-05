@@ -32,6 +32,7 @@ import {
   handleListCommand,
   handleInfoCommand,
   handleFixCommand,
+  handleManualCommand,
 } from "./cli/index.js";
 
 // Read version from package.json
@@ -95,6 +96,7 @@ async function main(): Promise<void> {
     "unmute",
     "list",
     "info",
+    "manual",
   ];
 
   if (command && specialCommands.includes(command)) {
@@ -139,6 +141,11 @@ async function main(): Promise<void> {
 
   if (command === "fix") {
     await handleFixCommand(args);
+    return;
+  }
+
+  if (command === "manual") {
+    await handleManualCommand(args);
     return;
   }
 

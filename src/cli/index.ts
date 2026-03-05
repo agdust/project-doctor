@@ -16,4 +16,5 @@ export {
   handleListCommand,
   handleInfoCommand,
   handleFixCommand,
+  handleManualCommand,
 } from "./handlers.js";

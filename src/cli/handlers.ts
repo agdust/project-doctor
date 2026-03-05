@@ -10,6 +10,7 @@ import { runMute, runUnmute } from "../commands/mute.js";
 import { runList } from "../commands/list.js";
 import { runInfo } from "../commands/info.js";
 import { runFixList, runFixAll, runFixOne } from "../commands/fix.js";
+import { runManualList, runManualDone, runManualUndone, runManualInfo } from "../commands/manual.js";
 import { red } from "../utils/colors.js";
 import { getProjectPath, isPath } from "./utils.js";
 import { printFixHelp } from "./help.js";
@@ -282,4 +283,76 @@ export async function handleFixCommand(args: string[]): Promise<void> {
     pick: values.pick,
   });
   process.exit(exitCode);
+}
+
+export async function handleManualCommand(args: string[]): Promise<void> {
+  const subcommand = args[0];
+
+  // Subcommands: done, undone, info
+  if (subcommand === "done") {
+    args.shift();
+    const checkName = args[0];
+    if (!checkName || checkName.startsWith("-")) {
+      console.error(`${red("Error:")} Missing check name.`);
+      process.exit(2);
+    }
+    args.shift();
+    const projectPath = getProjectPath(args);
+    await runManualDone(projectPath, checkName);
+    return;
+  }
+
+  if (subcommand === "undone") {
+    args.shift();
+    const checkName = args[0];
+    if (!checkName || checkName.startsWith("-")) {
+      console.error(`${red("Error:")} Missing check name.`);
+      process.exit(2);
+    }
+    args.shift();
+    const projectPath = getProjectPath(args);
+    await runManualUndone(projectPath, checkName);
+    return;
+  }
+
+  if (subcommand === "info") {
+    args.shift();
+    const checkName = args[0];
+    if (!checkName || checkName.startsWith("-")) {
+      console.error(`${red("Error:")} Missing check name.`);
+      process.exit(2);
+    }
+    args.shift();
+
+    const { values, positionals } = parseArgs({
+      args,
+      options: {
+        format: { type: "string" },
+      },
+      allowPositionals: true,
+    });
+
+    const projectPath = getProjectPath(positionals);
+    await runManualInfo(projectPath, checkName, {
+      format: values.format as "text" | "json" | undefined,
+    });
+    return;
+  }
+
+  // Default: list manual checks
+  const { values, positionals } = parseArgs({
+    args,
+    options: {
+      status: { type: "string" },
+      format: { type: "string" },
+    },
+    allowPositionals: true,
+  });
+
+  const projectPath = getProjectPath(positionals);
+
+  await runManualList(projectPath, {
+    status: values.status as "all" | "done" | "not-done" | "muted" | "disabled" | undefined,
+    format: values.format as "table" | "json" | "names" | undefined,
+  });
 }
