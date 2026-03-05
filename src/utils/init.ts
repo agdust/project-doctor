@@ -3,7 +3,7 @@ import path from "node:path";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "../config/constants.js";
 import { atomicWriteFile } from "./safe-fs.js";
 import { green, yellow } from "./colors.js";
-import { blank } from "../cli-framework/renderer.js";
+import { blank, ICONS } from "../cli-framework/renderer.js";
 
 const DEFAULT_CONFIG = `{
   // Disable specific checks
@@ -39,6 +39,6 @@ export async function runInit(projectPath: string): Promise<void> {
   await ensureConfigDir(projectPath);
   await atomicWriteFile(configPath, DEFAULT_CONFIG, "utf8");
 
-  console.log(`  ${green("✓")} Created ${CONFIG_DIR}/${CONFIG_FILE}`);
+  console.log(`  ${green(ICONS.pass)} Created ${CONFIG_DIR}/${CONFIG_FILE}`);
   blank();
 }

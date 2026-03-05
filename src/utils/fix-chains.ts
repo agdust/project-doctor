@@ -12,36 +12,27 @@ import { getFixPriority } from "./checks.js";
  */
 
 export const fixChains: string[][] = [
-  // Bundle size: install tool → configure → add script
   ["size-limit-installed", "size-limit-configured", "size-limit-script"],
 
-  // Knip: install tool → configure
   ["knip-installed", "knip-config"],
 
-  // nvmrc: create file → valid format → modern version
   [
     "node-version-nvmrc-exists",
     "node-version-nvmrc-valid-format",
     "node-version-nvmrc-modern-version",
   ],
 
-  // engines: add field → valid format → modern version
   ["package-json-has-engines", "node-version-engines-valid", "node-version-engines-modern"],
 
-  // editorconfig: create file → add settings
   ["editorconfig-exists", "editorconfig-has-root"],
   ["editorconfig-exists", "editorconfig-has-indent"],
 
-  // env: create file → add content
   ["env-example-exists", "env-example-not-empty"],
 
-  // prettier: config → ignore (optional dependency)
   ["prettier-config-exists", "prettier-ignore-exists"],
 
-  // ESLint: config → flat config migration
   ["eslint-config-exists", "eslint-flat-config"],
 
-  // TypeScript: config exists → strict settings
   ["tsconfig-exists", "tsconfig-strict-enabled"],
   ["tsconfig-exists", "tsconfig-no-unchecked-index"],
   ["tsconfig-exists", "tsconfig-verbatim-module-syntax"],

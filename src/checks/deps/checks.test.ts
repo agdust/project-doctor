@@ -77,7 +77,10 @@ describe("deps checks", () => {
     it("should pass when lockfile-lint is installed and has script", async () => {
       const ctx = mockCtx({
         devDependencies: { "lockfile-lint": "^4.0.0" },
-        scripts: { "lint:lockfile": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https" },
+        scripts: {
+          "lint:lockfile":
+            "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https",
+        },
       });
       const result = await lockfileLint.run(mockGlobal, ctx);
 

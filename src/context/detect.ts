@@ -15,7 +15,6 @@ export async function detectTools(files: FileCache): Promise<DetectedTools> {
     hasJscpdJson,
     hasJscpdrc,
   ] = await Promise.all([
-    // AGENT: what if package.json do not exist?
     files.readJson<PackageJson>("package.json"),
     files.exists("package-lock.json"),
     files.exists("yarn.lock"),

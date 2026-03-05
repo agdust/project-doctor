@@ -1,11 +1,10 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { createGlobalContext } from "../context/global.js";
 import { ensureConfigDir } from "../config/constants.js";
-import { runAllChecksRaw } from "./runner.js";
+import { runChecks } from "./runner.js";
 import { safeJsonParse } from "./safe-json.js";
 import { bold, dim, red, green } from "./colors.js";
-import { blank } from "../cli-framework/renderer.js";
+import { blank, ICONS } from "../cli-framework/renderer.js";
 import { atomicWriteFile } from "./safe-fs.js";
 import { toDateString } from "./dates.js";
 
@@ -45,11 +44,7 @@ async function saveHistory(projectPath: string, history: SnapshotEntry[]): Promi
 }
 
 export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> {
-  const global = await createGlobalContext(projectPath);
-
-  // Run all checks
-  // AGENT: shouldnt here project configuration be respected? Why we call Raw here?
-  const checkResults = await runAllChecksRaw(global);
+  const { results: checkResults } = await runChecks({ projectPath });
 
   const failingChecks = checkResults.filter((r) => r.status === "fail").map((r) => r.name);
 
@@ -85,7 +80,7 @@ export async function runSnapshot(projectPath: string): Promise<void> {
   await saveHistory(projectPath, history);
 
   blank();
-  console.log(`  ${green("✓")} Snapshot saved for ${snapshot.date}`);
+  console.log(`  ${green(ICONS.pass)} Snapshot saved for ${snapshot.date}`);
   console.log(`    ${snapshot.checks.passed}/${snapshot.checks.total} checks passing`);
   blank();
   console.log(`  ${dim(`Saved to ${HISTORY_DIR}/${HISTORY_FILE}`)}`);
@@ -109,7 +104,7 @@ export async function runHistory(projectPath: string): Promise<void> {
   console.log(`  ${dim("─────────────────────────")}`);
 
   for (const entry of history) {
-    const checkStatus = entry.checks.failed === 0 ? green("✓") : red("✗");
+    const checkStatus = entry.checks.failed === 0 ? green(ICONS.pass) : red(ICONS.fail);
     const checkText = `${entry.checks.passed}/${entry.checks.total}`;
 
     console.log(`  ${entry.date}    ${checkStatus} ${checkText}`);

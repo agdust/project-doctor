@@ -216,8 +216,13 @@ async function main(): Promise<void> {
     process.exit(hasFailed ? 1 : 0);
   }
 
-  // Default: launch interactive wizard
-  // AGENT: launch wizard only if strictly 0 args is passed, otherwise show an error that command or options are not recognized
+  // Launch interactive wizard only when no arguments are passed
+  if (process.argv.length > 2) {
+    console.error(red(`Error: Unknown command or option "${process.argv[2]}".`));
+    console.error('Run "project-doctor --help" for available commands.');
+    process.exit(2);
+  }
+
   await runProjectDoctorApp(projectPath);
 }
 

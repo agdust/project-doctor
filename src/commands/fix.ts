@@ -16,11 +16,15 @@ import type { CheckResultBase, FixResult, GlobalContext, CheckTag, Fix } from ".
 import { checkGroups } from "../registry.js";
 import { sortFixableChecks } from "../utils/fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
-import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
-import { isGroupForProjectType, isFixWithOptions, getValidCheckNames } from "../utils/checks.js";
+import {
+  isGroupForProjectType,
+  isFixWithOptions,
+  getValidCheckNames,
+  isCheckDisabledByConfig,
+} from "../utils/checks.js";
 import type { ResolvedConfig } from "../config/types.js";
 import { bold, dim, green, red, yellow } from "../utils/colors.js";
-import { blank } from "../cli-framework/renderer.js";
+import { blank, ICONS } from "../cli-framework/renderer.js";
 
 interface FixableCheck {
   name: string;
@@ -40,21 +44,7 @@ function shouldIncludeCheck(
   config: ResolvedConfig,
   options: FixFilterOptions,
 ): boolean {
-  // AGENT: I see this logoc with resolving check whether it's enabled or not is implemented deveral times. Feels like it can be refactored and put in one place
-  // Check if this check is turned off in config
-  if (isCheckOff(config, checkName)) {
-    return false;
-  }
-
-  // Check if any of the check's tags are turned off in config
-  for (const tag of checkTags) {
-    if (isTagOff(config, tag)) {
-      return false;
-    }
-  }
-
-  // Check if group is turned off
-  if (isGroupOff(config, groupName)) {
+  if (isCheckDisabledByConfig(checkName, checkTags, groupName, config)) {
     return false;
   }
 
@@ -122,7 +112,6 @@ async function collectFixableChecks(
           optionIds,
           runFix: async (pickOption?: string) => {
             if (hasOptions) {
-              // AGENT: if check has multiple fix options, like `license-exists`, then do not include it into autofix at any place. Only checks with one canonical fix can be run like that
               const optionToUse = pickOption ?? fix.options[0]?.id;
               const option = fix.options.find((o) => o.id === optionToUse);
               if (!option) {
@@ -207,44 +196,70 @@ export async function runFixAll(projectPath: string, options: FixRunOptions = {}
 
   const { checks } = await collectFixableChecks(projectPath, options);
 
-  if (checks.length === 0) {
+  // Multi-option checks require manual selection — exclude from autofix
+  const autoFixable = checks.filter((c) => !c.hasOptions);
+  const skippedMultiOption = checks.filter((c) => c.hasOptions);
+
+  if (autoFixable.length === 0 && skippedMultiOption.length === 0) {
     console.log(green("No fixable issues found"));
     blank();
     return 0;
   }
 
-  console.log(`Fixing ${bold(String(checks.length))} issue${checks.length > 1 ? "s" : ""}...`);
-  blank();
+  if (autoFixable.length === 0) {
+    console.log(dim("No auto-fixable issues found."));
+    blank();
+  } else {
+    console.log(
+      `Fixing ${bold(String(autoFixable.length))} issue${autoFixable.length > 1 ? "s" : ""}...`,
+    );
+    blank();
+  }
 
   let fixed = 0;
   let failed = 0;
 
-  for (const check of checks) {
+  for (const check of autoFixable) {
     console.log(`  ${check.name}...`);
     try {
       const fixResult = await check.runFix(options.pick);
       if (fixResult.success) {
-        console.log(`    ${green(`✓ ${fixResult.message}`)}`);
+        console.log(`    ${green(`${ICONS.pass} ${fixResult.message}`)}`);
         fixed++;
       } else {
-        console.log(`    ${red(`✗ ${fixResult.message}`)}`);
+        console.log(`    ${red(`${ICONS.fail} ${fixResult.message}`)}`);
         failed++;
       }
     } catch (error) {
       console.log(
-        `    ${red(`✗ Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`,
+        `    ${red(`${ICONS.fail} Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`,
       );
       failed++;
     }
   }
 
-  blank();
-  if (failed > 0) {
-    console.log(`${green(`✓ ${fixed} fixed`)}, ${red(`✗ ${failed} failed`)}`);
-  } else {
-    console.log(green(`✓ ${fixed} fixed`));
+  if (skippedMultiOption.length > 0) {
+    blank();
+    console.log(
+      dim(
+        `Skipped ${skippedMultiOption.length} check${skippedMultiOption.length > 1 ? "s" : ""} requiring manual option selection:`,
+      ),
+    );
+    for (const check of skippedMultiOption) {
+      console.log(`  ${dim(check.name)} ${dim(`(options: ${check.optionIds?.join(", ")})`)}`);
+    }
+    console.log(dim(`Use "project-doctor fix <check-name> --pick <option>" to fix these.`));
   }
+
   blank();
+  if (fixed > 0 || failed > 0) {
+    if (failed > 0) {
+      console.log(`${green(`${ICONS.pass} ${fixed} fixed`)}, ${red(`${ICONS.fail} ${failed} failed`)}`);
+    } else {
+      console.log(green(`${ICONS.pass} ${fixed} fixed`));
+    }
+    blank();
+  }
 
   return failed > 0 ? 1 : 0;
 }
@@ -292,16 +307,16 @@ export async function runFixOne(
   try {
     const fixResult = await check.runFix(options.pick);
     if (fixResult.success) {
-      console.log(`  ${green(`✓ ${fixResult.message}`)}`);
+      console.log(`  ${green(`${ICONS.pass} ${fixResult.message}`)}`);
       blank();
       return 0;
     } else {
-      console.log(`  ${red(`✗ ${fixResult.message}`)}`);
+      console.log(`  ${red(`${ICONS.fail} ${fixResult.message}`)}`);
       blank();
       return 1;
     }
   } catch (error) {
-    console.log(`  ${red(`✗ Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`);
+    console.log(`  ${red(`${ICONS.fail} Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`);
     blank();
     return 1;
   }

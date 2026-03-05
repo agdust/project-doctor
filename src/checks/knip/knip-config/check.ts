@@ -1,16 +1,16 @@
 import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
-import type { DepsContext } from "../context.js";
+import type { KnipContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 
 const name = "knip-config";
 
-export const check: Check<DepsContext> = {
+export const check: Check<KnipContext> = {
   name,
   description: "Check if knip configuration exists",
   tags: [TAG.node, TAG.recommended, TAG.tool.knip, TAG.effort.medium],
-  run: async (global, _ctx) => {
-    if (!global.detected.hasKnip) {
+  run: async (global, ctx) => {
+    if (!ctx.hasKnip) {
       return skip(name, "knip not installed");
     }
 

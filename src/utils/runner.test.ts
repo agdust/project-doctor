@@ -134,10 +134,9 @@ describe("runner", () => {
         if (result.name.endsWith("-not-detected")) continue;
         const checkDef = allChecks.find((c) => c.name === result.name);
         expect(checkDef, `check ${result.name} should exist in registry`).toBeDefined();
-        expect(
-          checkDef!.tags,
-          `check ${result.name} should have "required" tag`,
-        ).toContain("required");
+        expect(checkDef!.tags, `check ${result.name} should have "required" tag`).toContain(
+          "required",
+        );
       }
     });
 

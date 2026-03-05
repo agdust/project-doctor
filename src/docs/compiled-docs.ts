@@ -9,6 +9,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CheckTag } from "../types.js";
+import { safeJsonParse } from "../utils/safe-json.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -46,8 +47,11 @@ export async function loadDocsManifest(): Promise<DocsManifest> {
 
   try {
     const content = await readFile(MANIFEST_PATH, "utf8");
-    // AGENT: safe json parse maybe?
-    cachedManifest = JSON.parse(content) as DocsManifest;
+    const parsed = safeJsonParse<DocsManifest>(content);
+    if (!parsed) {
+      return { generatedAt: "", checks: {} };
+    }
+    cachedManifest = parsed;
     return cachedManifest;
   } catch {
     // Return empty manifest if file doesn't exist (e.g., during development)

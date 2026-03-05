@@ -55,5 +55,4 @@ describe("eslint checks", () => {
       expect(result.status).toBe("skip");
     });
   });
-
 });

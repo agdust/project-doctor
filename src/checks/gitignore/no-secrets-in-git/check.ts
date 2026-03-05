@@ -28,7 +28,13 @@ function npmrcHasAuthTokens(content: string): boolean {
 export const check: Check<GitignoreContext> = {
   name,
   description: "Check that common secret files are ignored",
-  tags: [TAG.universal, TAG.required, TAG.effort.low, TAG.security, TAG.source["lirantal-npm-security"]],
+  tags: [
+    TAG.universal,
+    TAG.required,
+    TAG.effort.low,
+    TAG.security,
+    TAG.source["lirantal-npm-security"],
+  ],
   run: async (global, { raw, gitignore }) => {
     if (raw === null || gitignore === null) {
       return skip(name, "No .gitignore");

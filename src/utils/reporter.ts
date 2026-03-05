@@ -14,9 +14,9 @@ const STATUS_FORMATTERS: Record<CheckStatus, (s: string) => string> = {
   skip: dim,
 };
 
-export function formatResult(result: CheckResult, useColor = true): string {
+export function formatResult(result: CheckResult): string {
   const icon = STATUS_ICONS[result.status];
-  const formatter = useColor ? STATUS_FORMATTERS[result.status] : (s: string) => s;
+  const formatter = STATUS_FORMATTERS[result.status];
 
   return `${formatter(icon)} ${result.name}: ${result.message}`;
 }
@@ -38,8 +38,6 @@ export interface PrintOptions {
 }
 
 export function printResults(results: CheckResult[], options: PrintOptions = {}): void {
-  // AGENT: is color-enabled support built in picocolors? Also isTTY has description in docks that it's always true
-  const useColor = process.stdout.isTTY ?? false;
   const grouped = groupResults(results);
   const { fullReport = false } = options;
 
@@ -51,11 +49,11 @@ export function printResults(results: CheckResult[], options: PrintOptions = {})
       continue;
     }
 
-    console.log(useColor ? bold(groupName) : groupName);
+    console.log(bold(groupName));
 
     const resultsToShow = fullReport ? groupResults : issues;
     for (const result of resultsToShow) {
-      console.log(`  ${formatResult(result, useColor)}`);
+      console.log(`  ${formatResult(result)}`);
     }
 
     blank();

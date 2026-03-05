@@ -6,7 +6,15 @@
 
 import { green } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, text, success, error, ICONS } from "../../cli-framework/index.js";
+import {
+  action,
+  separator,
+  blank,
+  text,
+  success,
+  error,
+  ICONS,
+} from "../../cli-framework/index.js";
 import { setManualCheckState } from "../../config/loader.js";
 import { getErrorMessage } from "../../utils/errors.js";
 import type { AppContext } from "../types.js";

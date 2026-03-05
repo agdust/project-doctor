@@ -34,7 +34,6 @@ export function divider(width = 45): void {
  * Print a blank line
  */
 export function blank(): void {
-  // AGENT: make sure all empty strings renderings use this function
   console.log();
 }
 
@@ -67,7 +66,7 @@ export function muted(content: string, indent = 2): void {
  */
 export function success(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${green(`✓ ${content}`)}`);
+  console.log(`${prefix}${green(`${ICONS.pass} ${content}`)}`);
 }
 
 /**
@@ -75,7 +74,7 @@ export function success(content: string, indent = 2): void {
  */
 export function error(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${red(`✗ ${content}`)}`);
+  console.log(`${prefix}${red(`${ICONS.fail} ${content}`)}`);
 }
 
 /**
@@ -83,7 +82,7 @@ export function error(content: string, indent = 2): void {
  */
 export function warn(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${yellow(`⚠ ${content}`)}`);
+  console.log(`${prefix}${yellow(`${ICONS.warn} ${content}`)}`);
 }
 
 /**
@@ -91,7 +90,7 @@ export function warn(content: string, indent = 2): void {
  */
 export function info(content: string, indent = 2): void {
   const prefix = " ".repeat(indent);
-  console.log(`${prefix}${cyan(`→ ${content}`)}`);
+  console.log(`${prefix}${cyan(`${ICONS.info} ${content}`)}`);
 }
 
 /**
@@ -127,7 +126,7 @@ export function bigTitle(appName: string): void {
   // Use bold + larger visual presence with box drawing
   const visibleLength = stripAnsi(appName).length;
   const line = "─".repeat(visibleLength + 4);
-  console.log();
+  blank();
   console.log(`  ${dim(`╭${line}╮`)}`);
   console.log(`  ${dim("│")}  ${bold(appName)}  ${dim("│")}`);
   console.log(`  ${dim(`╰${line}╯`)}`);

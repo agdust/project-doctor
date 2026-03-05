@@ -201,7 +201,9 @@ describe("config loader", () => {
 
   describe("isCheckOff / isTagOff / isGroupOff helpers", () => {
     it("isCheckOff should return true for off checks and false otherwise", async () => {
-      await updateConfig(tempDir, { checks: { "disabled-check": "off", "enabled-check": "error" } });
+      await updateConfig(tempDir, {
+        checks: { "disabled-check": "off", "enabled-check": "error" },
+      });
       const resolved = await loadAndResolveConfig(tempDir);
 
       expect(isCheckOff(resolved, "disabled-check")).toBe(true);

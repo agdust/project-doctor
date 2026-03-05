@@ -1,9 +1,9 @@
 import type { CheckResult, CheckResultBase, CheckTag, DetectedTools } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
-import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
+import { isGroupOff } from "../config/loader.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
-import { isGroupForProjectType } from "./checks.js";
+import { isGroupForProjectType, isCheckDisabledByConfig } from "./checks.js";
 
 // Groups that require specific tools to be detected
 const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
@@ -49,19 +49,12 @@ export interface RunnerResult {
 function shouldRunCheck(
   checkName: string,
   checkTags: CheckTag[],
+  groupName: string,
   config: ResolvedConfig,
   cliIncludeTags?: CheckTag[],
 ): boolean {
-  // Check if this check is turned off in config
-  if (isCheckOff(config, checkName)) {
+  if (isCheckDisabledByConfig(checkName, checkTags, groupName, config)) {
     return false;
-  }
-
-  // Check if any of the check's tags are turned off in config
-  for (const tag of checkTags) {
-    if (isTagOff(config, tag)) {
-      return false;
-    }
   }
 
   // CLI include tags filter (only run checks with these tags)
@@ -132,7 +125,7 @@ export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
     const groupContext = await group.loadContext(global);
 
     for (const check of group.checks) {
-      if (!shouldRunCheck(check.name, check.tags, config, options.includeTags)) {
+      if (!shouldRunCheck(check.name, check.tags, group.name, config, options.includeTags)) {
         continue;
       }
 
@@ -162,24 +155,4 @@ export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
 export async function runAllChecks(projectPath: string): Promise<CheckResult[]> {
   const { results } = await runChecks({ projectPath });
   return results;
-}
-
-/**
- * Run all checks without any filtering, returning base results.
- * Used internally by overview and snapshot utilities.
- */
-export async function runAllChecksRaw(
-  global: Parameters<(typeof checkGroups)[0]["loadContext"]>[0],
-): Promise<CheckResultBase[]> {
-  const checkResults: CheckResultBase[] = [];
-  for (const group of checkGroups) {
-    const groupContext = await group.loadContext(global);
-    for (const check of group.checks) {
-      const result = await (
-        check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase> | CheckResultBase
-      )(global, groupContext);
-      checkResults.push(result);
-    }
-  }
-  return checkResults;
 }

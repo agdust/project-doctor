@@ -6,7 +6,7 @@
 
 import { red } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, title, muted } from "../../cli-framework/index.js";
+import { action, separator, blank, title, muted, ICONS } from "../../cli-framework/index.js";
 import type { AppContext, FailedCheck } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 import { TAG } from "../../types.js";
@@ -17,7 +17,7 @@ function formatCheckOption(
 ): { name: string; description: string } {
   const padding = " ".repeat(maxNameLen - check.name.length);
   return {
-    name: `${red("✗")} ${check.name}${padding}`,
+    name: `${red(ICONS.fail)} ${check.name}${padding}`,
     description: check.message,
   };
 }

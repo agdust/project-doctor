@@ -1,8 +1,8 @@
 import { createGlobalContext } from "../context/global.js";
-import { runAllChecksRaw } from "./runner.js";
+import { runChecks } from "./runner.js";
 import { getProjectName } from "./project-name.js";
 import { bold, dim, red, green } from "./colors.js";
-import { blank } from "../cli-framework/renderer.js";
+import { blank, ICONS } from "../cli-framework/renderer.js";
 
 interface OverviewResult {
   projectName: string;
@@ -17,8 +17,7 @@ export async function getOverview(projectPath: string): Promise<OverviewResult> 
   const global = await createGlobalContext(projectPath);
   const projectName = await getProjectName(global, projectPath);
 
-  // Run all checks
-  const checkResults = await runAllChecksRaw(global);
+  const { results: checkResults } = await runChecks({ projectPath });
 
   return {
     projectName,
@@ -38,9 +37,9 @@ export function printOverview(result: OverviewResult): void {
   // Health checks line
   const { checks } = result;
   if (checks.failed > 0) {
-    console.log(`  ${red("✗")} ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`);
+    console.log(`  ${red(ICONS.fail)} ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`);
   } else {
-    console.log(`  ${green("✓")} All checks passing`);
+    console.log(`  ${green(ICONS.pass)} All checks passing`);
   }
 
   blank();

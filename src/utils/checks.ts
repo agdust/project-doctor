@@ -4,10 +4,10 @@
  * Common logic used by both CLI commands and interactive wizard.
  */
 
-import { TAG, type CheckTag, type Check, type FixResult, type GlobalContext } from "../types.js";
+import { TAG, type CheckTag, type Check, type FixWithOptions } from "../types.js";
 import { toDateString } from "./dates.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
-import { isTagOff, isGroupOff } from "../config/loader.js";
+import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import {
   isSkipUntil,
   parseSkipUntil,
@@ -29,6 +29,7 @@ export const JS_GROUPS = new Set([
   "prettier",
   "node-version",
   "deps",
+  "knip",
   "bundle-size",
   "jscpd",
 ]);
@@ -143,6 +144,31 @@ export function getCheckStatus(
   return { status: "enabled" };
 }
 
+/**
+ * Check if a check is disabled by config at any level (check, tag, or group).
+ *
+ * Shared logic used by both the runner and fix command to avoid duplication.
+ */
+export function isCheckDisabledByConfig(
+  checkName: string,
+  checkTags: CheckTag[],
+  groupName: string,
+  config: ResolvedConfig,
+): boolean {
+  if (isCheckOff(config, checkName)) {
+    return true;
+  }
+  for (const tag of checkTags) {
+    if (isTagOff(config, tag)) {
+      return true;
+    }
+  }
+  if (isGroupOff(config, groupName)) {
+    return true;
+  }
+  return false;
+}
+
 // ============================================================================
 // Check Lookup
 // ============================================================================
@@ -201,16 +227,7 @@ export function findCheck(checkName: string): { check: Check; group: string } | 
 }
 
 /** Check if a fix has options (vs simple fix) */
-// AGENT: maybe here in type giard type name can be reused instead of defining whole type inline?
-export function isFixWithOptions<T>(fix: unknown): fix is {
-  description: string;
-  options: {
-    id: string;
-    label: string;
-    description?: string;
-    run: (g: GlobalContext, c: T) => Promise<FixResult>;
-  }[];
-} {
+export function isFixWithOptions<T>(fix: unknown): fix is FixWithOptions<T> {
   return (
     fix !== undefined &&
     fix !== null &&

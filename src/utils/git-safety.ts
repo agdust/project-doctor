@@ -19,12 +19,22 @@ const CHALLENGE_PHRASE = "i understand the risks";
 const matchesChallenge = createMatcher(CHALLENGE_PHRASE);
 
 /**
- * Check if project has a git repository
+ * Check if project is inside a git repository.
+ * Walks up parent directories to detect repos where the project is a subdirectory.
  */
 export function hasGitRepo(projectPath: string): boolean {
-  // AGENT: does this check that cwd can be inside if git repo, and not be root of it?
-  const gitDir = path.join(projectPath, ".git");
-  return existsSync(gitDir);
+  let dir = path.resolve(projectPath);
+  const { root } = path.parse(dir);
+
+  while (true) {
+    if (existsSync(path.join(dir, ".git"))) {
+      return true;
+    }
+    if (dir === root) {
+      return false;
+    }
+    dir = path.dirname(dir);
+  }
 }
 
 /**

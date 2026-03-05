@@ -29,6 +29,7 @@ import {
 } from "./checks/node-version/index.js";
 import { loadContext as loadDocsContext, checks as docsChecks } from "./checks/docs/index.js";
 import { loadContext as loadDepsContext, checks as depsChecks } from "./checks/deps/index.js";
+import { loadContext as loadKnipContext, checks as knipChecks } from "./checks/knip/index.js";
 import { loadContext as loadEnvContext, checks as envChecks } from "./checks/env/index.js";
 import {
   loadContext as loadBundleSizeContext,
@@ -57,6 +58,7 @@ export const checkGroups = [
   createGroup("node-version", loadNodeVersionContext, nodeVersionChecks),
   createGroup("docs", loadDocsContext, docsChecks),
   createGroup("deps", loadDepsContext, depsChecks),
+  createGroup("knip", loadKnipContext, knipChecks),
   createGroup("env", loadEnvContext, envChecks),
   createGroup("bundle-size", loadBundleSizeContext, bundleSizeChecks),
   createGroup("docker", loadDockerContext, dockerChecks),

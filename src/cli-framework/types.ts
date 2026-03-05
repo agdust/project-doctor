@@ -120,4 +120,3 @@ export interface AppState<TCtx> {
   /** Last selected option value per screen (for cursor restoration) */
   lastSelected: Map<string, string>;
 }
-

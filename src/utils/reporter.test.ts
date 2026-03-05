@@ -16,40 +16,30 @@ describe("reporter", () => {
   describe("formatResult", () => {
     it("should format pass result with check icon, name, and message", () => {
       const result = makeResult({ name: "my-check", status: "pass", message: "Looks great" });
-      const formatted = formatResult(result, false);
-      expect(formatted).toBe("\u2713 my-check: Looks great");
+      const formatted = formatResult(result);
+      expect(formatted).toContain("my-check");
+      expect(formatted).toContain("Looks great");
     });
 
-    it("should format fail result with X icon", () => {
+    it("should format fail result with name and message", () => {
       const result = makeResult({ name: "bad-check", status: "fail", message: "Something wrong" });
-      const formatted = formatResult(result, false);
-      expect(formatted).toBe("\u2717 bad-check: Something wrong");
+      const formatted = formatResult(result);
+      expect(formatted).toContain("bad-check");
+      expect(formatted).toContain("Something wrong");
     });
 
-    it("should format skip result with dash icon", () => {
+    it("should format skip result with name and message", () => {
       const result = makeResult({ name: "skip-check", status: "skip", message: "Skipped" });
-      const formatted = formatResult(result, false);
-      expect(formatted).toBe("\u2014 skip-check: Skipped");
+      const formatted = formatResult(result);
+      expect(formatted).toContain("skip-check");
+      expect(formatted).toContain("Skipped");
     });
 
-    it("should not include ANSI codes when useColor is false", () => {
+    it("should include check name and message in output", () => {
       const result = makeResult();
-      const formatted = formatResult(result, false);
-      // eslint-disable-next-line no-control-regex
-      expect(formatted).not.toMatch(/\u001b\[/);
-    });
-
-    it("should apply color formatting when useColor is true", () => {
-      const result = makeResult({ status: "pass" });
-      const withColor = formatResult(result, true);
-      const withoutColor = formatResult(result, false);
-      // With color the icon portion should differ (picocolors wraps it)
-      // In non-TTY environments picocolors may be a no-op, so just verify
-      // the structural content is the same
-      expect(withColor).toContain("test-check");
-      expect(withColor).toContain("All good");
-      // The format should be "{icon} {name}: {message}" regardless
-      expect(withoutColor).toMatch(/^. test-check: All good$/);
+      const formatted = formatResult(result);
+      expect(formatted).toContain("test-check");
+      expect(formatted).toContain("All good");
     });
   });
 

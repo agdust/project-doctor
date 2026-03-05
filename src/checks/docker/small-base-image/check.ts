@@ -51,7 +51,7 @@ function isSmallVariant(tag: string): boolean {
 export const check: Check<DockerContext> = {
   name,
   description: "Check if Dockerfile uses a small base image",
-  tags: [TAG.universal, TAG.recommended, TAG.effort.medium],
+  tags: [TAG.universal, TAG.recommended, TAG.effort.high],
   run: (_global, { dockerfile, baseImage, baseImageTag }) => {
     if (dockerfile === null) {
       return skip(name, "No Dockerfile");

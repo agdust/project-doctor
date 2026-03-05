@@ -14,6 +14,7 @@ import {
   muted,
   success,
   error,
+  ICONS,
 } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
@@ -57,7 +58,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
     }
 
     // Check name and message
-    text(`${red("✗")}  ${bold(check.name)}`);
+    text(`${red(ICONS.fail)}  ${bold(check.name)}`);
     text(`   ${check.message}`);
     blank();
 

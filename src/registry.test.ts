@@ -14,6 +14,7 @@ describe("registry", () => {
     "node-version",
     "docs",
     "deps",
+    "knip",
     "env",
     "bundle-size",
     "docker",
