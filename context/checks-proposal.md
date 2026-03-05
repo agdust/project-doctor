@@ -50,7 +50,6 @@ Read file + basic validation.
 | `editorconfig-has-root` | Config scope |
 | `editorconfig-has-indent` | Indentation rules |
 | `gitignore-has-node-modules` | Deps excluded |
-| `gitignore-has-dist` | Build excluded |
 | `gitignore-has-env` | Secrets excluded |
 
 ---

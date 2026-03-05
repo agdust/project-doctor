@@ -4,7 +4,6 @@ import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
 import { check as exists } from "./exists/check.js";
 import { check as hasNodeModules } from "./has-node-modules/check.js";
-import { check as hasDist } from "./has-dist/check.js";
 import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
 
 describe("gitignore checks", () => {
@@ -68,24 +67,6 @@ describe("gitignore checks", () => {
       const result = await hasNodeModules.run(global, ctx);
 
       expect(result.status).toBe("skip");
-    });
-  });
-
-  describe("hasDist", () => {
-    it("should pass when dist is ignored", async () => {
-      const global = await createGlobalContext(fixtures.healthy);
-      const ctx = await loadContext(global);
-      const result = await hasDist.run(global, ctx);
-
-      expect(result.status).toBe("pass");
-    });
-
-    it("should pass when broken project has dist ignored", async () => {
-      const global = await createGlobalContext(fixtures.broken);
-      const ctx = await loadContext(global);
-      const result = await hasDist.run(global, ctx);
-
-      expect(result.status).toBe("pass");
     });
   });
 
