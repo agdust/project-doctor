@@ -37,7 +37,7 @@ export const aboutConfigScreen: Screen<AppContext> = {
     text(bold("Config File"));
     muted("Settings are stored in .project-doctor/config.json5", 0);
     blank();
-    text("  You can disable checks, tags, or entire groups.");
+    text("  You can disable checks or tags (including group names).");
     text("  Use 'skip-until-YYYY-MM-DD' to temporarily mute checks.");
     blank();
   },

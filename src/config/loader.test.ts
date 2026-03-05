@@ -195,7 +195,6 @@ describe("config loader", () => {
       const resolved = await loadAndResolveConfig(tempDir);
       expect(resolved.checks).toEqual({});
       expect(resolved.tags).toEqual({});
-      expect(resolved.groups).toEqual({});
     });
   });
 
@@ -220,7 +219,7 @@ describe("config loader", () => {
     });
 
     it("isGroupOff should return true for off groups and false otherwise", async () => {
-      await updateConfig(tempDir, { groups: { eslint: "off" } });
+      await updateConfig(tempDir, { tags: { eslint: "off" } });
       const resolved = await loadAndResolveConfig(tempDir);
 
       expect(isGroupOff(resolved, "eslint")).toBe(true);
@@ -229,18 +228,17 @@ describe("config loader", () => {
   });
 
   describe("config with all field types", () => {
-    it("should persist checks, tags, and groups simultaneously", async () => {
+    it("should persist checks and tags simultaneously", async () => {
       await updateConfig(tempDir, {
         checks: { "some-check": "off" },
-        tags: { opinionated: "off" },
-        groups: { eslint: "off" },
+        tags: { opinionated: "off", eslint: "off" },
       });
 
       const config = await loadConfig(tempDir);
       expect(config).not.toBeNull();
       expect(config!.checks?.["some-check"]).toBe("off");
       expect(config!.tags?.["opinionated"]).toBe("off");
-      expect(config!.groups?.["eslint"]).toBe("off");
+      expect(config!.tags?.["eslint"]).toBe("off");
     });
   });
 

@@ -154,7 +154,7 @@ describe("checks utilities", () => {
 
     it("should return disabled when group is off", () => {
       const config = makeConfig({
-        groups: { eslint: "off" },
+        tags: { eslint: "off" },
       });
       const result = getCheckStatus("some-check", [TAG.required], "eslint", config);
       expect(result.status).toBe("disabled");
@@ -170,7 +170,7 @@ describe("checks utilities", () => {
 
     it("should return enabled when a different group is off", () => {
       const config = makeConfig({
-        groups: { eslint: "off" },
+        tags: { eslint: "off" },
       });
       const result = getCheckStatus("some-check", [TAG.required], "package-json", config);
       expect(result.status).toBe("enabled");

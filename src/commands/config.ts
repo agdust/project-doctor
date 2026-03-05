@@ -40,7 +40,7 @@ function formatProjectTypeSource(source: "config" | "detected", detectedFrom?: s
 /**
  * Display current project configuration.
  *
- * Shows project type, configured checks, tags, and groups
+ * Shows project type, configured checks, and tags
  * with their current severity settings.
  *
  * @param projectPath - Absolute path to the project directory
@@ -81,18 +81,6 @@ export async function runConfigShow(projectPath: string): Promise<void> {
     blank();
   }
 
-  // Show groups configuration
-  const groupEntries = Object.entries(resolved.groups);
-  if (groupEntries.length > 0) {
-    console.log(bold("Groups:"));
-    for (const [name, severity] of groupEntries) {
-      console.log(`  ${name}: ${formatSeverity(severity)}`);
-    }
-    blank();
-  } else {
-    console.log(`${bold("Groups:")} ${dim("(none configured)")}`);
-    blank();
-  }
 }
 
 /**
@@ -129,7 +117,6 @@ export async function runConfigShowJson(projectPath: string): Promise<void> {
     projectTypeDetectedFrom: resolved.projectTypeDetectedFrom,
     checks: resolved.checks,
     tags: resolved.tags,
-    groups: resolved.groups,
   };
 
   console.log(JSON.stringify(output, null, 2));

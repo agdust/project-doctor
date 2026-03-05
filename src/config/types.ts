@@ -8,7 +8,8 @@
  * {
  *   checks: { "changelog-exists": "off" },
  *   tags: { "opinionated": "off" },
- *   groups: { "eslint": "off" },
+ *   // Group names also work as tags:
+ *   tags: { "eslint": "off" },
  *   // Temporarily skip until a date (reverts to "error" after)
  *   checks: { "some-check": "skip-until-2025-06-01" },
  * }
@@ -40,10 +41,8 @@ export interface Config {
   projectType?: ProjectType;
   /** Per-check configuration (severity or [severity, options] tuple) */
   checks?: Record<string, CheckEntry>;
-  /** Per-tag configuration */
+  /** Per-tag configuration (group names also work as tags) */
   tags?: Record<string, Severity>;
-  /** Per-group configuration */
-  groups?: Record<string, Severity>;
   /** User confirmed ESLint config overwriting */
   eslintOverwriteConfirmed?: boolean;
   /** User confirmed running without git protection */
@@ -65,7 +64,6 @@ export interface ResolvedConfig {
   projectTypeDetectedFrom?: string;
   checks: Record<string, CheckEntry>;
   tags: Record<string, Severity>;
-  groups: Record<string, Severity>;
   eslintOverwriteConfirmed: boolean;
   noGitConfirmed: boolean;
   manualChecks: Record<string, ManualCheckState>;

@@ -113,7 +113,6 @@ export function resolveConfig(
     projectTypeDetectedFrom: hasManualProjectType ? undefined : detection.detectedFrom,
     checks: config.checks ?? DEFAULT_CONFIG.checks,
     tags: config.tags ?? DEFAULT_CONFIG.tags,
-    groups: config.groups ?? DEFAULT_CONFIG.groups,
     eslintOverwriteConfirmed:
       config.eslintOverwriteConfirmed ?? DEFAULT_CONFIG.eslintOverwriteConfirmed,
     noGitConfirmed: config.noGitConfirmed ?? DEFAULT_CONFIG.noGitConfirmed,
@@ -216,9 +215,9 @@ export function isTagOff(config: ResolvedConfig, tagName: string): boolean {
   return isSeverityOff(config.tags[tagName]);
 }
 
-/** Check if a group is disabled */
+/** Check if a group is disabled (groups are stored as tags) */
 export function isGroupOff(config: ResolvedConfig, groupName: string): boolean {
-  return isSeverityOff(config.groups[groupName]);
+  return isSeverityOff(config.tags[groupName]);
 }
 
 // Simple in-memory lock to prevent concurrent config updates
@@ -262,7 +261,6 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
     // Deep merge objects using safe merge to prevent prototype pollution
     const mergedChecks = safeMergeRecords(existing?.checks, updates.checks);
     const mergedTags = safeMergeRecords(existing?.tags, updates.tags);
-    const mergedGroups = safeMergeRecords(existing?.groups, updates.groups);
     const mergedManualChecks = safeMergeRecords(existing?.manualChecks, updates.manualChecks);
 
     const merged: Config = {
@@ -271,7 +269,6 @@ export async function updateConfig(projectPath: string, updates: Partial<Config>
         updates.eslintOverwriteConfirmed ?? existing?.eslintOverwriteConfirmed,
       checks: Object.keys(mergedChecks).length > 0 ? mergedChecks : undefined,
       tags: Object.keys(mergedTags).length > 0 ? mergedTags : undefined,
-      groups: Object.keys(mergedGroups).length > 0 ? mergedGroups : undefined,
       manualChecks: Object.keys(mergedManualChecks).length > 0 ? mergedManualChecks : undefined,
     };
 
@@ -312,14 +309,14 @@ export async function setTagSeverity(
   });
 }
 
-/** Set a group's severity in config */
+/** Set a group's severity in config (groups are stored as tags) */
 export async function setGroupSeverity(
   projectPath: string,
   groupName: string,
   severity: Severity,
 ): Promise<void> {
   await updateConfig(projectPath, {
-    groups: { [groupName]: severity },
+    tags: { [groupName]: severity },
   });
 }
 

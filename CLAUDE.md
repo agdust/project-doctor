@@ -124,11 +124,8 @@ Projects can create `.project-doctor/config.json5`:
   // Disable specific checks
   checks: { "changelog-exists": "off" },
 
-  // Disable checks by tag
+  // Disable checks by tag (group names like "eslint" also work as tags)
   tags: { "opinionated": "off" },
-
-  // Disable entire groups
-  groups: { "eslint": "off" },
 
   // Temporarily skip until a date (reverts to "error" after)
   checks: { "tsconfig-strict-enabled": "skip-until-2025-06-01" },

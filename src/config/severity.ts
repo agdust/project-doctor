@@ -80,7 +80,6 @@ export const DEFAULT_CONFIG: ResolvedConfig = {
   projectTypeDetectedFrom: undefined,
   checks: {},
   tags: {},
-  groups: {},
   eslintOverwriteConfirmed: false,
   noGitConfirmed: false,
   manualChecks: {},

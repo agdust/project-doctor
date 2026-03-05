@@ -53,7 +53,6 @@ function mergeConfigs(base: ResolvedConfig, overrides: Partial<ResolvedConfig>):
     projectTypeDetectedFrom: overrides.projectTypeDetectedFrom ?? base.projectTypeDetectedFrom,
     checks: overrides.checks ? safeMergeRecords(base.checks, overrides.checks) : base.checks,
     tags: overrides.tags ? safeMergeRecords(base.tags, overrides.tags) : base.tags,
-    groups: overrides.groups ? safeMergeRecords(base.groups, overrides.groups) : base.groups,
     eslintOverwriteConfirmed: overrides.eslintOverwriteConfirmed ?? base.eslintOverwriteConfirmed,
     noGitConfirmed: overrides.noGitConfirmed ?? base.noGitConfirmed,
     manualChecks: overrides.manualChecks
