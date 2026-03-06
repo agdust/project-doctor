@@ -39,10 +39,10 @@ export const issueDetailScreen: Screen<AppContext> = {
     const current = ctx.currentIssueIndex + 1;
 
     text(`${red(ICONS.fail)}  ${bold(issue.description)}  ${dim(`(${current}/${total})`)}`);
-    muted(`   ${issue.name}`);
-    text(`   ${issue.result.message}`);
+    muted(issue.name, 6);
+    text(issue.result.message, 6);
     blank();
-    text(`   ${cyan("Fix:")} ${issue.fixDescription}`);
+    text(`${cyan("Fix:")} ${issue.fixDescription}`, 6);
     blank();
   },
 

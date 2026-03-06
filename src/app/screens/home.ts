@@ -48,13 +48,13 @@ export const homeScreen: Screen<AppContext> = {
       const { required, recommended, opinionated } = ctx.failedByCategory;
 
       if (required > 0) {
-        text(`  Required - ${required}`);
+        text(`Required - ${required}`, 4);
       }
       if (recommended > 0) {
-        text(`  Recommended - ${recommended}`);
+        text(`Recommended - ${recommended}`, 4);
       }
       if (opinionated > 0) {
-        text(`  Opinionated - ${opinionated}`);
+        text(`Opinionated - ${opinionated}`, 4);
       }
       blank();
     }

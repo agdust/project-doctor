@@ -20,28 +20,28 @@ export const aboutScreen: Screen<AppContext> = {
     blank();
 
     text(bold("Goals"));
-    text("  Detect configuration issues early");
-    text("  Enforce best practices consistently");
-    text("  Reduce time spent on project setup");
-    text("  Track issues over the time");
+    text("Detect configuration issues early", 4);
+    text("Enforce best practices consistently", 4);
+    text("Reduce time spent on project setup", 4);
+    text("Track issues over the time", 4);
     blank();
 
     text(bold("Values"));
-    text("  Opinionated, no configuration required");
-    text("  Fix issues, not just report them");
-    text("  Minimal noise, actionable output");
-    text("  Convenient, all you info you need is inside one simple cli");
+    text("Opinionated, no configuration required", 4);
+    text("Fix issues, not just report them", 4);
+    text("Minimal noise, actionable output", 4);
+    text("Convenient, all you info you need is inside one simple cli", 4);
     blank();
 
     text(bold("Controls"));
-    text(`  ${dim("↑/↓")}   Navigate options`);
-    text(`  ${dim("Enter")} Select option`);
-    text(`  ${dim("Esc")}   Go back / Cancel`);
-    text(`  ${dim("Space")} Toggle checkbox`);
+    text(`${dim("↑/↓")}   Navigate options`, 4);
+    text(`${dim("Enter")} Select option`, 4);
+    text(`${dim("Esc")}   Go back / Cancel`, 4);
+    text(`${dim("Space")} Toggle checkbox`, 4);
     blank();
 
     text(bold("CLI Usage"));
-    text("  project-doctor          Interactive wizard");
+    text("project-doctor          Interactive wizard", 4);
     blank();
 
     muted("https://github.com/anthropics/project-doctor");

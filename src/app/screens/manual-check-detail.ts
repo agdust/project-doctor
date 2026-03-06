@@ -45,20 +45,20 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
 
     text(`${icon}  ${bold(item.check.name)}  ${label}`);
     blank();
-    text(`   ${item.check.description}`);
+    text(item.check.description, 6);
     blank();
 
     // Show details
     text(cyan("Details:"));
     for (const line of item.check.details.split("\n")) {
-      text(`   ${line}`);
+      text(line, 6);
     }
     blank();
 
     // Show why (if available)
     if (item.check.why !== undefined) {
       text(cyan("Why:"));
-      text(`   ${item.check.why}`);
+      text(item.check.why, 6);
       blank();
     }
   },

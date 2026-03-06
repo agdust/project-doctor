@@ -38,13 +38,13 @@ export const issuesScreen: Screen<AppContext> = {
     ).length;
 
     if (requiredAll > 0) {
-      text(`  Required - ${requiredAll} (${requiredFixable} auto-fixable)`);
+      text(`Required - ${requiredAll} (${requiredFixable} auto-fixable)`, 4);
     }
     if (recommendedAll > 0) {
-      text(`  Recommended - ${recommendedAll} (${recommendedFixable} auto-fixable)`);
+      text(`Recommended - ${recommendedAll} (${recommendedFixable} auto-fixable)`, 4);
     }
     if (opinionatedAll > 0) {
-      text(`  Opinionated - ${opinionatedAll} (${opinionatedFixable} auto-fixable)`);
+      text(`Opinionated - ${opinionatedAll} (${opinionatedFixable} auto-fixable)`, 4);
     }
     blank();
   },

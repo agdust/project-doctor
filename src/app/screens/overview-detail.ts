@@ -59,8 +59,8 @@ export const overviewDetailScreen: Screen<AppContext> = {
 
     // Check title and status
     text(`${red(ICONS.fail)}  ${bold(check.description)}`);
-    muted(`   ${check.name}`);
-    text(`   ${check.message}`);
+    muted(check.name, 6);
+    text(check.message, 6);
     blank();
 
     // Why section
@@ -70,7 +70,7 @@ export const overviewDetailScreen: Screen<AppContext> = {
       // Indent and wrap the why text
       const lines = check.why.split("\n");
       for (const line of lines) {
-        text(`   ${line}`);
+        text(line, 6);
       }
       blank();
     }
