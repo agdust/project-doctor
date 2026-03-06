@@ -4,7 +4,7 @@
  * Information about categories, tags, and checks.
  */
 
-import { bold, dim, red, yellow, cyan } from "../../utils/colors.js";
+import { bold, dim, red, yellow, cyan, green } from "../../utils/colors.js";
 import type { Screen } from "../../cli-framework/index.js";
 import { blank, title, text, muted } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
@@ -18,27 +18,48 @@ export const aboutConfigScreen: Screen<AppContext> = {
     title("About Configuration");
     blank();
 
-    text(bold("Categories"));
-    muted("Checks are grouped by importance level:", 0);
+    text(bold("Config File"));
     blank();
-    text(`  ${red("Required")}      Essential for a healthy project`);
-    text(`  ${yellow("Recommended")}   Best practices, highly suggested`);
-    text(`  ${dim("Opinionated")}   Style preferences, optional`);
+    text("Settings are stored in .project-doctor/config.json5", 4);
     blank();
 
     text(bold("Tags"));
-    muted("Checks can be filtered by tags:", 0);
-    blank();
-    text(`  ${cyan("Scope")}         universal, node, typescript`);
-    text(`  ${cyan("Framework")}     framework:svelte, framework:react, etc.`);
-    text(`  ${cyan("Tool")}          tool:eslint, tool:prettier, tool:knip, etc.`);
     blank();
 
-    text(bold("Config File"));
-    muted("Settings are stored in .project-doctor/config.json5", 0);
+    muted("Checks can be filtered by tags", 2);
     blank();
-    text("  You can disable checks or tags (including group names).");
-    text("  Use 'skip-until-YYYY-MM-DD' to temporarily mute checks.");
+
+    text(cyan("By importance level:"));
+    blank();
+
+    text(`${red("Required")}      Essential. Ignoring this might lad to bugs and issues`, 4);
+    text(`${yellow("Recommended")}   Best practices, highly suggested for better code quality`, 4);
+    text(`${dim("Opinionated")}   Even more strict rules, yet you may find them "too much"`, 4);
+    blank();
+
+    text(cyan("By scope:"));
+    text("universal, node, typescript", 4);
+    blank();
+
+    text(cyan("By tool:"));
+    text(`tool:eslint, tool:prettier, tool:knip, etc.`, 4);
+    blank();
+    blank();
+
+    text(bold("Config values"));
+    blank();
+
+    muted("You can manage checks or tags just like eslint rules");
+    blank();
+
+    text(`${red('"off"')} to disable`, 4);
+    text(`${green('"error"')} to enable`, 4);
+    text(`${green('["error", { config: values }]')} to enable and configure, where applicable`, 4);
+    text(`${yellow('"skip"')} to skip`, 4);
+    text(
+      `${yellow('"skip-until-YYYY-MM-DD"')} to skip until certain date, after it consider this as "error"`,
+      4,
+    );
     blank();
   },
 
