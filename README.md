@@ -27,11 +27,11 @@ npx project-doctor
 
 This project was created by one person, and some things might be missing. I only have one device, use one terminal with just one theme. If something breaks on another OS or in another setup — please bring all possible details, and keep in mind that I cannot test every possible scenario or setup by my own.
 
-This project was written by clanker, but I've read and approved every line of it, and if there is something stupid in the codebase, shame on me. I'm the responsible adult here, though no guarantees or anything, it's still open source.
+This project was written by LLM Coding Agent, but I've designed it, and read and approved every line of it. So if there is something stupid in the codebase, shame on me only. I'm the responsible adult here, though no guarantees or anything, it's still open source.
 
 ## Configuration
 
-Projects uses own directory with config and optional history records. You are not required to create anything manually.
+Projects uses own directory with config and optional history records. You are not required to create anything manually, just open interactive wizard or run `init` command.
 
 Default config format is JSON5, to allow you to leave comments, but regular `.json` is supported, if you prefer it.
 
@@ -39,16 +39,18 @@ Default config format is JSON5, to allow you to leave comments, but regular `.js
 
 ```json5
 {
-  // right now must be either "js" or "generic"
+  // Project type is a top-level preset of what checks are enabled.
+  // For now must be either "js" or "generic"
   projectType: "js",
 
-  // control checks individually, with same options like in eslint
+  // control checks individually, with configuration in eslint style
   checks: {
-    // value can be either
-    // "off",
-    // "error",
-    // ["error", { options: "when relevant for check" }]
-    // or "mute-until-2025-06-01"
+    // value can be one of these:
+    //    "off"
+    //    "error"
+    //    ["error", { options: "when relevant for check" }]
+    //    "mute"
+    //    "mute-until-2025-06-01"
     "changelog-exists": "off"
     },
 
@@ -58,7 +60,7 @@ Default config format is JSON5, to allow you to leave comments, but regular `.js
   //    groups named after tools or subtools: eslint, gitignore, prettier, etc.
   //    other custom tags
   tags: {
-    // accept same values as individual checks, except config
+    // accept same values as individual checks
     "opinionated": "off"
   },
 }
