@@ -44,7 +44,7 @@ export const summaryScreen: Screen<AppContext> = {
   },
 
   options: (): Option<AppContext>[] => [
-    action("home", "Back to home", () => SCREEN.home),
+    action("issues", "Back to Issues", () => SCREEN.issues),
     action("exit", "Exit", () => EXIT_VALUE),
   ],
 };
