@@ -1,7 +1,7 @@
 /**
  * Severity helpers and config defaults
  *
- * Runtime functions for working with severity values and skip-until dates.
+ * Runtime functions for working with severity values and mute-until dates.
  */
 
 import type { Severity, CheckEntry, CheckOptions, ResolvedConfig } from "./types.js";
@@ -26,33 +26,33 @@ export function extractCheckOptions(entry: CheckEntry | undefined): CheckOptions
   return undefined;
 }
 
-/** Check if a severity value is a skip-until pattern */
-export function isSkipUntil(value: string): value is `skip-until-${string}` {
-  return value.startsWith("skip-until-");
+/** Check if a severity value is a mute-until pattern */
+export function isMuteUntil(value: string): value is `mute-until-${string}` {
+  return value.startsWith("mute-until-");
 }
 
-/** Parse skip-until date, returns null if invalid or expired */
-export function parseSkipUntil(value: string): Date | null {
-  if (!isSkipUntil(value)) {
+/** Parse mute-until date, returns null if invalid or expired */
+export function parseMuteUntil(value: string): Date | null {
+  if (!isMuteUntil(value)) {
     return null;
   }
 
-  const dateStr = value.slice("skip-until-".length);
+  const dateStr = value.slice("mute-until-".length);
   return parseISODate(dateStr);
 }
 
-/** Maximum allowed skip duration: 3 years */
-const MAX_SKIP_YEARS = 3;
+/** Maximum allowed mute duration: 3 years */
+const MAX_MUTE_YEARS = 3;
 
 /**
- * Check if skip-until is still active (date not passed)
+ * Check if mute-until is still active (date not passed)
  * Returns false (treats as "error") if:
  * - Date is invalid
  * - Date is more than 3 years in the future
  * - Date has already passed
  */
-export function isSkipUntilActive(value: string): boolean {
-  const date = parseSkipUntil(value);
+export function isMuteUntilActive(value: string): boolean {
+  const date = parseMuteUntil(value);
   if (!date) {
     return false;
   }
@@ -61,7 +61,7 @@ export function isSkipUntilActive(value: string): boolean {
 
   // Check if date is too far in the future (more than 3 years)
   const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + MAX_SKIP_YEARS);
+  maxDate.setFullYear(maxDate.getFullYear() + MAX_MUTE_YEARS);
   if (date > maxDate) {
     return false;
   }
@@ -69,9 +69,9 @@ export function isSkipUntilActive(value: string): boolean {
   return now <= date;
 }
 
-/** Create a skip-until value for a given date */
-export function createSkipUntil(date: Date): Severity {
-  return `skip-until-${toDateString(date)}`;
+/** Create a mute-until value for a given date */
+export function createMuteUntil(date: Date): Severity {
+  return `mute-until-${toDateString(date)}`;
 }
 
 export const DEFAULT_CONFIG: ResolvedConfig = {

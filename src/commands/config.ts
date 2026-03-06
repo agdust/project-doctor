@@ -8,7 +8,7 @@
 
 import { loadAndResolveConfig, setProjectType } from "../config/loader.js";
 import type { ProjectType, Severity } from "../config/types.js";
-import { isSkipUntil, parseSkipUntil, extractSeverity } from "../config/severity.js";
+import { isMuteUntil, parseMuteUntil, extractSeverity } from "../config/severity.js";
 import { bold, dim, green, yellow, red } from "../utils/colors.js";
 import { toDateString } from "../utils/dates.js";
 import { blank } from "../cli-framework/renderer.js";
@@ -17,10 +17,10 @@ function formatSeverity(severity: Severity): string {
   if (severity === "off") {
     return dim("off");
   }
-  if (isSkipUntil(severity)) {
-    const date = parseSkipUntil(severity);
+  if (isMuteUntil(severity)) {
+    const date = parseMuteUntil(severity);
     if (date) {
-      return yellow(`skip-until-${toDateString(date)}`);
+      return yellow(`mute-until-${toDateString(date)}`);
     }
     return dim(severity);
   }

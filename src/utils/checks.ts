@@ -16,9 +16,9 @@ import { toDateString } from "./dates.js";
 import type { ProjectType, ResolvedConfig } from "../config/types.js";
 import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import {
-  isSkipUntil,
-  parseSkipUntil,
-  isSkipUntilActive,
+  isMuteUntil,
+  parseMuteUntil,
+  isMuteUntilActive,
   extractSeverity,
 } from "../config/severity.js";
 import { checkGroups, listChecks, manualChecks } from "../registry.js";
@@ -128,8 +128,8 @@ export function getCheckStatus(
     if (checkSeverity === "off") {
       return { status: "disabled" };
     }
-    if (isSkipUntil(checkSeverity) && isSkipUntilActive(checkSeverity)) {
-      const date = parseSkipUntil(checkSeverity);
+    if (isMuteUntil(checkSeverity) && isMuteUntilActive(checkSeverity)) {
+      const date = parseMuteUntil(checkSeverity);
       return {
         status: "muted",
         mutedUntil: date ? toDateString(date) : undefined,
@@ -348,7 +348,7 @@ export async function loadWhyFromDocs(_group: string, checkName: string): Promis
 /**
  * Count the number of currently muted checks in config.
  *
- * A check is considered muted if it has an active "skip-until-YYYY-MM-DD" value.
+ * A check is considered muted if it has an active "mute-until-YYYY-MM-DD" value.
  *
  * @param config - Resolved project configuration
  * @returns Number of muted checks
@@ -357,7 +357,7 @@ export function countMutedChecks(config: ResolvedConfig): number {
   let count = 0;
   for (const check of Object.values(config.checks)) {
     const severity = extractSeverity(check);
-    if (severity !== undefined && isSkipUntil(severity) && isSkipUntilActive(severity)) {
+    if (severity !== undefined && isMuteUntil(severity) && isMuteUntilActive(severity)) {
       count++;
     }
   }
@@ -370,7 +370,7 @@ export function countMutedChecks(config: ResolvedConfig): number {
 
 /**
  * Determine display state for a manual check based on config severity.
- * Disabled ("off") and muted ("skip-until-*") override the persisted state.
+ * Disabled ("off") and muted ("mute-until-*") override the persisted state.
  */
 export function getManualCheckDisplayState(
   check: ManualCheck,
@@ -382,7 +382,7 @@ export function getManualCheckDisplayState(
   if (checkSeverity === "off") {
     return "disabled";
   }
-  if (checkSeverity !== undefined && isSkipUntilActive(checkSeverity)) {
+  if (checkSeverity !== undefined && isMuteUntilActive(checkSeverity)) {
     return "muted";
   }
 
@@ -392,7 +392,7 @@ export function getManualCheckDisplayState(
     if (tagSeverity === "off") {
       return "disabled";
     }
-    if (tagSeverity && isSkipUntilActive(tagSeverity)) {
+    if (tagSeverity && isMuteUntilActive(tagSeverity)) {
       return "muted";
     }
   }

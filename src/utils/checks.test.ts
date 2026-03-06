@@ -176,7 +176,7 @@ describe("checks utilities", () => {
       expect(result.status).toBe("enabled");
     });
 
-    describe("skip-until", () => {
+    describe("mute-until", () => {
       beforeEach(() => {
         vi.useFakeTimers();
       });
@@ -185,20 +185,20 @@ describe("checks utilities", () => {
         vi.useRealTimers();
       });
 
-      it("should return muted with date when skip-until is active", () => {
+      it("should return muted with date when mute-until is active", () => {
         vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
         const config = makeConfig({
-          checks: { "some-check": "skip-until-2025-06-01" },
+          checks: { "some-check": "mute-until-2025-06-01" },
         });
         const result = getCheckStatus("some-check", [TAG.required], "package-json", config);
         expect(result.status).toBe("muted");
         expect(result.mutedUntil).toBe("2025-06-01");
       });
 
-      it("should return enabled when skip-until has expired", () => {
+      it("should return enabled when mute-until has expired", () => {
         vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
         const config = makeConfig({
-          checks: { "some-check": "skip-until-2025-06-01" },
+          checks: { "some-check": "mute-until-2025-06-01" },
         });
         const result = getCheckStatus("some-check", [TAG.required], "package-json", config);
         expect(result.status).toBe("enabled");
@@ -348,12 +348,12 @@ describe("checks utilities", () => {
       expect(countMutedChecks(config)).toBe(0);
     });
 
-    it("should count active skip-until entries", () => {
+    it("should count active mute-until entries", () => {
       vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
       const config = makeConfig({
         checks: {
-          "check-a": "skip-until-2025-06-01",
-          "check-b": "skip-until-2025-12-31",
+          "check-a": "mute-until-2025-06-01",
+          "check-b": "mute-until-2025-12-31",
           "check-c": "off",
           "check-d": "error",
         },
@@ -361,21 +361,21 @@ describe("checks utilities", () => {
       expect(countMutedChecks(config)).toBe(2);
     });
 
-    it("should not count expired skip-until entries", () => {
+    it("should not count expired mute-until entries", () => {
       vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
       const config = makeConfig({
         checks: {
-          "check-a": "skip-until-2025-06-01",
+          "check-a": "mute-until-2025-06-01",
         },
       });
       expect(countMutedChecks(config)).toBe(0);
     });
 
-    it("should handle tuple entries with skip-until severity", () => {
+    it("should handle tuple entries with mute-until severity", () => {
       vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
       const config = makeConfig({
         checks: {
-          "check-a": ["skip-until-2025-06-01", { exceptions: [] }],
+          "check-a": ["mute-until-2025-06-01", { exceptions: [] }],
         },
       });
       expect(countMutedChecks(config)).toBe(1);

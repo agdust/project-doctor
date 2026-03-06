@@ -48,7 +48,7 @@ Default config format is JSON5, to allow you to leave comments, but regular `.js
     // "off",
     // "error",
     // ["error", { options: "when relevant for check" }]
-    // or "skip-until-2025-06-01"
+    // or "mute-until-2025-06-01"
     "changelog-exists": "off"
     },
 

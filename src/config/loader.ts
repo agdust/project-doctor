@@ -3,7 +3,7 @@ import path from "node:path";
 import JSON5 from "json5";
 import type { Config, ResolvedConfig, Severity, ProjectType } from "./types.js";
 import type { ManualCheckState } from "../types.js";
-import { DEFAULT_CONFIG, isSkipUntilActive, extractSeverity } from "./severity.js";
+import { DEFAULT_CONFIG, isMuteUntilActive, extractSeverity } from "./severity.js";
 import { CONFIG_DIR, CONFIG_FILE, ensureConfigDir } from "./constants.js";
 import { safeJson5Parse, safeJsonParse, safeMergeRecords } from "../utils/safe-json.js";
 import { atomicWriteFile } from "../utils/safe-fs.js";
@@ -186,9 +186,9 @@ export async function loadAndResolveConfig(projectPath: string): Promise<Resolve
 }
 
 /**
- * Check if a severity value means "off" (disabled/skipped)
+ * Check if a severity value means "off" (disabled/muted)
  * - "off" -> true
- * - "skip-until-YYYY-MM-DD" -> true if date not passed, false if expired
+ * - "mute-until-YYYY-MM-DD" -> true if date not passed, false if expired
  * - "error" or anything else -> false
  */
 function isSeverityOff(value: Severity | undefined): boolean {
@@ -201,8 +201,8 @@ function isSeverityOff(value: Severity | undefined): boolean {
   if (value === "error") {
     return false;
   }
-  // Check skip-until pattern
-  return isSkipUntilActive(value);
+  // Check mute-until pattern
+  return isMuteUntilActive(value);
 }
 
 /** Check if a check is disabled */

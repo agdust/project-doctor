@@ -6,7 +6,7 @@
 
 import { blank, muted, error, action } from "../../cli-framework/index.js";
 import { setCheckSeverity, setTagSeverity, isTagOff } from "../../config/loader.js";
-import { createSkipUntil, isSkipUntilActive } from "../../config/severity.js";
+import { createMuteUntil, isMuteUntilActive } from "../../config/severity.js";
 import { getErrorMessage } from "../../utils/errors.js";
 import { getValidGroupNames } from "../../utils/checks.js";
 import { listChecks } from "../../registry.js";
@@ -58,7 +58,7 @@ export function createMuteDisableActions(options: {
       try {
         const muteDate = new Date();
         muteDate.setDate(muteDate.getDate() + MUTE_DURATIONS.TWO_WEEKS_DAYS);
-        await setCheckSeverity(c.projectPath, getCheckName(c), createSkipUntil(muteDate));
+        await setCheckSeverity(c.projectPath, getCheckName(c), createMuteUntil(muteDate));
         blank();
         muted("Muted for 2 weeks", 3);
         c.stats.muted++;
@@ -73,7 +73,7 @@ export function createMuteDisableActions(options: {
       try {
         const muteDate = new Date();
         muteDate.setMonth(muteDate.getMonth() + MUTE_DURATIONS.TWO_MONTHS);
-        await setCheckSeverity(c.projectPath, getCheckName(c), createSkipUntil(muteDate));
+        await setCheckSeverity(c.projectPath, getCheckName(c), createMuteUntil(muteDate));
         blank();
         muted("Muted for 2 months", 3);
         c.stats.muted++;
@@ -112,7 +112,7 @@ export function getTagStatus(tagName: string, ctx: AppContext): TagStatus {
     return "disabled";
   }
   const severity = ctx.global.config.tags[tagName];
-  if (severity && isSkipUntilActive(severity)) {
+  if (severity && isMuteUntilActive(severity)) {
     return "muted";
   }
   return "enabled";
@@ -174,7 +174,7 @@ export function createTagToggleActions(options: {
 
   async function applyAndRescan(
     ctx: AppContext,
-    severity: "off" | "error" | `skip-until-${string}`,
+    severity: "off" | "error" | `mute-until-${string}`,
     message: string,
   ): Promise<string | undefined> {
     const tag = getTagName(ctx);
@@ -194,12 +194,12 @@ export function createTagToggleActions(options: {
     action("mute-2w", "Mute for 2 weeks", async (c) => {
       const muteDate = new Date();
       muteDate.setDate(muteDate.getDate() + MUTE_DURATIONS.TWO_WEEKS_DAYS);
-      return applyAndRescan(c, createSkipUntil(muteDate), "Muted for 2 weeks");
+      return applyAndRescan(c, createMuteUntil(muteDate), "Muted for 2 weeks");
     }),
     action("mute-2m", "Mute for 2 months", async (c) => {
       const muteDate = new Date();
       muteDate.setMonth(muteDate.getMonth() + MUTE_DURATIONS.TWO_MONTHS);
-      return applyAndRescan(c, createSkipUntil(muteDate), "Muted for 2 months");
+      return applyAndRescan(c, createMuteUntil(muteDate), "Muted for 2 months");
     }),
     action("disable", "Disable", async (c) => {
       return applyAndRescan(c, "off", "Disabled");

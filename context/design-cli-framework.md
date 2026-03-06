@@ -105,7 +105,7 @@ Every screen (except root) shows "← Back" as last option. ESC or selecting Bac
 
 1. **Explain, don't dictate**: "This is recommended because..." not "You must do this"
 2. **Show impact**: Preview changes before applying
-3. **Allow escape**: Skip, disable, or configure any check
+3. **Allow escape**: Mute, disable, or configure any check
 4. **Be honest**: If uncertain, say so
 
 ### 4. Speed & Responsiveness

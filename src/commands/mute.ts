@@ -12,7 +12,7 @@
  */
 
 import { setCheckSeverity } from "../config/loader.js";
-import { createSkipUntil } from "../config/severity.js";
+import { createMuteUntil } from "../config/severity.js";
 import { getValidCheckNames, getValidManualCheckNames } from "../utils/checks.js";
 import { red } from "../utils/colors.js";
 import { parseISODate, toDateString } from "../utils/dates.js";
@@ -42,7 +42,7 @@ export interface MuteOptions {
 /**
  * Temporarily mute a check until a specified date.
  *
- * The check will be skipped until the mute expires, then
+ * The check will be muted until the date expires, then
  * automatically becomes active again.
  *
  * @param projectPath - Absolute path to the project directory
@@ -95,7 +95,7 @@ export async function runMute(
     muteUntil = addMonths(now, options.months);
   }
 
-  const severity = createSkipUntil(muteUntil);
+  const severity = createMuteUntil(muteUntil);
   await setCheckSeverity(projectPath, checkName, severity);
 
   console.log(`Muted check "${checkName}" until ${toDateString(muteUntil)}`);
@@ -117,7 +117,7 @@ export async function runUnmute(projectPath: string, checkName: string): Promise
     process.exit(2);
   }
 
-  // Setting to "error" effectively removes any mute/skip-until configuration
+  // Setting to "error" effectively removes any mute-until configuration
   await setCheckSeverity(projectPath, checkName, "error");
   console.log(`Unmuted check: ${checkName}`);
 }

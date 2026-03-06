@@ -12,8 +12,8 @@ const DEFAULT_CONFIG = `{
   // Disable checks by tag (group names like "eslint" also work as tags)
   // tags: { "opinionated": "off" },
 
-  // Temporarily skip until a date (reverts to "error" after)
-  // checks: { "some-check": "skip-until-2025-06-01" },
+  // Temporarily mute until a date (reverts to "error" after)
+  // checks: { "some-check": "mute-until-2025-06-01" },
 }
 `;
 

@@ -127,15 +127,15 @@ Projects can create `.project-doctor/config.json5`:
   // Disable checks by tag (group names like "eslint" also work as tags)
   tags: { "opinionated": "off" },
 
-  // Temporarily skip until a date (reverts to "error" after)
-  checks: { "tsconfig-strict-enabled": "skip-until-2025-06-01" },
+  // Temporarily mute until a date (reverts to "error" after)
+  checks: { "tsconfig-strict-enabled": "mute-until-2025-06-01" },
 }
 ```
 
 Severity values:
 - `"off"` - permanently disabled
 - `"error"` - enabled (default)
-- `"skip-until-YYYY-MM-DD"` - skipped until date, then becomes "error"
+- `"mute-until-YYYY-MM-DD"` - muted until date, then becomes "error"
 
 ### Adding Checks
 
@@ -158,7 +158,7 @@ Reusable multi-screen CLI app framework:
 
 Key concepts:
 - **Screen**: UI state with render() and getOptions()
-- **ActionOption**: Does something (fix, skip, disable)
+- **ActionOption**: Does something (fix, mute, disable)
 - **NavigationOption**: Opens another screen
 - **Screen Stack**: Browser-like history for back navigation
 - **ESC**: Go back to previous screen

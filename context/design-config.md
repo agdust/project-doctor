@@ -22,9 +22,9 @@ Allow users to customize check behavior per project using an ESLint-style config
  * Severity level:
  * - "off" - permanently disabled
  * - "error" - enabled (default)
- * - "skip-until-YYYY-MM-DD" - skipped until date, then becomes "error"
+ * - "mute-until-YYYY-MM-DD" - muted until date, then becomes "error"
  */
-type Severity = "off" | "error" | `skip-until-${string}`;
+type Severity = "off" | "error" | `mute-until-${string}`;
 
 type Config = {
   // Disable specific checks by name
@@ -69,12 +69,12 @@ type Config = {
 }
 ```
 
-### Temporarily skip a check
+### Temporarily mute a check
 ```json5
 {
   checks: {
-    // Skipped until this date, then becomes "error"
-    "tsconfig-strict-enabled": "skip-until-2025-06-01"
+    // Muted until this date, then becomes "error"
+    "tsconfig-strict-enabled": "mute-until-2025-06-01"
   }
 }
 ```

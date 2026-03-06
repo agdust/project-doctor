@@ -242,38 +242,38 @@ describe("config loader", () => {
     });
   });
 
-  describe("skip-until config entries", () => {
-    it("should persist skip-until values", async () => {
+  describe("mute-until config entries", () => {
+    it("should persist mute-until values", async () => {
       await updateConfig(tempDir, {
-        checks: { "some-check": "skip-until-2025-06-01" },
+        checks: { "some-check": "mute-until-2025-06-01" },
       });
 
       const config = await loadConfig(tempDir);
-      expect(config?.checks?.["some-check"]).toBe("skip-until-2025-06-01");
+      expect(config?.checks?.["some-check"]).toBe("mute-until-2025-06-01");
     });
 
-    it("isCheckOff should treat active skip-until as off (muted)", async () => {
+    it("isCheckOff should treat active mute-until as off (muted)", async () => {
       // Use a date in the near future (within the 3-year max window)
       const futureDate = new Date();
       futureDate.setFullYear(futureDate.getFullYear() + 1);
       const dateStr = futureDate.toISOString().split("T")[0];
 
       await updateConfig(tempDir, {
-        checks: { "muted-check": `skip-until-${dateStr}` },
+        checks: { "muted-check": `mute-until-${dateStr}` },
       });
       const resolved = await loadAndResolveConfig(tempDir);
 
-      // Active skip-until is treated as "off" by isSeverityOff
+      // Active mute-until is treated as "off" by isSeverityOff
       expect(isCheckOff(resolved, "muted-check")).toBe(true);
     });
 
-    it("isCheckOff should treat expired skip-until as not off", async () => {
+    it("isCheckOff should treat expired mute-until as not off", async () => {
       await updateConfig(tempDir, {
-        checks: { "expired-check": "skip-until-2020-01-01" },
+        checks: { "expired-check": "mute-until-2020-01-01" },
       });
       const resolved = await loadAndResolveConfig(tempDir);
 
-      // Expired skip-until should NOT be treated as off — check re-enables
+      // Expired mute-until should NOT be treated as off — check re-enables
       expect(isCheckOff(resolved, "expired-check")).toBe(false);
     });
   });
