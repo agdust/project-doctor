@@ -10,6 +10,11 @@ import { CancelPromptError } from "@inquirer/core";
 import type { AppConfig, AppState, Screen, Option } from "./types.js";
 import { back } from "./helpers.js";
 import { clear, bigTitle, blank } from "./renderer.js";
+import { cyan } from "../utils/colors.js";
+
+// Strip ANSI escape sequences so pre-formatted labels don't interfere with highlight color
+const ANSI_RE = /\u001B\[[0-9;]*m/g;
+const stripAnsi = (text: string): string => text.replaceAll(ANSI_RE, "");
 
 export const BACK_VALUE = "__back__";
 export const EXIT_VALUE = "__exit__";
@@ -127,7 +132,11 @@ export class App<TCtx> {
         loop: false,
         // Disable search to prevent buffered input from resetting cursor position
         // (search with empty string matches first item, causing cursor jump)
-        theme: { prefix: "", keybindings: ["vim"] },
+        theme: {
+          prefix: "",
+          keybindings: ["vim"],
+          style: { highlight: (text: string) => cyan(stripAnsi(text)) },
+        },
         default: defaultValue,
       },
       { signal: abortController.signal },

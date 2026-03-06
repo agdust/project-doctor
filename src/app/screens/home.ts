@@ -4,7 +4,7 @@
  * Shows project health summary and main navigation options.
  */
 
-import { dim, red, green } from "../../utils/colors.js";
+import { dim, red, green, bold } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { nav, action, separator, blank, text, EXIT_VALUE } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
@@ -68,9 +68,9 @@ export const homeScreen: Screen<AppContext> = {
     // Current issues
     if (failedCount > 0) {
       const badge = fixableCount > 0 ? `${fixableCount} auto-fixable` : `${failedCount} failed`;
-      opts.push(nav("issues", "Current issues", SCREEN.issues, { badge }));
+      opts.push(nav("issues", bold("Issues"), SCREEN.issues, { badge }));
     } else {
-      opts.push(nav("issues", "Current issues", SCREEN.issues, { badge: "all passing" }));
+      opts.push(nav("issues", "Issues", SCREEN.issues, { badge: "all passing" }));
     }
 
     // Manual checklist, Config, Run checks again, About, separator, Exit
@@ -78,13 +78,13 @@ export const homeScreen: Screen<AppContext> = {
     const manualBadge = uncheckedCount === 0 ? "all done" : `${uncheckedCount} unchecked`;
     opts.push(
       nav("manual-checklist", "Manual checklist", SCREEN.manualChecklist, { badge: manualBadge }),
+      action("rescan", "Rescan", () => {
+        return SCREEN.scanning;
+      }),
       nav("config", "Config", SCREEN.config, {
         description: "Manage categories and checks",
       }),
-      action("rescan", "Run checks again", () => {
-        return SCREEN.scanning;
-      }),
-      nav("about", "About Project Doctor", SCREEN.about),
+      nav("about", "About", SCREEN.about),
       separator(),
       action("exit", "Exit", () => {
         return EXIT_VALUE;

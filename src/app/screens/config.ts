@@ -5,7 +5,7 @@
  */
 
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, blank, title, muted } from "../../cli-framework/index.js";
+import { nav, blank, title, muted, separator } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 
@@ -24,14 +24,15 @@ export const configScreen: Screen<AppContext> = {
     const typeLabel = ctx.global.config.projectType === "js" ? "JavaScript/Node" : "Generic";
 
     return [
-      nav("about-config", "About config", SCREEN.aboutConfig, {
-        description: "Learn about categories, tags, and checks",
-      }),
       nav("project-type", "Project type", SCREEN.projectType, {
         description: `Currently: ${typeLabel}`,
       }),
-      nav("tags", "Control tags", SCREEN.tags, {
+      nav("tags", "Manage tags", SCREEN.tags, {
         description: "Toggle tags and view their checks",
+      }),
+      separator(),
+      nav("about-config", "About config", SCREEN.aboutConfig, {
+        description: "Learn about categories, tags, and checks",
       }),
     ];
   },
