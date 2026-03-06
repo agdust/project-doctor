@@ -5,9 +5,4 @@ import { check as lockfileNotIgnored } from "./lockfile-not-ignored/check.js";
 
 export { loadContext } from "./context.js";
 
-export const checks = [
-  exists,
-  hasNodeModules,
-  noSecretsInGit,
-  lockfileNotIgnored,
-];
+export const checks = [exists, hasNodeModules, noSecretsInGit, lockfileNotIgnored];

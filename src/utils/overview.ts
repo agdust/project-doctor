@@ -37,7 +37,9 @@ export function printOverview(result: OverviewResult): void {
   // Health checks line
   const { checks } = result;
   if (checks.failed > 0) {
-    console.log(`  ${red(ICONS.fail)} ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`);
+    console.log(
+      `  ${red(ICONS.fail)} ${checks.failed} check${checks.failed > 1 ? "s" : ""} failing`,
+    );
   } else {
     console.log(`  ${green(ICONS.pass)} All checks passing`);
   }

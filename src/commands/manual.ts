@@ -210,14 +210,14 @@ export async function runManualInfo(
   console.log(`${bold("Status:")} ${formatDisplayState(displayState)}`);
   console.log(`${bold("State:")} ${state}`);
 
-  if (output.details) {
+  if (output.details !== undefined) {
     blank();
     console.log(bold("Details:"));
     console.log("─".repeat(60));
     console.log(output.details);
   }
 
-  if (output.why) {
+  if (output.why !== undefined) {
     blank();
     console.log(bold("Why This Matters:"));
     console.log("─".repeat(60));

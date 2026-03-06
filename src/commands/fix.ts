@@ -254,7 +254,9 @@ export async function runFixAll(projectPath: string, options: FixRunOptions = {}
   blank();
   if (fixed > 0 || failed > 0) {
     if (failed > 0) {
-      console.log(`${green(`${ICONS.pass} ${fixed} fixed`)}, ${red(`${ICONS.fail} ${failed} failed`)}`);
+      console.log(
+        `${green(`${ICONS.pass} ${fixed} fixed`)}, ${red(`${ICONS.fail} ${failed} failed`)}`,
+      );
     } else {
       console.log(green(`${ICONS.pass} ${fixed} fixed`));
     }
@@ -316,7 +318,9 @@ export async function runFixOne(
       return 1;
     }
   } catch (error) {
-    console.log(`  ${red(`${ICONS.fail} Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`);
+    console.log(
+      `  ${red(`${ICONS.fail} Error: ${error instanceof Error ? error.message : "Unknown error"}`)}`,
+    );
     blank();
     return 1;
   }

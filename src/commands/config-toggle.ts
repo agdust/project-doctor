@@ -3,7 +3,12 @@
  */
 
 import { setCheckSeverity, setTagSeverity, setGroupSeverity } from "../config/loader.js";
-import { getValidCheckNames, getValidGroupNames, getValidTagNames, getValidManualCheckNames } from "../utils/checks.js";
+import {
+  getValidCheckNames,
+  getValidGroupNames,
+  getValidTagNames,
+  getValidManualCheckNames,
+} from "../utils/checks.js";
 import { red } from "../utils/colors.js";
 import type { Severity } from "../config/types.js";
 

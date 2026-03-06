@@ -55,7 +55,10 @@ export const aboutConfigScreen: Screen<AppContext> = {
     text(`${red('"off"')} to disable`, 4);
     text(`${green('"error"')} to enable`, 4);
     text(`${green('["error", { config: values }]')} to enable and configure, where applicable`, 4);
-    text(`${yellow('"mute-until-YYYY-MM-DD"')} to mute until certain date, after it consider this as "error"`, 4);
+    text(
+      `${yellow('"mute-until-YYYY-MM-DD"')} to mute until certain date, after it consider this as "error"`,
+      4,
+    );
     blank();
   },
 

@@ -80,7 +80,6 @@ export async function runConfigShow(projectPath: string): Promise<void> {
     console.log(`${bold("Tags:")} ${dim("(none configured)")}`);
     blank();
   }
-
 }
 
 /**

@@ -10,7 +10,12 @@ import { runMute, runUnmute } from "../commands/mute.js";
 import { runList } from "../commands/list.js";
 import { runInfo } from "../commands/info.js";
 import { runFixList, runFixAll, runFixOne } from "../commands/fix.js";
-import { runManualList, runManualDone, runManualUndone, runManualInfo } from "../commands/manual.js";
+import {
+  runManualList,
+  runManualDone,
+  runManualUndone,
+  runManualInfo,
+} from "../commands/manual.js";
 import { red } from "../utils/colors.js";
 import { getProjectPath, isPath } from "./utils.js";
 import { printFixHelp } from "./help.js";

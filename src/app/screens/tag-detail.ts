@@ -49,7 +49,10 @@ export const tagDetailScreen: Screen<AppContext> = {
       separator("Manage"),
     ];
 
-    const toggleOpts = { getTagName: (c: AppContext) => c.selectedTag, onComplete: () => SCREEN.tags };
+    const toggleOpts = {
+      getTagName: (c: AppContext) => c.selectedTag,
+      onComplete: () => SCREEN.tags,
+    };
 
     if (status === "enabled") {
       opts.push(...createTagToggleActions(toggleOpts));
