@@ -20,7 +20,7 @@ import {
 import { getErrorMessage } from "../../utils/errors.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
-import { moveToNextIssue, createMuteDisableActions } from "./shared.js";
+import { moveToNextIssue, createMuteDisableActions, createCopyUrlActions } from "./shared.js";
 
 export const issueDetailScreen: Screen<AppContext> = {
   id: SCREEN.issueDetail,
@@ -106,8 +106,10 @@ export const issueDetailScreen: Screen<AppContext> = {
       );
     }
 
-    // Next (skip without tracking)
     opts.push(
+      // Copy URL actions (tool docs, source reference)
+      ...createCopyUrlActions(issue),
+
       action("next", "Next", (c) => {
         c.stats.skipped++;
         return moveToNextIssue(c);

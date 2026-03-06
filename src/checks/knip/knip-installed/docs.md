@@ -1,3 +1,7 @@
+---
+{ "toolUrl": "https://knip.dev/" }
+---
+
 # knip-installed
 
 Checks that knip is installed for dead code detection.

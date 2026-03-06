@@ -1,3 +1,7 @@
+---
+{ "toolUrl": "https://eslint.org/docs/latest/" }
+---
+
 # eslint-config-exists
 
 Checks that an ESLint configuration file exists.

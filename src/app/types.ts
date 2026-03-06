@@ -30,6 +30,8 @@ export interface FixableIssue {
   result: CheckResult;
   fixDescription: string;
   why: string | null;
+  sourceUrl: string | null;
+  toolUrl: string | null;
   /** For simple fixes - single action */
   runFix?: () => Promise<FixResult> | FixResult;
   /** For fixes with options - multiple choices */
@@ -44,6 +46,8 @@ export interface FailedCheck {
   tags: CheckTag[];
   message: string;
   why: string | null;
+  sourceUrl: string | null;
+  toolUrl: string | null;
   fixDescription: string | null;
   /** For simple fixes - single action */
   runFix?: () => Promise<FixResult> | FixResult;

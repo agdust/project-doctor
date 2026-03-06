@@ -1,3 +1,7 @@
+---
+{ "sourceUrl": "https://github.com/lirantal/npm-security-best-practices" }
+---
+
 # git-ci-lockfile
 
 Checks that CI workflows use deterministic package installation.
@@ -16,8 +20,6 @@ Always use deterministic commands in:
 - CI/CD pipelines
 - Production deployments
 - Docker builds
-
-Source: [npm Security Best Practices](https://github.com/lirantal/npm-security-best-practices)
 
 ## Examples
 

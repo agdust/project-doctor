@@ -150,6 +150,9 @@ export default defineConfig(
       // conflicts with prettier
       "unicorn/number-literal-case": "off",
 
+      // explicit better then implicit
+      "unicorn/no-useless-undefined": "off",
+
       // =========================================================================
       // eslint-plugin-n overrides
       // =========================================================================

@@ -1,3 +1,7 @@
+---
+{ "toolUrl": "https://github.com/kucherenko/jscpd" }
+---
+
 # jscpd-config-exists
 
 Checks that jscpd (JavaScript Copy/Paste Detector) is configured.

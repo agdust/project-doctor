@@ -18,32 +18,9 @@ import {
 } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
-import { TAG, type CheckTag } from "../../types.js";
+import { TAG } from "../../types.js";
 import { getErrorMessage } from "../../utils/errors.js";
-import { copyToClipboard } from "../../utils/clipboard.js";
-
-// Tool documentation links
-const TOOL_DOCS: Record<string, string> = {
-  eslint: "https://eslint.org/docs/latest/",
-  prettier: "https://prettier.io/docs/en/",
-  typescript: "https://www.typescriptlang.org/docs/",
-  vitest: "https://vitest.dev/guide/",
-  knip: "https://knip.dev/",
-  jscpd: "https://github.com/kucherenko/jscpd",
-};
-
-function getToolLink(tags: CheckTag[]): { tool: string; url: string } | null {
-  for (const tag of tags) {
-    if (tag.startsWith("tool:")) {
-      const tool = tag.slice(5);
-      const url = TOOL_DOCS[tool];
-      if (url) {
-        return { tool, url };
-      }
-    }
-  }
-  return null;
-}
+import { createCopyUrlActions } from "./shared.js";
 
 export const overviewDetailScreen: Screen<AppContext> = {
   id: SCREEN.overviewDetail,
@@ -81,10 +58,13 @@ export const overviewDetailScreen: Screen<AppContext> = {
       blank();
     }
 
-    // Tool link
-    const toolLink = getToolLink(check.tags);
-    if (toolLink) {
-      muted(`Documentation: ${toolLink.url}`);
+    // Tool/source links
+    if (check.toolUrl !== null) {
+      muted(`Documentation: ${check.toolUrl}`);
+      blank();
+    }
+    if (check.sourceUrl !== null) {
+      muted(`Source: ${check.sourceUrl}`);
       blank();
     }
   },
@@ -179,29 +159,8 @@ export const overviewDetailScreen: Screen<AppContext> = {
       );
     }
 
-    // Tool docs link
-    const toolLink = getToolLink(check.tags);
-    if (toolLink) {
-      opts.push(
-        action(
-          "docs",
-          "Copy docs URL",
-          async () => {
-            const ok = await copyToClipboard(toolLink.url);
-            blank();
-            if (ok) {
-              success(`Copied ${toolLink.url} to clipboard`, 3);
-            } else {
-              muted(`URL: ${toolLink.url}`, 3);
-            }
-            blank();
-            // eslint-disable-next-line unicorn/no-useless-undefined
-            return undefined;
-          },
-          `Copy ${toolLink.tool} documentation URL to clipboard`,
-        ),
-      );
-    }
+    // Copy URL actions (tool docs, source reference)
+    opts.push(...createCopyUrlActions(check));
 
     return opts;
   },

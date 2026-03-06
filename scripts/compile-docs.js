@@ -15,6 +15,25 @@ const outputDir = path.join(__dirname, "..", "dist");
 const outputFile = path.join(outputDir, "docs-manifest.json");
 
 /**
+ * Parse JSON frontmatter from markdown content.
+ * Returns { data, content } where data is the parsed frontmatter
+ * and content is the markdown without the frontmatter block.
+ */
+function parseFrontmatter(markdown) {
+  if (!markdown.startsWith("---\n")) {
+    return { data: {}, content: markdown };
+  }
+  const endIndex = markdown.indexOf("\n---\n", 4);
+  if (endIndex === -1) {
+    return { data: {}, content: markdown };
+  }
+  const frontmatterBlock = markdown.slice(4, endIndex);
+  const content = markdown.slice(endIndex + 5);
+  const data = JSON.parse(frontmatterBlock);
+  return { data, content };
+}
+
+/**
  * Extract tokens belonging to the "## Why" section using marked's lexer
  */
 function getWhyTokens(markdown) {
@@ -108,9 +127,12 @@ async function compileAllDocs() {
             fs.readFile(checkPath, "utf-8"),
           ]);
 
+          // Parse frontmatter and strip it from content
+          const { data: frontmatter, content: markdownContent } = parseFrontmatter(docsContent);
+
           // Use marked's lexer for structured markdown parsing
           const { name, description } = extractNameAndDescription(
-            docsContent,
+            markdownContent,
             `${group}-${item}`,
           );
 
@@ -124,9 +146,9 @@ async function compileAllDocs() {
           const hasFix = /fix:\s*\{/.test(checkContent);
 
           // Parse markdown to HTML
-          const fullHtml = marked.parse(docsContent);
-          const whyText = extractWhyText(docsContent);
-          const whyHtml = extractWhyHtml(docsContent);
+          const fullHtml = marked.parse(markdownContent);
+          const whyText = extractWhyText(markdownContent);
+          const whyHtml = extractWhyHtml(markdownContent);
 
           manifest.checks[name] = {
             name,
@@ -137,6 +159,8 @@ async function compileAllDocs() {
             whyText,
             whyHtml,
             fullHtml,
+            sourceUrl: frontmatter.sourceUrl || null,
+            toolUrl: frontmatter.toolUrl || null,
           };
         } catch {
           // Not a check folder with docs, skip

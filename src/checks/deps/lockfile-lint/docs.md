@@ -1,3 +1,10 @@
+---
+{
+  "sourceUrl": "https://github.com/lirantal/npm-security-best-practices",
+  "toolUrl": "https://github.com/lirantal/lockfile-lint"
+}
+---
+
 # deps-lockfile-lint
 
 Checks that lockfile-lint is configured to prevent lockfile injection attacks.
@@ -13,8 +20,6 @@ The `lockfile-lint` tool validates your lockfile against security policies:
 - Verifies integrity hashes are present
 
 Note: pnpm is architecturally resistant to this vulnerability.
-
-Source: [npm Security Best Practices](https://github.com/lirantal/npm-security-best-practices)
 
 ## Examples
 

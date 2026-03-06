@@ -1,3 +1,7 @@
+---
+{ "toolUrl": "https://knip.dev/" }
+---
+
 # knip-config
 
 Checks that knip has a configuration file.

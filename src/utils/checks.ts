@@ -23,7 +23,11 @@ import {
 } from "../config/severity.js";
 import { checkGroups, listChecks, manualChecks } from "../registry.js";
 import type { ManualCheckDisplayState } from "../app/types.js";
-import { getWhyText as getWhyTextFromDocs } from "../docs/compiled-docs.js";
+import {
+  getWhyText as getWhyTextFromDocs,
+  getSourceUrl as getSourceUrlFromDocs,
+  getToolUrl as getToolUrlFromDocs,
+} from "../docs/compiled-docs.js";
 
 // ============================================================================
 // Project Type Filtering
@@ -339,6 +343,16 @@ export function buildTagsMap(): Map<string, CheckTag[]> {
  */
 export async function loadWhyFromDocs(_group: string, checkName: string): Promise<string | null> {
   return getWhyTextFromDocs(checkName);
+}
+
+/** Load source URL from compiled docs manifest. */
+export async function loadSourceUrlFromDocs(checkName: string): Promise<string | null> {
+  return getSourceUrlFromDocs(checkName);
+}
+
+/** Load tool documentation URL from compiled docs manifest. */
+export async function loadToolUrlFromDocs(checkName: string): Promise<string | null> {
+  return getToolUrlFromDocs(checkName);
 }
 
 // ============================================================================

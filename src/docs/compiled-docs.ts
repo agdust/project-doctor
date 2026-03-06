@@ -27,6 +27,8 @@ export interface CompiledCheckDoc {
   whyText: string | null;
   whyHtml: string | null;
   fullHtml: string;
+  sourceUrl: string | null;
+  toolUrl: string | null;
 }
 
 export interface DocsManifest {
@@ -84,6 +86,24 @@ export async function getWhyHtml(checkName: string): Promise<string | null> {
   const manifest = await loadDocsManifest();
   const doc = manifest.checks[checkName];
   return doc?.whyHtml ?? null;
+}
+
+/**
+ * Get the source URL for a check (from frontmatter).
+ */
+export async function getSourceUrl(checkName: string): Promise<string | null> {
+  const manifest = await loadDocsManifest();
+  const doc = manifest.checks[checkName];
+  return doc?.sourceUrl ?? null;
+}
+
+/**
+ * Get the tool documentation URL for a check (from frontmatter).
+ */
+export async function getToolUrl(checkName: string): Promise<string | null> {
+  const manifest = await loadDocsManifest();
+  const doc = manifest.checks[checkName];
+  return doc?.toolUrl ?? null;
 }
 
 /**

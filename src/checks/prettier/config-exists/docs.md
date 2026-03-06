@@ -1,3 +1,7 @@
+---
+{ "toolUrl": "https://prettier.io/docs/en/" }
+---
+
 # prettier-config-exists
 
 Checks that a Prettier configuration file exists.

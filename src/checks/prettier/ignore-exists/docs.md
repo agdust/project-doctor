@@ -1,3 +1,7 @@
+---
+{ "toolUrl": "https://prettier.io/docs/en/" }
+---
+
 # prettier-ignore-exists
 
 Checks that a `.prettierignore` file exists.

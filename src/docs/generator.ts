@@ -20,9 +20,24 @@ async function generateDocs(): Promise<void> {
     const nav = `<nav><a href="index.html">All Checks</a> / ${doc.group}</nav>`;
     const tagsHtml = doc.tags.map((t) => `<span class="tag ${t}">${t}</span>`).join(" ");
     const fixBadge = doc.hasFix ? '<span class="tag fixable">auto-fix</span>' : "";
+
+    // Build links section from frontmatter URLs
+    let linksHtml = "";
+    if (doc.toolUrl !== null || doc.sourceUrl !== null) {
+      linksHtml += "<hr><p>";
+      if (doc.toolUrl !== null) {
+        linksHtml += `Documentation: <a href="${escapeHtml(doc.toolUrl)}">${escapeHtml(doc.toolUrl)}</a><br>`;
+      }
+      if (doc.sourceUrl !== null) {
+        linksHtml += `Source: <a href="${escapeHtml(doc.sourceUrl)}">${escapeHtml(doc.sourceUrl)}</a>`;
+      }
+      linksHtml += "</p>";
+    }
+
     const content = `
       <div>${tagsHtml} ${fixBadge}</div>
       ${doc.fullHtml}
+      ${linksHtml}
     `;
     const html = htmlPage(doc.name, content, nav);
     const filename = `${doc.name}.html`;

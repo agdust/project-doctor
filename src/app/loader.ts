@@ -19,6 +19,8 @@ import {
   getFixPriority,
   isGroupForProjectType,
   loadWhyFromDocs,
+  loadSourceUrlFromDocs,
+  loadToolUrlFromDocs,
   getManualCheckDisplayState,
 } from "../utils/checks.js";
 import { getErrorMessage } from "../utils/errors.js";
@@ -96,8 +98,12 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
           failedByCategory.opinionated++;
         }
 
-        // Load why content for all failed checks
-        const why = await loadWhyFromDocs(group.name, check.name);
+        // Load docs metadata for all failed checks
+        const [why, sourceUrl, toolUrl] = await Promise.all([
+          loadWhyFromDocs(group.name, check.name),
+          loadSourceUrlFromDocs(check.name),
+          loadToolUrlFromDocs(check.name),
+        ]);
 
         // Build failed check with full info
         const failedCheck: FailedCheck = {
@@ -107,6 +113,8 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
           tags: check.tags,
           message: baseResult.message,
           why,
+          sourceUrl,
+          toolUrl,
           fixDescription: check.fix?.description ?? null,
         };
 
@@ -147,6 +155,8 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
               result,
               fixDescription: fix.description,
               why,
+              sourceUrl,
+              toolUrl,
               fixOptions: failedCheck.fixOptions,
             });
           } else {
@@ -158,6 +168,8 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
               result,
               fixDescription: fix.description,
               why,
+              sourceUrl,
+              toolUrl,
               runFix: failedCheck.runFix,
             });
           }

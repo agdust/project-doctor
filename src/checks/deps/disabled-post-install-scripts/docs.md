@@ -1,3 +1,7 @@
+---
+{ "sourceUrl": "https://github.com/lirantal/npm-security-best-practices" }
+---
+
 # deps-disabled-post-install-scripts
 
 Checks that npm is configured to disable post-install scripts.
@@ -11,8 +15,6 @@ Recent attacks like Shai-Hulud, the Nx attack, and the infamous event-stream inc
 By setting `ignore-scripts=true` in your `.npmrc`, npm will skip all lifecycle scripts during installation. You can then selectively allow scripts for trusted packages using tools like `@lavamoat/allow-scripts`.
 
 Note: pnpm 10.0+ and Bun disable postinstall scripts by default.
-
-Source: [npm Security Best Practices](https://github.com/lirantal/npm-security-best-practices)
 
 ## Examples
 

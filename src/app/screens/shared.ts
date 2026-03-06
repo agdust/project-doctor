@@ -8,6 +8,7 @@ import { blank, muted, error, action } from "../../cli-framework/index.js";
 import { setCheckSeverity, setTagSeverity, isTagOff } from "../../config/loader.js";
 import { createMuteUntil, isMuteUntilActive } from "../../config/severity.js";
 import { getErrorMessage } from "../../utils/errors.js";
+import { copyToClipboard } from "../../utils/clipboard.js";
 import { getValidGroupNames } from "../../utils/checks.js";
 import { listChecks } from "../../registry.js";
 import { TAG } from "../../types.js";
@@ -16,6 +17,9 @@ import type { ActionOption } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 import { rescanProject } from "../loader.js";
+
+/** Tracks which copy-URL actions have been triggered (for "Copied!" label feedback) */
+const copiedActions = new Set<string>();
 
 /** Mute/disable duration constants */
 export const MUTE_DURATIONS = {
@@ -98,6 +102,59 @@ export function createMuteDisableActions(options: {
       return onComplete(c);
     }),
   ];
+}
+
+/**
+ * Create copy-URL action options for tool docs and source references.
+ * Only includes actions for non-null URLs. Returns undefined to stay on current screen.
+ */
+export function createCopyUrlActions(item: {
+  toolUrl: string | null;
+  sourceUrl: string | null;
+}): ActionOption<AppContext>[] {
+  const actions: ActionOption<AppContext>[] = [];
+
+  if (item.toolUrl !== null) {
+    const url = item.toolUrl;
+    const id = "copy-tool-url";
+    const label = copiedActions.has(id) ? "Copy docs URL (Copied!)" : "Copy docs URL";
+    actions.push(
+      action(id, label, async () => {
+        const ok = await copyToClipboard(url);
+        if (ok) {
+          copiedActions.add(id);
+        } else {
+          blank();
+          error("Failed to copy — no clipboard tool available", 3);
+          blank();
+        }
+        return undefined;
+      }),
+    );
+  }
+
+  if (item.sourceUrl !== null) {
+    const url = item.sourceUrl;
+    const id = "copy-source-url";
+    const label = copiedActions.has(id) ? "Copy source URL (Copied!)" : "Copy source URL";
+    actions.push(
+      action(id, label, async () => {
+        const ok = await copyToClipboard(url);
+        if (ok) {
+          copiedActions.add(id);
+        } else {
+          blank();
+          error("Failed to copy — no clipboard tool available", 3);
+          blank();
+        }
+        return undefined;
+      }),
+    );
+  }
+
+  copiedActions.clear();
+
+  return actions;
 }
 
 // ============================================================================

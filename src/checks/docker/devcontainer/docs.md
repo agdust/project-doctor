@@ -1,3 +1,7 @@
+---
+{ "sourceUrl": "https://github.com/lirantal/npm-security-best-practices" }
+---
+
 # docker-devcontainer
 
 Checks for dev container configuration for isolated development.
@@ -18,8 +22,6 @@ Additional hardening options:
 - Run as non-root user
 
 Works with VS Code, GitHub Codespaces, and other container-aware IDEs.
-
-Source: [npm Security Best Practices](https://github.com/lirantal/npm-security-best-practices)
 
 ## Examples
 

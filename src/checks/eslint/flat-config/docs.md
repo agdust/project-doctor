@@ -1,3 +1,7 @@
+---
+{ "toolUrl": "https://eslint.org/docs/latest/" }
+---
+
 # eslint-flat-config
 
 Checks for ESLint flat config format (v9+).
