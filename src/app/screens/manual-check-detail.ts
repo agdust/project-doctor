@@ -7,7 +7,7 @@
 import { bold, dim, green, yellow, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, blank, text, success, error, ICONS } from "../../cli-framework/index.js";
-import { setManualCheckState, setCheckSeverity } from "../../config/loader.js";
+import { setManualCheckState, setManualCheckSeverity } from "../../config/loader.js";
 import { getErrorMessage } from "../../utils/errors.js";
 import type { AppContext, ManualCheckItem } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
@@ -111,7 +111,7 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
       opts.push(
         action("re-enable", "Re-enable", async (c) => {
           try {
-            await setCheckSeverity(c.projectPath, item.check.name, "error");
+            await setManualCheckState(c.projectPath, item.check.name, item.state);
             item.displayState = item.state === "done" ? "done" : "not-done";
             blank();
             success("Re-enabled", 3);
@@ -130,6 +130,7 @@ export const manualCheckDetailScreen: Screen<AppContext> = {
         ...createMuteDisableActions({
           getCheckName: () => item.check.name,
           onComplete: () => SCREEN.manualChecklist,
+          writeSeverity: setManualCheckSeverity,
           extraOnMute: (c) => {
             const currentItem = c.manualCheckItems[c.selectedManualCheckIndex];
             if (currentItem !== undefined) {

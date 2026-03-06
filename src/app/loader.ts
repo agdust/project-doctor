@@ -22,6 +22,7 @@ import {
   loadSourceUrlFromDocs,
   loadToolUrlFromDocs,
   getManualCheckDisplayState,
+  extractManualCheckState,
 } from "../utils/checks.js";
 import { getErrorMessage } from "../utils/errors.js";
 import { getProjectName } from "../utils/project-name.js";
@@ -193,8 +194,8 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
 
   // Load manual check states from config
   const manualCheckItems: ManualCheckItem[] = manualChecks.map((check) => {
-    const state = global.config.manualChecks[check.name] ?? "not-done";
-    const displayState = getManualCheckDisplayState(check, global.config, state);
+    const state = extractManualCheckState(global.config.manualChecks[check.name]);
+    const displayState = getManualCheckDisplayState(check, global.config);
     return { check, state, displayState };
   });
 

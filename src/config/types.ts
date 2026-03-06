@@ -19,6 +19,12 @@
 import type { ManualCheckState } from "../types.js";
 
 /**
+ * Manual check config entry: a state ("done"/"not-done") or a severity override ("off"/"mute-until-*").
+ * When a manual check is disabled or muted, the severity replaces the state in config.
+ */
+export type ManualCheckEntry = ManualCheckState | Severity;
+
+/**
  * Severity level:
  * - "off" - permanently disabled
  * - "error" - enabled (default)
@@ -47,8 +53,8 @@ export interface Config {
   eslintOverwriteConfirmed?: boolean;
   /** User confirmed running without git protection */
   noGitConfirmed?: boolean;
-  /** Manual check states (done/not-done) */
-  manualChecks?: Record<string, ManualCheckState>;
+  /** Manual check entries (state or severity override) */
+  manualChecks?: Record<string, ManualCheckEntry>;
 }
 
 /** How project type was determined */
@@ -66,5 +72,5 @@ export interface ResolvedConfig {
   tags: Record<string, Severity>;
   eslintOverwriteConfirmed: boolean;
   noGitConfirmed: boolean;
-  manualChecks: Record<string, ManualCheckState>;
+  manualChecks: Record<string, ManualCheckEntry>;
 }

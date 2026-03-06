@@ -18,6 +18,7 @@ import {
   getValidManualCheckNames,
   findManualCheck,
   getManualCheckDisplayState,
+  extractManualCheckState,
 } from "../utils/checks.js";
 import { bold, dim, green, yellow, red } from "../utils/colors.js";
 import { blank } from "../cli-framework/renderer.js";
@@ -67,8 +68,8 @@ export async function runManualList(
   const config = await loadAndResolveConfig(projectPath);
 
   let checks: ManualCheckListInfo[] = manualChecks.map((check) => {
-    const state = config.manualChecks[check.name] ?? "not-done";
-    const displayState = getManualCheckDisplayState(check, config, state);
+    const state = extractManualCheckState(config.manualChecks[check.name]);
+    const displayState = getManualCheckDisplayState(check, config);
     return {
       name: check.name,
       description: check.description,
@@ -182,8 +183,8 @@ export async function runManualInfo(
   }
 
   const config = await loadAndResolveConfig(projectPath);
-  const state = config.manualChecks[check.name] ?? "not-done";
-  const displayState = getManualCheckDisplayState(check, config, state);
+  const state = extractManualCheckState(config.manualChecks[check.name]);
+  const displayState = getManualCheckDisplayState(check, config);
 
   const output = {
     name: check.name,

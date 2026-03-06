@@ -337,3 +337,14 @@ export async function setManualCheckState(
     manualChecks: { [checkName]: state },
   });
 }
+
+/** Set a manual check's severity (mute/disable) in config */
+export async function setManualCheckSeverity(
+  projectPath: string,
+  checkName: string,
+  severity: Severity,
+): Promise<void> {
+  await updateConfig(projectPath, {
+    manualChecks: { [checkName]: severity },
+  });
+}

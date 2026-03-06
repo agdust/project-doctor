@@ -7,6 +7,7 @@
 import { blank, muted, error, action } from "../../cli-framework/index.js";
 import { setCheckSeverity, setTagSeverity, isTagOff } from "../../config/loader.js";
 import { createMuteUntil, isMuteUntilActive } from "../../config/severity.js";
+import type { Severity } from "../../config/types.js";
 import { getErrorMessage } from "../../utils/errors.js";
 import { copyToClipboard } from "../../utils/clipboard.js";
 import { getValidGroupNames } from "../../utils/checks.js";
@@ -48,21 +49,24 @@ export function moveToNextIssue(ctx: AppContext): string | undefined {
  * @param onComplete - Function called after mute/disable, returns next screen ID
  * @param extraOnMute - Optional callback for additional state updates on mute
  * @param extraOnDisable - Optional callback for additional state updates on disable
+ * @param writeSeverity - Optional custom severity writer (defaults to setCheckSeverity)
  */
 export function createMuteDisableActions(options: {
   getCheckName: (ctx: AppContext) => string;
   onComplete: (ctx: AppContext) => string | undefined;
   extraOnMute?: (ctx: AppContext) => void;
   extraOnDisable?: (ctx: AppContext) => void;
+  writeSeverity?: (projectPath: string, checkName: string, severity: Severity) => Promise<void>;
 }): ActionOption<AppContext>[] {
   const { getCheckName, onComplete, extraOnMute, extraOnDisable } = options;
+  const writeSeverity = options.writeSeverity ?? setCheckSeverity;
 
   return [
     action("mute-2w", "Mute for 2 weeks", async (c) => {
       try {
         const muteDate = new Date();
         muteDate.setDate(muteDate.getDate() + MUTE_DURATIONS.TWO_WEEKS_DAYS);
-        await setCheckSeverity(c.projectPath, getCheckName(c), createMuteUntil(muteDate));
+        await writeSeverity(c.projectPath, getCheckName(c), createMuteUntil(muteDate));
         blank();
         muted("Muted for 2 weeks", 3);
         c.stats.muted++;
@@ -77,7 +81,7 @@ export function createMuteDisableActions(options: {
       try {
         const muteDate = new Date();
         muteDate.setMonth(muteDate.getMonth() + MUTE_DURATIONS.TWO_MONTHS);
-        await setCheckSeverity(c.projectPath, getCheckName(c), createMuteUntil(muteDate));
+        await writeSeverity(c.projectPath, getCheckName(c), createMuteUntil(muteDate));
         blank();
         muted("Muted for 2 months", 3);
         c.stats.muted++;
@@ -90,7 +94,7 @@ export function createMuteDisableActions(options: {
     }),
     action("disable", "Disable", async (c) => {
       try {
-        await setCheckSeverity(c.projectPath, getCheckName(c), "off");
+        await writeSeverity(c.projectPath, getCheckName(c), "off");
         blank();
         muted("Disabled permanently", 3);
         c.stats.disabled++;

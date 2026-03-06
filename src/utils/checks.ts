@@ -13,7 +13,7 @@ import {
   type ManualCheckState,
 } from "../types.js";
 import { toDateString } from "./dates.js";
-import type { ProjectType, ResolvedConfig } from "../config/types.js";
+import type { ProjectType, ResolvedConfig, ManualCheckEntry } from "../config/types.js";
 import { isCheckOff, isTagOff, isGroupOff } from "../config/loader.js";
 import {
   isMuteUntil,
@@ -383,20 +383,28 @@ export function countMutedChecks(config: ResolvedConfig): number {
 // ============================================================================
 
 /**
- * Determine display state for a manual check based on config severity.
+ * Extract the underlying ManualCheckState from a manualChecks config entry.
+ * Severity overrides ("off", "mute-until-*", "error") map to "not-done".
+ */
+export function extractManualCheckState(entry: ManualCheckEntry | undefined): ManualCheckState {
+  return entry === "done" ? "done" : "not-done";
+}
+
+/**
+ * Determine display state for a manual check based on config.
+ * Reads severity from manualChecks config (not auto-checks config).
  * Disabled ("off") and muted ("mute-until-*") override the persisted state.
  */
 export function getManualCheckDisplayState(
   check: ManualCheck,
   config: ResolvedConfig,
-  state: ManualCheckState,
 ): ManualCheckDisplayState {
-  // Check-level severity
-  const checkSeverity = extractSeverity(config.checks[check.name]);
-  if (checkSeverity === "off") {
+  // Check-level severity (stored in manualChecks)
+  const entry = config.manualChecks[check.name];
+  if (entry === "off") {
     return "disabled";
   }
-  if (checkSeverity !== undefined && isMuteUntilActive(checkSeverity)) {
+  if (entry !== undefined && entry !== "done" && entry !== "not-done" && isMuteUntilActive(entry)) {
     return "muted";
   }
 
@@ -411,5 +419,5 @@ export function getManualCheckDisplayState(
     }
   }
 
-  return state === "done" ? "done" : "not-done";
+  return entry === "done" ? "done" : "not-done";
 }

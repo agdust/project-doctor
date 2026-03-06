@@ -46,7 +46,7 @@ export const tagDetailScreen: Screen<AppContext> = {
       nav("view-checks", "View checks", SCREEN.tagChecks, {
         badge: `${checkCount}`,
       }),
-      separator("Manage"),
+      separator(),
     ];
 
     const toggleOpts = {
