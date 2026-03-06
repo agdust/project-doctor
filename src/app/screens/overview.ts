@@ -11,13 +11,9 @@ import type { AppContext, FailedCheck } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 import { TAG } from "../../types.js";
 
-function formatCheckOption(
-  check: FailedCheck,
-  maxNameLen: number,
-): { name: string; description: string } {
-  const padding = " ".repeat(maxNameLen - check.name.length);
+function formatCheckOption(check: FailedCheck): { name: string; description: string } {
   return {
-    name: `${red(ICONS.fail)} ${check.name}${padding}`,
+    name: `${red(ICONS.fail)} ${check.description}`,
     description: check.message,
   };
 }
@@ -56,16 +52,13 @@ export const overviewScreen: Screen<AppContext> = {
       },
     ];
 
-    // Find max name length for alignment
-    const maxNameLen = Math.max(...checks.map((c) => c.name.length));
-
     for (const { label, items } of sections) {
       if (items.length === 0) {
         continue;
       }
       opts.push(separator(`${label} (${items.length})`));
       for (const check of items) {
-        const { name, description } = formatCheckOption(check, maxNameLen);
+        const { name, description } = formatCheckOption(check);
         const index = checks.indexOf(check);
         opts.push(
           action(

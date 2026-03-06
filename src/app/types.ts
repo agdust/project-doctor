@@ -24,6 +24,7 @@ export interface FixOptionRunnable {
 /** A check that has an available fix */
 export interface FixableIssue {
   name: string;
+  description: string;
   group: string;
   tags: CheckTag[];
   result: CheckResult;
@@ -38,6 +39,7 @@ export interface FixableIssue {
 /** A failed check (may or may not have auto-fix) */
 export interface FailedCheck {
   name: string;
+  description: string;
   group: string;
   tags: CheckTag[];
   message: string;

@@ -102,6 +102,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         // Build failed check with full info
         const failedCheck: FailedCheck = {
           name: check.name,
+          description: check.description,
           group: group.name,
           tags: check.tags,
           message: baseResult.message,
@@ -140,6 +141,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
           if ("options" in fix) {
             fixableIssues.push({
               name: check.name,
+              description: check.description,
               group: group.name,
               tags: check.tags,
               result,
@@ -150,6 +152,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
           } else {
             fixableIssues.push({
               name: check.name,
+              description: check.description,
               group: group.name,
               tags: check.tags,
               result,

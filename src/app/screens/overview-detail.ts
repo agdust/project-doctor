@@ -57,8 +57,9 @@ export const overviewDetailScreen: Screen<AppContext> = {
       return;
     }
 
-    // Check name and message
-    text(`${red(ICONS.fail)}  ${bold(check.name)}`);
+    // Check title and status
+    text(`${red(ICONS.fail)}  ${bold(check.description)}`);
+    muted(`   ${check.name}`);
     text(`   ${check.message}`);
     blank();
 
