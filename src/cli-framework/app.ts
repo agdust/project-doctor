@@ -270,6 +270,7 @@ export class App<TCtx> {
     // Lifecycle: onLeave
     await fromScreen.onLeave?.(this.state.context);
 
+    this.state.lastSelected.delete(toScreenId); // Reset cursor for forward navigation
     this.state.current = toScreenId;
   }
 
