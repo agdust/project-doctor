@@ -30,8 +30,8 @@ export const configScreen: Screen<AppContext> = {
       nav("project-type", "Project type", SCREEN.projectType, {
         description: `Currently: ${typeLabel}`,
       }),
-      nav("categories", "Control categories", SCREEN.categories, {
-        description: "Enable or disable check categories",
+      nav("tags", "Control tags", SCREEN.tags, {
+        description: "Toggle tags and view their checks",
       }),
     ];
   },

@@ -101,6 +101,9 @@ export interface AppContext {
   /** Selected manual check index (for checklist screen) */
   selectedManualCheckIndex: number;
 
+  /** Selected tag (for tag detail screen) */
+  selectedTag: string;
+
   /** Session stats */
   stats: {
     fixed: number;

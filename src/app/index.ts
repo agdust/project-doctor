@@ -22,13 +22,15 @@ import { scanningScreen } from "./screens/scanning.js";
 import { configScreen } from "./screens/config.js";
 import { projectTypeScreen } from "./screens/project-type.js";
 import { aboutConfigScreen } from "./screens/about-config.js";
-import { categoriesScreen } from "./screens/categories.js";
 import { aboutScreen } from "./screens/about.js";
 import { manualChecklistScreen } from "./screens/manual-checklist.js";
 import { manualCheckDetailScreen } from "./screens/manual-check-detail.js";
 import { manualDoneScreen } from "./screens/manual-checked.js";
 import { manualMutedScreen } from "./screens/manual-muted.js";
 import { manualDisabledScreen } from "./screens/manual-disabled.js";
+import { tagsScreen } from "./screens/tags.js";
+import { tagDetailScreen } from "./screens/tag-detail.js";
+import { tagChecksScreen } from "./screens/tag-checks.js";
 
 export async function runProjectDoctorApp(projectPath: string): Promise<void> {
   // Check git safety before proceeding
@@ -61,13 +63,15 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       configScreen,
       projectTypeScreen,
       aboutConfigScreen,
-      categoriesScreen,
       aboutScreen,
       manualChecklistScreen,
       manualCheckDetailScreen,
       manualDoneScreen,
       manualMutedScreen,
       manualDisabledScreen,
+      tagsScreen,
+      tagDetailScreen,
+      tagChecksScreen,
     ],
     initialScreen: SCREEN.home,
 

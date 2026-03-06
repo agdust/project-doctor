@@ -5,12 +5,17 @@
  */
 
 import { blank, muted, error, action } from "../../cli-framework/index.js";
-import { setCheckSeverity } from "../../config/loader.js";
-import { createSkipUntil } from "../../config/severity.js";
+import { setCheckSeverity, setTagSeverity, isTagOff } from "../../config/loader.js";
+import { createSkipUntil, isSkipUntilActive } from "../../config/severity.js";
 import { getErrorMessage } from "../../utils/errors.js";
+import { getValidGroupNames } from "../../utils/checks.js";
+import { listChecks } from "../../registry.js";
+import { TAG } from "../../types.js";
+import type { CheckTag } from "../../types.js";
 import type { ActionOption } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
+import { rescanProject } from "../loader.js";
 
 /** Mute/disable duration constants */
 export const MUTE_DURATIONS = {
@@ -93,4 +98,135 @@ export function createMuteDisableActions(options: {
       return onComplete(c);
     }),
   ];
+}
+
+// ============================================================================
+// Tag Utilities
+// ============================================================================
+
+export type TagStatus = "enabled" | "disabled" | "muted";
+
+/** Determine effective status of a tag from config */
+export function getTagStatus(tagName: string, ctx: AppContext): TagStatus {
+  if (isTagOff(ctx.global.config, tagName)) {
+    return "disabled";
+  }
+  const severity = ctx.global.config.tags[tagName];
+  if (severity && isSkipUntilActive(severity)) {
+    return "muted";
+  }
+  return "enabled";
+}
+
+/** Get checks that belong to a tag (including group-as-tag matching) */
+export function getChecksForTag(
+  tag: string,
+): { name: string; group: string; description: string; tags: CheckTag[] }[] {
+  const allChecks = listChecks();
+  const groupNames = getValidGroupNames();
+  const isGroup = groupNames.has(tag);
+
+  return allChecks.filter((c) => {
+    if (isGroup) {
+      return c.group === tag || c.tags.includes(tag as never);
+    }
+    return c.tags.includes(tag as never);
+  });
+}
+
+/** Derive the display section for a tag from the TAG constant structure */
+export function getTagSection(tag: string): string {
+  // Importance tags
+  if (tag === TAG.required || tag === TAG.recommended || tag === TAG.opinionated) {
+    return "Importance";
+  }
+
+  // Scope tags
+  if (tag === TAG.universal || tag === TAG.node || tag === TAG.typescript) {
+    return "Scope";
+  }
+
+  // Grouped tags — section from prefix
+  for (const [key, value] of Object.entries(TAG)) {
+    if (typeof value === "object" && (Object.values(value) as string[]).includes(tag)) {
+      return key.charAt(0).toUpperCase() + key.slice(1);
+    }
+  }
+
+  // Group names used as tags
+  if (getValidGroupNames().has(tag)) {
+    return "Group";
+  }
+
+  return "Other";
+}
+
+/**
+ * Create mute/disable/enable action options for a tag.
+ *
+ * Tags use setTagSeverity (groups are stored in the same tags record).
+ */
+export function createTagToggleActions(options: {
+  getTagName: (ctx: AppContext) => string;
+  onComplete: (ctx: AppContext) => string | undefined;
+}): ActionOption<AppContext>[] {
+  const { getTagName, onComplete } = options;
+
+  async function applyAndRescan(
+    ctx: AppContext,
+    severity: "off" | "error" | `skip-until-${string}`,
+    message: string,
+  ): Promise<string | undefined> {
+    const tag = getTagName(ctx);
+    try {
+      await setTagSeverity(ctx.projectPath, tag, severity);
+      ctx.global.config.tags[tag] = severity;
+      blank();
+      muted(message, 3);
+      await rescanProject(ctx);
+    } catch (error_) {
+      error(getErrorMessage(error_), 3);
+    }
+    return onComplete(ctx);
+  }
+
+  return [
+    action("mute-2w", "Mute for 2 weeks", async (c) => {
+      const muteDate = new Date();
+      muteDate.setDate(muteDate.getDate() + MUTE_DURATIONS.TWO_WEEKS_DAYS);
+      return applyAndRescan(c, createSkipUntil(muteDate), "Muted for 2 weeks");
+    }),
+    action("mute-2m", "Mute for 2 months", async (c) => {
+      const muteDate = new Date();
+      muteDate.setMonth(muteDate.getMonth() + MUTE_DURATIONS.TWO_MONTHS);
+      return applyAndRescan(c, createSkipUntil(muteDate), "Muted for 2 months");
+    }),
+    action("disable", "Disable", async (c) => {
+      return applyAndRescan(c, "off", "Disabled");
+    }),
+  ];
+}
+
+/**
+ * Create an enable action option for a tag.
+ */
+export function createTagEnableAction(options: {
+  getTagName: (ctx: AppContext) => string;
+  onComplete: (ctx: AppContext) => string | undefined;
+}): ActionOption<AppContext> {
+  const { getTagName, onComplete } = options;
+
+  return action("enable", "Enable", async (c) => {
+    const tag = getTagName(c);
+    try {
+      await setTagSeverity(c.projectPath, tag, "error");
+      c.global.config.tags[tag] = "error";
+      blank();
+      muted("Enabled", 3);
+      await rescanProject(c);
+    } catch (error_) {
+      error(getErrorMessage(error_), 3);
+    }
+    return onComplete(c);
+  });
 }

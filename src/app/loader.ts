@@ -195,6 +195,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     selectedOverviewIndex: 0,
     manualCheckItems,
     selectedManualCheckIndex: 0,
+    selectedTag: "",
     stats: {
       fixed: 0,
       skipped: 0,
