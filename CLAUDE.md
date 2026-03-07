@@ -66,9 +66,6 @@ src/
 │   ├── reporter.ts     # Result formatting
 │   ├── fixer.ts        # Auto-fix with priority sorting
 │   └── fix-chains.ts   # Fix dependency ordering
-└── eslint-config/      # ESLint configuration builder module
-    ├── commands/       # CLI command handlers (init, add, show, diff)
-    └── ...
 ```
 
 ## Key Concepts
@@ -150,7 +147,6 @@ Severity values:
 - `context/design-check-organization.md` - Architecture and tagging system
 - `context/design-config.md` - ESLint-style configuration system
 - `context/design-cli-framework.md` - Multi-screen CLI framework
-- `context/design-eslint-config.md` - ESLint config builder module
 
 ## CLI Framework (`src/cli-framework/`)
 

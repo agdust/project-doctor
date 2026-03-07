@@ -44,7 +44,6 @@ Read file + basic validation.
 | `package-json-has-engines` | Node version requirement |
 | `package-json-type-module` | ESM detection |
 | `package-json-has-main-or-exports` | Entry point defined |
-| `tsconfig-valid-json` | Valid tsconfig |
 | `tsconfig-strict-enabled` | Type safety |
 | `tsconfig-has-outdir` | Build output location |
 | `editorconfig-has-root` | Config scope |
