@@ -66,7 +66,6 @@ Pattern matching and content analysis.
 | `package-json-scripts-dev` | Dev command exists |
 | `package-json-scripts-test` | Test command exists |
 | `package-json-scripts-lint` | Lint command exists |
-| `package-json-deps-no-duplicates` | No dep in both deps/devDeps |
 | `eslint-flat-config` | Modern config format |
 | `eslint-no-legacy-config` | No deprecated .eslintrc |
 | `prettier-eslint-conflict` | No conflicting rules |
