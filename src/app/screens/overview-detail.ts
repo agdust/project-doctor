@@ -6,21 +6,11 @@
 
 import { bold, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import {
-  action,
-  separator,
-  blank,
-  text,
-  muted,
-  success,
-  error,
-  ICONS,
-} from "../../cli-framework/index.js";
+import { action, separator, blank, text, muted, ICONS } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 import { TAG } from "../../types.js";
-import { getErrorMessage } from "../../utils/errors.js";
-import { createCopyUrlActions } from "./shared.js";
+import { createCopyUrlActions, createFixHandler } from "./shared.js";
 
 export const overviewDetailScreen: Screen<AppContext> = {
   id: SCREEN.overviewDetail,
@@ -110,23 +100,11 @@ export const overviewDetailScreen: Screen<AppContext> = {
           action(
             opt.id,
             opt.label,
-            async (c) => {
-              try {
-                const result = await opt.runFix();
-                blank();
-                if (result.success) {
-                  success(result.message, 3);
-                  c.stats.fixed++;
-                  removeFixedCheck(c);
-                } else {
-                  error(result.message, 3);
-                }
-              } catch (error_) {
-                error(getErrorMessage(error_), 3);
-              }
-              blank();
-              return SCREEN.overview;
-            },
+            createFixHandler({
+              runFix: opt.runFix,
+              onSuccess: removeFixedCheck,
+              getNextScreen: () => SCREEN.overview,
+            }),
             opt.description,
           ),
         );
@@ -137,23 +115,11 @@ export const overviewDetailScreen: Screen<AppContext> = {
         action(
           "fix",
           "Apply fix",
-          async (c) => {
-            try {
-              const result = await runFix();
-              blank();
-              if (result.success) {
-                success(result.message, 3);
-                c.stats.fixed++;
-                removeFixedCheck(c);
-              } else {
-                error(result.message, 3);
-              }
-            } catch (error_) {
-              error(getErrorMessage(error_), 3);
-            }
-            blank();
-            return SCREEN.overview;
-          },
+          createFixHandler({
+            runFix,
+            onSuccess: removeFixedCheck,
+            getNextScreen: () => SCREEN.overview,
+          }),
           check.fixDescription ?? undefined,
         ),
       );

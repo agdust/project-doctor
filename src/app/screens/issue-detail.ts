@@ -6,21 +6,15 @@
 
 import { bold, dim, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import {
-  action,
-  nav,
-  blank,
-  title,
-  muted,
-  text,
-  success,
-  error,
-  ICONS,
-} from "../../cli-framework/index.js";
-import { getErrorMessage } from "../../utils/errors.js";
+import { action, nav, blank, title, muted, text, ICONS } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
-import { moveToNextIssue, createMuteDisableActions, createCopyUrlActions } from "./shared.js";
+import {
+  moveToNextIssue,
+  createMuteDisableActions,
+  createCopyUrlActions,
+  createFixHandler,
+} from "./shared.js";
 
 export const issueDetailScreen: Screen<AppContext> = {
   id: SCREEN.issueDetail,
@@ -70,25 +64,15 @@ export const issueDetailScreen: Screen<AppContext> = {
       );
     } else if (issue.runFix) {
       // Simple auto fix
-      const runFix = issue.runFix;
       opts.push(
-        action("fix", "Accept auto fix", async (c) => {
-          try {
-            const result = await runFix();
-            blank();
-            if (result.success) {
-              success(result.message, 3);
-              c.stats.fixed++;
-            } else {
-              error(result.message, 3);
-            }
-          } catch (error_) {
-            error(getErrorMessage(error_), 3);
-          }
-          blank();
-
-          return moveToNextIssue(c);
-        }),
+        action(
+          "fix",
+          "Accept auto fix",
+          createFixHandler({
+            runFix: issue.runFix,
+            getNextScreen: (c) => moveToNextIssue(c),
+          }),
+        ),
       );
     }
 

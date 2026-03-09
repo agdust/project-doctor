@@ -6,10 +6,10 @@
 
 import { bold, dim } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, blank, text, success, error } from "../../cli-framework/index.js";
-import { getErrorMessage } from "../../utils/errors.js";
+import { action, blank, text } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
+import { createFixHandler } from "./shared.js";
 
 export const fixOptionsScreen: Screen<AppContext> = {
   id: SCREEN.fixOptions,
@@ -41,28 +41,17 @@ export const fixOptionsScreen: Screen<AppContext> = {
         action(
           opt.id,
           opt.label,
-          async (c) => {
-            try {
-              const result = await opt.runFix();
-              blank();
-              if (result.success) {
-                success(result.message, 3);
-                c.stats.fixed++;
-              } else {
-                error(result.message, 3);
+          createFixHandler({
+            runFix: opt.runFix,
+            getNextScreen: (c) => {
+              // After fixing, advance to next issue but navigate back to issue-detail
+              c.currentIssueIndex++;
+              if (c.currentIssueIndex >= c.issues.length) {
+                return SCREEN.summary;
               }
-            } catch (error_) {
-              error(getErrorMessage(error_), 3);
-            }
-            blank();
-
-            // After fixing, advance to next issue but navigate back to issue-detail
-            c.currentIssueIndex++;
-            if (c.currentIssueIndex >= c.issues.length) {
-              return SCREEN.summary;
-            }
-            return SCREEN.issueDetail;
-          },
+              return SCREEN.issueDetail;
+            },
+          }),
           opt.description,
         ),
       );

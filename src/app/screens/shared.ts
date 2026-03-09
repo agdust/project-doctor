@@ -4,7 +4,7 @@
  * Common logic used across multiple screens to avoid duplication.
  */
 
-import { blank, muted, error, action } from "../../cli-framework/index.js";
+import { blank, muted, success, error, action } from "../../cli-framework/index.js";
 import { setCheckSeverity, setTagSeverity, isTagOff } from "../../config/loader.js";
 import { createMuteUntil, isMuteUntilActive } from "../../config/severity.js";
 import type { Severity } from "../../config/types.js";
@@ -13,7 +13,7 @@ import { copyToClipboard } from "../../utils/clipboard.js";
 import { getValidGroupNames } from "../../utils/checks.js";
 import { listChecks } from "../../registry.js";
 import { TAG } from "../../types.js";
-import type { CheckTag } from "../../types.js";
+import type { CheckTag, FixResult } from "../../types.js";
 import type { ActionOption } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
@@ -40,6 +40,36 @@ export function moveToNextIssue(ctx: AppContext): string | undefined {
   }
 
   return undefined;
+}
+
+/**
+ * Create an action handler that runs a fix and reports the result.
+ *
+ * Centralises the try / success / error / catch boilerplate shared by
+ * overview-detail, issue-detail, and fix-options screens.
+ */
+export function createFixHandler(options: {
+  runFix: () => Promise<FixResult> | FixResult;
+  onSuccess?: (ctx: AppContext) => void;
+  getNextScreen: (ctx: AppContext) => string | undefined;
+}): (ctx: AppContext) => Promise<string | undefined> {
+  return async (c) => {
+    try {
+      const result = await options.runFix();
+      blank();
+      if (result.success) {
+        success(result.message, 3);
+        c.stats.fixed++;
+        options.onSuccess?.(c);
+      } else {
+        error(result.message, 3);
+      }
+    } catch (error_) {
+      error(getErrorMessage(error_), 3);
+    }
+    blank();
+    return options.getNextScreen(c);
+  };
 }
 
 /**
@@ -118,47 +148,37 @@ export function createCopyUrlActions(item: {
 }): ActionOption<AppContext>[] {
   const actions: ActionOption<AppContext>[] = [];
 
-  if (item.toolUrl !== null) {
-    const url = item.toolUrl;
-    const id = "copy-tool-url";
-    const label = copiedActions.has(id) ? "Copy docs URL (Copied!)" : "Copy docs URL";
-    actions.push(
-      action(id, label, async () => {
-        const ok = await copyToClipboard(url);
-        if (ok) {
-          copiedActions.add(id);
-        } else {
-          blank();
-          error("Failed to copy — no clipboard tool available", 3);
-          blank();
-        }
-        return undefined;
-      }),
-    );
-  }
-
-  if (item.sourceUrl !== null) {
-    const url = item.sourceUrl;
-    const id = "copy-source-url";
-    const label = copiedActions.has(id) ? "Copy source URL (Copied!)" : "Copy source URL";
-    actions.push(
-      action(id, label, async () => {
-        const ok = await copyToClipboard(url);
-        if (ok) {
-          copiedActions.add(id);
-        } else {
-          blank();
-          error("Failed to copy — no clipboard tool available", 3);
-          blank();
-        }
-        return undefined;
-      }),
-    );
-  }
+  pushCopyAction(actions, item.toolUrl, "copy-tool-url", "Copy docs URL");
+  pushCopyAction(actions, item.sourceUrl, "copy-source-url", "Copy source URL");
 
   copiedActions.clear();
 
   return actions;
+}
+
+function pushCopyAction(
+  actions: ActionOption<AppContext>[],
+  url: string | null,
+  id: string,
+  baseLabel: string,
+): void {
+  if (url === null) {
+    return;
+  }
+  const label = copiedActions.has(id) ? `${baseLabel} (Copied!)` : baseLabel;
+  actions.push(
+    action(id, label, async () => {
+      const ok = await copyToClipboard(url);
+      if (ok) {
+        copiedActions.add(id);
+      } else {
+        blank();
+        error("Failed to copy — no clipboard tool available", 3);
+        blank();
+      }
+      return undefined;
+    }),
+  );
 }
 
 // ============================================================================
