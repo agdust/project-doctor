@@ -12,13 +12,13 @@
  *   --pick <option-id>      Select which fix option to apply
  */
 
-import type { FixResult, GlobalContext, CheckTag, Fix } from "../types.js";
+import type { FixResult, GlobalContext, CheckTag } from "../types.js";
 import { sortFixableChecks } from "../utils/fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
-import { isFixWithOptions, getValidCheckNames } from "../utils/checks.js";
+import { getValidCheckNames } from "../utils/checks.js";
 import { bold, dim, green, red, yellow } from "../utils/colors.js";
 import { blank, ICONS } from "../cli-framework/renderer.js";
-import { loadAndRunChecks } from "../utils/check-loader.js";
+import { loadAndRunChecks, extractFixableEntries } from "../utils/check-loader.js";
 
 interface FixableCheck {
   name: string;
@@ -41,49 +41,42 @@ async function collectFixableChecks(
   options: FixFilterOptions,
 ): Promise<{ checks: FixableCheck[]; global: GlobalContext }> {
   const global = await createGlobalContext(projectPath);
-  const fixableChecks: FixableCheck[] = [];
 
   const { groups: groupResults } = await loadAndRunChecks(global, {
     groups: options.groups,
     includeTags: options.tags as CheckTag[] | undefined,
   });
 
-  for (const groupResult of groupResults) {
-    for (const { check, result } of groupResult.checkEntries) {
-      if (result.status !== "fail" || !check.fix || groupResult.groupContext === null) {
-        continue;
-      }
+  const entries = extractFixableEntries(global, groupResults);
 
-      const fix = check.fix as Fix;
-      const groupContext = groupResult.groupContext;
-      const hasOptions = isFixWithOptions(fix);
-      const optionIds = hasOptions ? fix.options.map((o) => o.id) : undefined;
+  const fixableChecks: FixableCheck[] = entries.map((entry) => {
+    const { fixOptions } = entry;
+    const hasOptions = fixOptions !== undefined && fixOptions.length > 0;
+    const optionIds = hasOptions ? fixOptions.map((o) => o.id) : undefined;
 
-      fixableChecks.push({
-        name: check.name,
-        group: groupResult.groupName,
-        tags: check.tags,
-        message: result.message,
-        fixDescription: fix.description,
-        hasOptions,
-        optionIds,
-        runFix: async (pickOption?: string) => {
-          if (hasOptions) {
-            const optionToUse = pickOption ?? fix.options[0]?.id;
-            const option = fix.options.find((o) => o.id === optionToUse);
-            if (!option) {
-              return { success: false, message: `Unknown fix option: ${optionToUse}` };
-            }
-            return option.run(global, groupContext);
-          } else {
-            return (
-              fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult }
-            ).run(global, groupContext);
+    return {
+      name: entry.check.name,
+      group: entry.groupName,
+      tags: entry.check.tags,
+      message: entry.result.message,
+      fixDescription: entry.fixDescription,
+      hasOptions,
+      optionIds,
+      runFix: async (pickOption?: string) => {
+        if (hasOptions) {
+          const optionToUse = pickOption ?? fixOptions[0]?.id;
+          const option = fixOptions.find((o) => o.id === optionToUse);
+          if (!option) {
+            return { success: false, message: `Unknown fix option: ${optionToUse}` };
           }
-        },
-      });
-    }
-  }
+          return option.runFix();
+        } else if (entry.runFix) {
+          return entry.runFix();
+        }
+        return { success: false, message: "No fix available" };
+      },
+    };
+  });
 
   return { checks: sortFixableChecks(fixableChecks), global };
 }

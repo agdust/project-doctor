@@ -4,12 +4,7 @@
  * Scans project, runs checks, and populates app context.
  */
 
-import {
-  TAG,
-  type CheckResult,
-  type GlobalContext,
-  type FixResult,
-} from "../types.js";
+import { TAG, type CheckResult } from "../types.js";
 import { manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
 import { sortFixableChecks } from "../utils/fix-chains.js";
@@ -21,7 +16,7 @@ import {
   extractManualCheckState,
 } from "../utils/checks.js";
 import { getProjectName } from "../utils/project-name.js";
-import { loadAndRunChecks } from "../utils/check-loader.js";
+import { loadAndRunChecks, extractFixableEntries } from "../utils/check-loader.js";
 import type {
   AppContext,
   FixableIssue,
@@ -46,6 +41,10 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
   const { results, groups: groupResults } = await loadAndRunChecks(global);
   allResults.push(...results);
 
+  // Extract fixable entries (bound fix callbacks) for lookup
+  const fixEntries = extractFixableEntries(global, groupResults);
+  const fixableByName = new Map(fixEntries.map((e) => [e.check.name, e]));
+
   // Enrich failed checks with docs and fix callbacks
   for (const groupResult of groupResults) {
     for (const { check, result } of groupResult.checkEntries) {
@@ -69,6 +68,8 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         loadToolUrlFromDocs(check.name),
       ]);
 
+      const fixEntry = fixableByName.get(check.name);
+
       // Build failed check with full info
       const failedCheck: FailedCheck = {
         name: check.name,
@@ -80,64 +81,27 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         sourceUrl,
         toolUrl,
         fixDescription: check.fix?.description ?? null,
+        runFix: fixEntry?.runFix,
+        fixOptions: fixEntry?.fixOptions,
       };
-
-      // Add fix info if available and group context loaded successfully
-      if (check.fix && groupResult.groupContext !== null) {
-        const fix = check.fix;
-        const groupContext = groupResult.groupContext;
-        if ("options" in fix) {
-          failedCheck.fixOptions = fix.options.map((opt) => ({
-            id: opt.id,
-            label: opt.label,
-            description: opt.description,
-            runFix: () =>
-              (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
-                global,
-                groupContext,
-              ),
-          }));
-        } else {
-          failedCheck.runFix = () =>
-            (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
-              global,
-              groupContext,
-            );
-        }
-      }
 
       failedChecks.push(failedCheck);
 
       // Collect fixable failures (for the fixing flow)
-      if (check.fix && groupResult.groupContext !== null) {
-        const fix = check.fix;
-        if ("options" in fix) {
-          fixableIssues.push({
-            name: check.name,
-            description: check.description,
-            group: groupResult.groupName,
-            tags: check.tags,
-            result,
-            fixDescription: fix.description,
-            why,
-            sourceUrl,
-            toolUrl,
-            fixOptions: failedCheck.fixOptions,
-          });
-        } else {
-          fixableIssues.push({
-            name: check.name,
-            description: check.description,
-            group: groupResult.groupName,
-            tags: check.tags,
-            result,
-            fixDescription: fix.description,
-            why,
-            sourceUrl,
-            toolUrl,
-            runFix: failedCheck.runFix,
-          });
-        }
+      if (fixEntry) {
+        fixableIssues.push({
+          name: check.name,
+          description: check.description,
+          group: groupResult.groupName,
+          tags: check.tags,
+          result,
+          fixDescription: fixEntry.fixDescription,
+          why,
+          sourceUrl,
+          toolUrl,
+          runFix: fixEntry.runFix,
+          fixOptions: fixEntry.fixOptions,
+        });
       }
     }
   }

@@ -6,7 +6,14 @@
  * and fix command.
  */
 
-import type { Check, CheckResult, CheckResultBase, CheckTag, GlobalContext } from "../types.js";
+import type {
+  Check,
+  CheckResult,
+  CheckResultBase,
+  CheckTag,
+  FixResult,
+  GlobalContext,
+} from "../types.js";
 import { checkGroups } from "../registry.js";
 import { isGroupOff } from "../config/loader.js";
 import {
@@ -153,4 +160,83 @@ export async function loadAndRunChecks(
   }
 
   return { results: allResults, groups };
+}
+
+// ============================================================================
+// Fixable entry extraction — shared by fix command and app loader
+// ============================================================================
+
+export interface BoundFixOption {
+  id: string;
+  label: string;
+  description?: string;
+  runFix: () => Promise<FixResult> | FixResult;
+}
+
+export interface FixableEntry {
+  check: Check;
+  result: CheckResult;
+  groupName: string;
+  fixDescription: string;
+  runFix?: () => Promise<FixResult> | FixResult;
+  fixOptions?: BoundFixOption[];
+}
+
+/**
+ * Extract fixable entries from group results.
+ *
+ * Iterates group results, filters for failed checks that have a fix
+ * and a successfully-loaded group context, and binds fix callbacks
+ * into closures over global/groupContext.
+ */
+export function extractFixableEntries(
+  global: GlobalContext,
+  groupResults: GroupRunResult[],
+): FixableEntry[] {
+  const entries: FixableEntry[] = [];
+
+  for (const groupResult of groupResults) {
+    if (groupResult.groupContext === null) {
+      continue;
+    }
+
+    const groupContext = groupResult.groupContext;
+
+    for (const { check, result } of groupResult.checkEntries) {
+      if (result.status !== "fail" || !check.fix) {
+        continue;
+      }
+
+      const fix = check.fix;
+      const entry: FixableEntry = {
+        check,
+        result,
+        groupName: groupResult.groupName,
+        fixDescription: fix.description,
+      };
+
+      if ("options" in fix) {
+        entry.fixOptions = fix.options.map((opt) => ({
+          id: opt.id,
+          label: opt.label,
+          description: opt.description,
+          runFix: () =>
+            (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
+              global,
+              groupContext,
+            ),
+        }));
+      } else {
+        entry.runFix = () =>
+          (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
+            global,
+            groupContext,
+          );
+      }
+
+      entries.push(entry);
+    }
+  }
+
+  return entries;
 }

@@ -13,14 +13,10 @@ import type {
   ManualCheckState,
 } from "../types.js";
 import type { SnapshotEntry } from "../utils/snapshot.js";
+import type { BoundFixOption } from "../utils/check-loader.js";
 
 /** An option for fixing an issue */
-export interface FixOptionRunnable {
-  id: string;
-  label: string;
-  description?: string;
-  runFix: () => Promise<FixResult> | FixResult;
-}
+export type FixOptionRunnable = BoundFixOption;
 
 /** A check that has an available fix */
 export interface FixableIssue {
