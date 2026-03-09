@@ -15,23 +15,7 @@ import { setCheckSeverity } from "../config/loader.js";
 import { createMuteUntil } from "../config/severity.js";
 import { getValidCheckNames, getValidManualCheckNames } from "../utils/checks.js";
 import { red } from "../utils/colors.js";
-import { parseISODate, toDateString } from "../utils/dates.js";
-
-function addWeeks(date: Date, weeks: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + weeks * 7);
-  return result;
-}
-
-function addMonths(date: Date, months: number): Date {
-  const result = new Date(date);
-  result.setMonth(result.getMonth() + months);
-  return result;
-}
-
-function parseDate(dateStr: string): Date | null {
-  return parseISODate(dateStr);
-}
+import { addWeeks, addMonths, parseISODate, toDateString } from "../utils/dates.js";
 
 export interface MuteOptions {
   weeks?: number;
@@ -67,7 +51,7 @@ export async function runMute(
   const now = new Date();
 
   if (options.until !== undefined) {
-    const parsed = parseDate(options.until);
+    const parsed = parseISODate(options.until);
     if (!parsed) {
       console.error(red(`Error: Invalid date format "${options.until}". Use YYYY-MM-DD.`));
       process.exit(2);

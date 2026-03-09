@@ -12,9 +12,13 @@
  *   --format <format>   Output: table (default), json, names
  */
 
-import { loadAndResolveConfig, setManualCheckState, setManualCheckSeverity } from "../config/loader.js";
+import {
+  loadAndResolveConfig,
+  setManualCheckState,
+  setManualCheckSeverity,
+} from "../config/loader.js";
 import { createMuteUntil } from "../config/severity.js";
-import { parseISODate, toDateString } from "../utils/dates.js";
+import { addWeeks, addMonths, parseISODate, toDateString } from "../utils/dates.js";
 import { manualChecks } from "../registry.js";
 import {
   getValidManualCheckNames,
@@ -238,18 +242,6 @@ export interface ManualMuteOptions {
   weeks?: number;
   months?: number;
   until?: string;
-}
-
-function addWeeks(date: Date, weeks: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + weeks * 7);
-  return result;
-}
-
-function addMonths(date: Date, months: number): Date {
-  const result = new Date(date);
-  result.setMonth(result.getMonth() + months);
-  return result;
 }
 
 /**

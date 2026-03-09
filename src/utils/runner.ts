@@ -1,14 +1,7 @@
-import type { CheckResult, CheckResultBase, CheckTag } from "../types.js";
+import type { CheckResult, CheckTag } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
-import { isGroupOff } from "../config/loader.js";
-import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
-import {
-  isGroupForProjectType,
-  isCheckDisabledByConfig,
-  isToolDetectedForGroup,
-  getToolDisplayName,
-} from "./checks.js";
+import { loadAndRunChecks } from "./check-loader.js";
 
 export interface RunnerOptions {
   projectPath: string;
@@ -25,28 +18,6 @@ export interface RunnerOptions {
 export interface RunnerResult {
   results: CheckResult[];
   config: ResolvedConfig;
-}
-
-function shouldRunCheck(
-  checkName: string,
-  checkTags: CheckTag[],
-  groupName: string,
-  config: ResolvedConfig,
-  cliIncludeTags?: CheckTag[],
-): boolean {
-  if (isCheckDisabledByConfig(checkName, checkTags, groupName, config)) {
-    return false;
-  }
-
-  // CLI include tags filter (only run checks with these tags)
-  if (cliIncludeTags && cliIncludeTags.length > 0) {
-    const hasIncluded = checkTags.some((t) => cliIncludeTags.includes(t));
-    if (!hasIncluded) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
@@ -67,70 +38,13 @@ export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
   };
 
   const global = await createGlobalContext(options.projectPath, contextOptions);
-  const config = global.config;
 
-  // Determine which groups to run
-  // If CLI specifies groups, only run those (filter)
-  // Otherwise run all groups except those turned off in config
-  let groupsToRun = checkGroups;
+  const { results } = await loadAndRunChecks(global, {
+    groups: options.groups,
+    includeTags: options.includeTags,
+  });
 
-  if (options.groups !== undefined && options.groups.length > 0) {
-    // CLI filter: only run specified groups
-    const groupsFilter = options.groups;
-    groupsToRun = checkGroups.filter((g) => groupsFilter.includes(g.name));
-  } else {
-    // Config filter: skip groups turned off
-    groupsToRun = checkGroups.filter((g) => !isGroupOff(config, g.name));
-  }
-
-  const allResults: CheckResult[] = [];
-
-  for (const group of groupsToRun) {
-    // Skip JS groups for generic projects
-    if (!isGroupForProjectType(group.name, config.projectType)) {
-      continue;
-    }
-
-    // Skip detailed checks if required tool is not detected
-    if (!isToolDetectedForGroup(group.name, global.detected)) {
-      const toolName = getToolDisplayName(group.name);
-      allResults.push({
-        name: `${group.name}-not-detected`,
-        group: group.name,
-        status: "skip",
-        message: `${toolName} not detected`,
-      });
-      continue;
-    }
-
-    const groupContext = await group.loadContext(global);
-
-    for (const check of group.checks) {
-      if (!shouldRunCheck(check.name, check.tags, group.name, config, options.includeTags)) {
-        continue;
-      }
-
-      try {
-        // Type assertion needed because checkGroups contains mixed context types
-        // but each group's checks are correctly typed for their own context
-        const baseResult = await (
-          check.run as (g: typeof global, c: unknown) => Promise<CheckResultBase> | CheckResultBase
-        )(global, groupContext);
-        const result: CheckResult = { ...baseResult, group: group.name };
-        allResults.push(result);
-      } catch (error) {
-        const errorResult: CheckResult = {
-          name: check.name,
-          group: group.name,
-          status: "fail",
-          message: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-        };
-        allResults.push(errorResult);
-      }
-    }
-  }
-
-  return { results: allResults, config };
+  return { results, config: global.config };
 }
 
 export async function runAllChecks(projectPath: string): Promise<CheckResult[]> {

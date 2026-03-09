@@ -67,14 +67,16 @@ export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> 
   return createSnapshotFromResults(checkResults);
 }
 
-export async function runSnapshot(projectPath: string): Promise<void> {
-  blank();
-  console.log(`  ${dim("Taking snapshot...")}`);
-
-  const snapshot = await takeSnapshot(projectPath);
+/**
+ * Insert or replace today's snapshot entry in history, sort by date, and save.
+ * Returns the updated history array.
+ */
+export async function upsertSnapshot(
+  projectPath: string,
+  snapshot: SnapshotEntry,
+): Promise<SnapshotEntry[]> {
   const history = await loadHistory(projectPath);
 
-  // Replace or append today's entry
   const existingIndex = history.findIndex((e) => e.date === snapshot.date);
   if (existingIndex === -1) {
     history.push(snapshot);
@@ -82,10 +84,17 @@ export async function runSnapshot(projectPath: string): Promise<void> {
     history[existingIndex] = snapshot;
   }
 
-  // Sort by date
   history.sort((a, b) => a.date.localeCompare(b.date));
-
   await saveHistory(projectPath, history);
+  return history;
+}
+
+export async function runSnapshot(projectPath: string): Promise<void> {
+  blank();
+  console.log(`  ${dim("Taking snapshot...")}`);
+
+  const snapshot = await takeSnapshot(projectPath);
+  await upsertSnapshot(projectPath, snapshot);
 
   blank();
   console.log(`  ${green(ICONS.pass)} Snapshot saved for ${snapshot.date}`);

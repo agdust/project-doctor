@@ -45,10 +45,7 @@ describe("createGlobalContext", () => {
 
   it("should skip config when skipConfig is true", async () => {
     const dir = await setup();
-    await writeFile(
-      path.join(dir, "package.json"),
-      JSON.stringify({ name: "test-project" }),
-    );
+    await writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "test-project" }));
 
     // Create config that disables a check
     await mkdir(path.join(dir, ".project-doctor"), { recursive: true });
@@ -65,10 +62,7 @@ describe("createGlobalContext", () => {
 
   it("should apply config overrides", async () => {
     const dir = await setup();
-    await writeFile(
-      path.join(dir, "package.json"),
-      JSON.stringify({ name: "test-project" }),
-    );
+    await writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "test-project" }));
 
     const ctx = await createGlobalContext(dir, {
       configOverrides: {
@@ -99,10 +93,7 @@ describe("createGlobalContext", () => {
   it("should provide a working file cache", async () => {
     const dir = await setup();
     await writeFile(path.join(dir, "test.txt"), "hello");
-    await writeFile(
-      path.join(dir, "package.json"),
-      JSON.stringify({ name: "test" }),
-    );
+    await writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "test" }));
 
     const ctx = await createGlobalContext(dir);
 

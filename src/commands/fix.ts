@@ -12,19 +12,13 @@
  *   --pick <option-id>      Select which fix option to apply
  */
 
-import type { CheckResultBase, FixResult, GlobalContext, CheckTag, Fix } from "../types.js";
-import { checkGroups } from "../registry.js";
+import type { FixResult, GlobalContext, CheckTag, Fix } from "../types.js";
 import { sortFixableChecks } from "../utils/fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
-import {
-  isGroupForProjectType,
-  isFixWithOptions,
-  getValidCheckNames,
-  isCheckDisabledByConfig,
-} from "../utils/checks.js";
-import type { ResolvedConfig } from "../config/types.js";
+import { isFixWithOptions, getValidCheckNames } from "../utils/checks.js";
 import { bold, dim, green, red, yellow } from "../utils/colors.js";
 import { blank, ICONS } from "../cli-framework/renderer.js";
+import { loadAndRunChecks } from "../utils/check-loader.js";
 
 interface FixableCheck {
   name: string;
@@ -37,33 +31,6 @@ interface FixableCheck {
   runFix: (pickOption?: string) => Promise<FixResult>;
 }
 
-function shouldIncludeCheck(
-  checkName: string,
-  checkTags: CheckTag[],
-  groupName: string,
-  config: ResolvedConfig,
-  options: FixFilterOptions,
-): boolean {
-  if (isCheckDisabledByConfig(checkName, checkTags, groupName, config)) {
-    return false;
-  }
-
-  // CLI filters
-  if (options.groups && options.groups.length > 0 && !options.groups.includes(groupName)) {
-    return false;
-  }
-
-  if (options.tags && options.tags.length > 0) {
-    const tagsToMatch = options.tags;
-    const hasMatchingTag = checkTags.some((t) => tagsToMatch.includes(t));
-    if (!hasMatchingTag) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 export interface FixFilterOptions {
   groups?: string[];
   tags?: string[];
@@ -74,58 +41,47 @@ async function collectFixableChecks(
   options: FixFilterOptions,
 ): Promise<{ checks: FixableCheck[]; global: GlobalContext }> {
   const global = await createGlobalContext(projectPath);
-  const config = global.config;
   const fixableChecks: FixableCheck[] = [];
 
-  // Filter groups based on project type
-  const groupsToRun = checkGroups.filter((g) => isGroupForProjectType(g.name, config.projectType));
+  const { groups: groupResults } = await loadAndRunChecks(global, {
+    groups: options.groups,
+    includeTags: options.tags as CheckTag[] | undefined,
+  });
 
-  // Run all checks and collect fixable failures
-  for (const group of groupsToRun) {
-    const groupContext = await group.loadContext(global);
-
-    for (const check of group.checks) {
-      if (!check.fix) {
+  for (const groupResult of groupResults) {
+    for (const { check, result } of groupResult.checkEntries) {
+      if (result.status !== "fail" || !check.fix || groupResult.groupContext === null) {
         continue;
       }
 
-      if (!shouldIncludeCheck(check.name, check.tags, group.name, config, options)) {
-        continue;
-      }
+      const fix = check.fix as Fix;
+      const groupContext = groupResult.groupContext;
+      const hasOptions = isFixWithOptions(fix);
+      const optionIds = hasOptions ? fix.options.map((o) => o.id) : undefined;
 
-      const baseResult = await (
-        check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase> | CheckResultBase
-      )(global, groupContext);
-
-      if (baseResult.status === "fail") {
-        const fix = check.fix as Fix;
-        const hasOptions = isFixWithOptions(fix);
-        const optionIds = hasOptions ? fix.options.map((o) => o.id) : undefined;
-
-        fixableChecks.push({
-          name: check.name,
-          group: group.name,
-          tags: check.tags,
-          message: baseResult.message,
-          fixDescription: fix.description,
-          hasOptions,
-          optionIds,
-          runFix: async (pickOption?: string) => {
-            if (hasOptions) {
-              const optionToUse = pickOption ?? fix.options[0]?.id;
-              const option = fix.options.find((o) => o.id === optionToUse);
-              if (!option) {
-                return { success: false, message: `Unknown fix option: ${optionToUse}` };
-              }
-              return option.run(global, groupContext);
-            } else {
-              return (
-                fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult }
-              ).run(global, groupContext);
+      fixableChecks.push({
+        name: check.name,
+        group: groupResult.groupName,
+        tags: check.tags,
+        message: result.message,
+        fixDescription: fix.description,
+        hasOptions,
+        optionIds,
+        runFix: async (pickOption?: string) => {
+          if (hasOptions) {
+            const optionToUse = pickOption ?? fix.options[0]?.id;
+            const option = fix.options.find((o) => o.id === optionToUse);
+            if (!option) {
+              return { success: false, message: `Unknown fix option: ${optionToUse}` };
             }
-          },
-        });
-      }
+            return option.run(global, groupContext);
+          } else {
+            return (
+              fix as { run: (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult }
+            ).run(global, groupContext);
+          }
+        },
+      });
     }
   }
 

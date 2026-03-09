@@ -7,27 +7,21 @@
 import {
   TAG,
   type CheckResult,
-  type CheckResultBase,
   type GlobalContext,
-  type CheckTag,
   type FixResult,
 } from "../types.js";
-import { checkGroups, manualChecks } from "../registry.js";
+import { manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
-import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
+import { sortFixableChecks } from "../utils/fix-chains.js";
 import {
-  getFixPriority,
-  isGroupForProjectType,
-  isToolDetectedForGroup,
-  getToolDisplayName,
   loadWhyFromDocs,
   loadSourceUrlFromDocs,
   loadToolUrlFromDocs,
   getManualCheckDisplayState,
   extractManualCheckState,
 } from "../utils/checks.js";
-import { getErrorMessage } from "../utils/errors.js";
 import { getProjectName } from "../utils/project-name.js";
+import { loadAndRunChecks } from "../utils/check-loader.js";
 import type {
   AppContext,
   FixableIssue,
@@ -48,163 +42,108 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
   const fixableIssues: FixableIssue[] = [];
   const failedByCategory: FailedByCategory = { required: 0, recommended: 0, opinionated: 0 };
 
-  // Filter groups based on project type
-  const groupsToRun = checkGroups.filter((g) =>
-    isGroupForProjectType(g.name, global.config.projectType),
-  );
+  // Run all checks through the unified loader
+  const { results, groups: groupResults } = await loadAndRunChecks(global);
+  allResults.push(...results);
 
-  // Run all checks
-  for (const group of groupsToRun) {
-    // Skip groups when required tool is not detected (consistent with CLI runner)
-    if (!isToolDetectedForGroup(group.name, global.detected)) {
-      const toolName = getToolDisplayName(group.name);
-      allResults.push({
-        name: `${group.name}-not-detected`,
-        group: group.name,
-        status: "skip",
-        message: `${toolName} not detected`,
-      });
-      continue;
-    }
-
-    let groupContext: unknown;
-    try {
-      groupContext = await group.loadContext(global);
-    } catch (error) {
-      // If group context loading fails, mark all checks in group as failed
-      for (const check of group.checks) {
-        const result: CheckResult = {
-          name: check.name,
-          group: group.name,
-          status: "fail",
-          message: `Group context error: ${getErrorMessage(error)}`,
-        };
-        allResults.push(result);
-      }
-      continue;
-    }
-
-    for (const check of group.checks) {
-      let baseResult: CheckResultBase;
-      try {
-        baseResult = await (
-          check.run as (g: GlobalContext, c: unknown) => Promise<CheckResultBase> | CheckResultBase
-        )(global, groupContext);
-      } catch (error) {
-        // Convert thrown errors to failed check results
-        baseResult = {
-          name: check.name,
-          status: "fail",
-          message: `Check error: ${getErrorMessage(error)}`,
-        };
+  // Enrich failed checks with docs and fix callbacks
+  for (const groupResult of groupResults) {
+    for (const { check, result } of groupResult.checkEntries) {
+      if (result.status !== "fail") {
+        continue;
       }
 
-      const result: CheckResult = { ...baseResult, group: group.name };
-      allResults.push(result);
+      // Count by category
+      if (check.tags.includes(TAG.required)) {
+        failedByCategory.required++;
+      } else if (check.tags.includes(TAG.recommended)) {
+        failedByCategory.recommended++;
+      } else {
+        failedByCategory.opinionated++;
+      }
 
-      // Track failed checks
-      if (baseResult.status === "fail") {
-        // Count by category
-        if (check.tags.includes(TAG.required)) {
-          failedByCategory.required++;
-        } else if (check.tags.includes(TAG.recommended)) {
-          failedByCategory.recommended++;
-        } else {
-          failedByCategory.opinionated++;
-        }
+      // Load docs metadata for all failed checks
+      const [why, sourceUrl, toolUrl] = await Promise.all([
+        loadWhyFromDocs(groupResult.groupName, check.name),
+        loadSourceUrlFromDocs(check.name),
+        loadToolUrlFromDocs(check.name),
+      ]);
 
-        // Load docs metadata for all failed checks
-        const [why, sourceUrl, toolUrl] = await Promise.all([
-          loadWhyFromDocs(group.name, check.name),
-          loadSourceUrlFromDocs(check.name),
-          loadToolUrlFromDocs(check.name),
-        ]);
+      // Build failed check with full info
+      const failedCheck: FailedCheck = {
+        name: check.name,
+        description: check.description,
+        group: groupResult.groupName,
+        tags: check.tags,
+        message: result.message,
+        why,
+        sourceUrl,
+        toolUrl,
+        fixDescription: check.fix?.description ?? null,
+      };
 
-        // Build failed check with full info
-        const failedCheck: FailedCheck = {
-          name: check.name,
-          description: check.description,
-          group: group.name,
-          tags: check.tags,
-          message: baseResult.message,
-          why,
-          sourceUrl,
-          toolUrl,
-          fixDescription: check.fix?.description ?? null,
-        };
-
-        // Add fix info if available
-        if (check.fix) {
-          const fix = check.fix;
-          if ("options" in fix) {
-            failedCheck.fixOptions = fix.options.map((opt) => ({
-              id: opt.id,
-              label: opt.label,
-              description: opt.description,
-              runFix: () =>
-                (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
-                  global,
-                  groupContext,
-                ),
-            }));
-          } else {
-            failedCheck.runFix = () =>
-              (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
+      // Add fix info if available and group context loaded successfully
+      if (check.fix && groupResult.groupContext !== null) {
+        const fix = check.fix;
+        const groupContext = groupResult.groupContext;
+        if ("options" in fix) {
+          failedCheck.fixOptions = fix.options.map((opt) => ({
+            id: opt.id,
+            label: opt.label,
+            description: opt.description,
+            runFix: () =>
+              (opt.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
                 global,
                 groupContext,
-              );
-          }
+              ),
+          }));
+        } else {
+          failedCheck.runFix = () =>
+            (fix.run as (g: GlobalContext, c: unknown) => Promise<FixResult> | FixResult)(
+              global,
+              groupContext,
+            );
         }
+      }
 
-        failedChecks.push(failedCheck);
+      failedChecks.push(failedCheck);
 
-        // Collect fixable failures (for the fixing flow)
-        if (check.fix) {
-          const fix = check.fix;
-          if ("options" in fix) {
-            fixableIssues.push({
-              name: check.name,
-              description: check.description,
-              group: group.name,
-              tags: check.tags,
-              result,
-              fixDescription: fix.description,
-              why,
-              sourceUrl,
-              toolUrl,
-              fixOptions: failedCheck.fixOptions,
-            });
-          } else {
-            fixableIssues.push({
-              name: check.name,
-              description: check.description,
-              group: group.name,
-              tags: check.tags,
-              result,
-              fixDescription: fix.description,
-              why,
-              sourceUrl,
-              toolUrl,
-              runFix: failedCheck.runFix,
-            });
-          }
+      // Collect fixable failures (for the fixing flow)
+      if (check.fix && groupResult.groupContext !== null) {
+        const fix = check.fix;
+        if ("options" in fix) {
+          fixableIssues.push({
+            name: check.name,
+            description: check.description,
+            group: groupResult.groupName,
+            tags: check.tags,
+            result,
+            fixDescription: fix.description,
+            why,
+            sourceUrl,
+            toolUrl,
+            fixOptions: failedCheck.fixOptions,
+          });
+        } else {
+          fixableIssues.push({
+            name: check.name,
+            description: check.description,
+            group: groupResult.groupName,
+            tags: check.tags,
+            result,
+            fixDescription: fix.description,
+            why,
+            sourceUrl,
+            toolUrl,
+            runFix: failedCheck.runFix,
+          });
         }
       }
     }
-  }
-
-  // Build tag map for chain root lookups
-  const tagsByName = new Map<string, CheckTag[]>();
-  for (const issue of fixableIssues) {
-    tagsByName.set(issue.name, issue.tags);
   }
 
   // Sort by dependency chain and priority
-  const sortedIssues = sortByChainAndPriority(fixableIssues, (issue) => {
-    const rootName = getChainRoot(issue.name);
-    const rootTags = tagsByName.get(rootName) ?? issue.tags;
-    return getFixPriority(issue.tags, rootTags);
-  });
+  const sortedIssues = sortFixableChecks(fixableIssues);
 
   // Load manual check states from config
   const manualCheckItems: ManualCheckItem[] = manualChecks.map((check) => {

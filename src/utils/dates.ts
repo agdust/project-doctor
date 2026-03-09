@@ -17,6 +17,20 @@ export function toDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/** Add a number of weeks to a date. */
+export function addWeeks(date: Date, weeks: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + weeks * 7);
+  return result;
+}
+
+/** Add a number of months to a date. */
+export function addMonths(date: Date, months: number): Date {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+}
+
 /**
  * Parse and validate an ISO date string (YYYY-MM-DD).
  *

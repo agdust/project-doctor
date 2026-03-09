@@ -9,7 +9,7 @@ import type { Screen, Option } from "../../cli-framework/index.js";
 import { action, blank, text, success, ICONS } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
-import { loadHistory, saveHistory, createSnapshotFromResults } from "../../utils/snapshot.js";
+import { loadHistory, createSnapshotFromResults, upsertSnapshot } from "../../utils/snapshot.js";
 
 export const historyScreen: Screen<AppContext> = {
   id: SCREEN.history,
@@ -69,19 +69,7 @@ export const historyScreen: Screen<AppContext> = {
   options: (): Option<AppContext>[] => [
     action("snapshot", "Take snapshot", async (c) => {
       const snapshot = createSnapshotFromResults(c.allResults);
-      const history = await loadHistory(c.projectPath);
-
-      // Replace or append today's entry
-      const existingIndex = history.findIndex((e) => e.date === snapshot.date);
-      if (existingIndex === -1) {
-        history.push(snapshot);
-      } else {
-        history[existingIndex] = snapshot;
-      }
-
-      // Sort by date
-      history.sort((a, b) => a.date.localeCompare(b.date));
-      await saveHistory(c.projectPath, history);
+      const history = await upsertSnapshot(c.projectPath, snapshot);
 
       // Update context for immediate re-render
       c.historyEntries = history;
