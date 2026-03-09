@@ -11,6 +11,7 @@ import {
   type FixWithOptions,
   type ManualCheck,
   type ManualCheckState,
+  type DetectedTools,
 } from "../types.js";
 import { toDateString } from "./dates.js";
 import type { ProjectType, ResolvedConfig, ManualCheckEntry } from "../config/types.js";
@@ -28,6 +29,36 @@ import {
   getSourceUrl as getSourceUrlFromDocs,
   getToolUrl as getToolUrlFromDocs,
 } from "../docs/compiled-docs.js";
+
+// ============================================================================
+// Tool Detection — Groups that require specific tools
+// ============================================================================
+
+/** Groups that require specific tools to be detected */
+const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
+  eslint: "hasEslint",
+  prettier: "hasPrettier",
+  tsconfig: "hasTypeScript",
+};
+
+/** Check if the required tool for a group is detected */
+export function isToolDetectedForGroup(groupName: string, detected: DetectedTools): boolean {
+  const requirement = GROUP_TOOL_REQUIREMENTS[groupName];
+  if (!requirement) {
+    return true;
+  }
+  return Boolean(detected[requirement]);
+}
+
+/** Get the display name for a tool required by a group */
+export function getToolDisplayName(groupName: string): string {
+  const names: Record<string, string> = {
+    eslint: "ESLint",
+    prettier: "Prettier",
+    tsconfig: "TypeScript",
+  };
+  return names[groupName] ?? groupName;
+}
 
 // ============================================================================
 // Project Type Filtering

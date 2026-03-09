@@ -18,6 +18,8 @@ import { sortByChainAndPriority, getChainRoot } from "../utils/fix-chains.js";
 import {
   getFixPriority,
   isGroupForProjectType,
+  isToolDetectedForGroup,
+  getToolDisplayName,
   loadWhyFromDocs,
   loadSourceUrlFromDocs,
   loadToolUrlFromDocs,
@@ -53,6 +55,18 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
 
   // Run all checks
   for (const group of groupsToRun) {
+    // Skip groups when required tool is not detected (consistent with CLI runner)
+    if (!isToolDetectedForGroup(group.name, global.detected)) {
+      const toolName = getToolDisplayName(group.name);
+      allResults.push({
+        name: `${group.name}-not-detected`,
+        group: group.name,
+        status: "skip",
+        message: `${toolName} not detected`,
+      });
+      continue;
+    }
+
     let groupContext: unknown;
     try {
       groupContext = await group.loadContext(global);
@@ -219,6 +233,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
       disabled: 0,
     },
     scanned: true,
+    historyEntries: [],
   };
 }
 

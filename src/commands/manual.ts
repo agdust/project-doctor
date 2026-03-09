@@ -12,7 +12,9 @@
  *   --format <format>   Output: table (default), json, names
  */
 
-import { loadAndResolveConfig, setManualCheckState } from "../config/loader.js";
+import { loadAndResolveConfig, setManualCheckState, setManualCheckSeverity } from "../config/loader.js";
+import { createMuteUntil } from "../config/severity.js";
+import { parseISODate, toDateString } from "../utils/dates.js";
 import { manualChecks } from "../registry.js";
 import {
   getValidManualCheckNames,
@@ -226,4 +228,116 @@ export async function runManualInfo(
   }
 
   blank();
+}
+
+// ============================================================================
+// Mute / Unmute / Disable / Enable
+// ============================================================================
+
+export interface ManualMuteOptions {
+  weeks?: number;
+  months?: number;
+  until?: string;
+}
+
+function addWeeks(date: Date, weeks: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + weeks * 7);
+  return result;
+}
+
+function addMonths(date: Date, months: number): Date {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+}
+
+/**
+ * Temporarily mute a manual check until a specified date.
+ */
+export async function runManualMute(
+  projectPath: string,
+  checkName: string,
+  options: ManualMuteOptions,
+): Promise<void> {
+  const validNames = getValidManualCheckNames();
+
+  if (!validNames.has(checkName)) {
+    console.error(red(`Error: Unknown manual check "${checkName}".`));
+    console.error('Run "project-doctor manual" to see available manual checks.');
+    process.exit(2);
+  }
+
+  let muteUntil: Date;
+  const now = new Date();
+
+  if (options.until !== undefined) {
+    const parsed = parseISODate(options.until);
+    if (!parsed) {
+      console.error(red(`Error: Invalid date format "${options.until}". Use YYYY-MM-DD.`));
+      process.exit(2);
+    }
+    if (parsed <= now) {
+      console.error(red("Error: Date must be in the future."));
+      process.exit(2);
+    }
+    muteUntil = parsed;
+  } else if (options.months === undefined) {
+    const weeks = options.weeks ?? 2;
+    muteUntil = addWeeks(now, weeks);
+  } else {
+    muteUntil = addMonths(now, options.months);
+  }
+
+  const severity = createMuteUntil(muteUntil);
+  await setManualCheckSeverity(projectPath, checkName, severity);
+  console.log(`Muted manual check "${checkName}" until ${toDateString(muteUntil)}`);
+}
+
+/**
+ * Remove mute from a manual check, making it active immediately.
+ */
+export async function runManualUnmute(projectPath: string, checkName: string): Promise<void> {
+  const validNames = getValidManualCheckNames();
+
+  if (!validNames.has(checkName)) {
+    console.error(red(`Error: Unknown manual check "${checkName}".`));
+    console.error('Run "project-doctor manual" to see available manual checks.');
+    process.exit(2);
+  }
+
+  await setManualCheckSeverity(projectPath, checkName, "error");
+  console.log(`Unmuted manual check: ${checkName}`);
+}
+
+/**
+ * Permanently disable a manual check.
+ */
+export async function runManualDisable(projectPath: string, checkName: string): Promise<void> {
+  const validNames = getValidManualCheckNames();
+
+  if (!validNames.has(checkName)) {
+    console.error(red(`Error: Unknown manual check "${checkName}".`));
+    console.error('Run "project-doctor manual" to see available manual checks.');
+    process.exit(2);
+  }
+
+  await setManualCheckSeverity(projectPath, checkName, "off");
+  console.log(`Disabled manual check: ${checkName}`);
+}
+
+/**
+ * Re-enable a disabled manual check.
+ */
+export async function runManualEnable(projectPath: string, checkName: string): Promise<void> {
+  const validNames = getValidManualCheckNames();
+
+  if (!validNames.has(checkName)) {
+    console.error(red(`Error: Unknown manual check "${checkName}".`));
+    console.error('Run "project-doctor manual" to see available manual checks.');
+    process.exit(2);
+  }
+
+  await setManualCheckSeverity(projectPath, checkName, "error");
+  console.log(`Enabled manual check: ${checkName}`);
 }

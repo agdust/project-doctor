@@ -15,6 +15,10 @@ import {
   runManualDone,
   runManualUndone,
   runManualInfo,
+  runManualMute,
+  runManualUnmute,
+  runManualDisable,
+  runManualEnable,
 } from "../commands/manual.js";
 import { red } from "../utils/colors.js";
 import { getProjectPath, isPath } from "./utils.js";
@@ -341,6 +345,85 @@ export async function handleManualCommand(args: string[]): Promise<void> {
     await runManualInfo(projectPath, checkName, {
       format: values.format as "text" | "json" | undefined,
     });
+    return;
+  }
+
+  if (subcommand === "mute") {
+    args.shift();
+    const checkName = args[0];
+    if (!checkName || checkName.startsWith("-")) {
+      console.error(`${red("Error:")} Missing check name.`);
+      process.exit(2);
+    }
+    args.shift();
+
+    const { values, positionals } = parseArgs({
+      args,
+      options: {
+        weeks: { type: "string" },
+        months: { type: "string" },
+        until: { type: "string" },
+      },
+      allowPositionals: true,
+    });
+
+    const projectPath = getProjectPath(positionals);
+    const weeks = parsePositiveInt(values.weeks);
+    const months = parsePositiveInt(values.months);
+
+    if (values.weeks !== undefined && weeks === undefined) {
+      console.error(
+        `${red("Error:")} Invalid weeks value "${values.weeks}". Must be a positive number.`,
+      );
+      process.exit(2);
+    }
+    if (values.months !== undefined && months === undefined) {
+      console.error(
+        `${red("Error:")} Invalid months value "${values.months}". Must be a positive number.`,
+      );
+      process.exit(2);
+    }
+
+    await runManualMute(projectPath, checkName, { weeks, months, until: values.until });
+    return;
+  }
+
+  if (subcommand === "unmute") {
+    args.shift();
+    const checkName = args[0];
+    if (!checkName || checkName.startsWith("-")) {
+      console.error(`${red("Error:")} Missing check name.`);
+      process.exit(2);
+    }
+    args.shift();
+    const projectPath = getProjectPath(args);
+    await runManualUnmute(projectPath, checkName);
+    return;
+  }
+
+  if (subcommand === "disable") {
+    args.shift();
+    const checkName = args[0];
+    if (!checkName || checkName.startsWith("-")) {
+      console.error(`${red("Error:")} Missing check name.`);
+      process.exit(2);
+    }
+    args.shift();
+    const projectPath = getProjectPath(args);
+    await runManualDisable(projectPath, checkName);
+    return;
+  }
+
+  if (subcommand === "enable") {
+    args.shift();
+    const checkName = args[0];
+    if (!checkName || checkName.startsWith("-")) {
+      console.error(`${red("Error:")} Missing check name.`);
+      process.exit(2);
+    }
+    args.shift();
+    const projectPath = getProjectPath(args);
+    await runManualEnable(projectPath, checkName);
     return;
   }
 

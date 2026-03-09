@@ -69,7 +69,7 @@ export async function loadConfigWithFormat(
     return { config: json5Result.data, format: "json5" };
   }
   if (json5Result.exists && json5Result.parseError) {
-    console.warn(`Warning: Could not parse ${json5Path} - using defaults`);
+    throw new ConfigParseError(json5Path);
   }
 
   // Try .project-doctor/config.json (preserve user's format choice)
@@ -79,10 +79,24 @@ export async function loadConfigWithFormat(
     return { config: jsonResult.data, format: "json" };
   }
   if (jsonResult.exists && jsonResult.parseError) {
-    console.warn(`Warning: Could not parse ${jsonPath} - using defaults`);
+    throw new ConfigParseError(jsonPath);
   }
 
   return { config: null, format: "json5" };
+}
+
+/** Error thrown when config file exists but cannot be parsed */
+export class ConfigParseError extends Error {
+  configPath: string;
+
+  constructor(configPath: string) {
+    super(
+      `Could not parse config file: ${configPath}\n` +
+        "Please fix the syntax error or delete the file to use defaults.",
+    );
+    this.name = "ConfigParseError";
+    this.configPath = configPath;
+  }
 }
 
 export async function loadConfig(projectPath: string): Promise<Config | null> {

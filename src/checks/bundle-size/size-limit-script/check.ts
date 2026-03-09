@@ -2,6 +2,7 @@ import { TAG } from "../../../types.js";
 import type { Check } from "../../../types.js";
 import type { BundleSizeContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
+import { readJson, writeJson, setNestedField } from "../../../utils/json-editor.js";
 
 const name = "size-limit-script";
 
@@ -19,5 +20,18 @@ export const check: Check<BundleSizeContext> = {
     }
 
     return pass(name, "size-limit script found in package.json");
+  },
+  fix: {
+    description: 'Add "size" script to package.json',
+    run: async (global) => {
+      const pkg = await readJson<Record<string, unknown>>(global.projectPath, "package.json");
+      if (!pkg) {
+        return { success: false, message: "Could not read package.json" };
+      }
+
+      setNestedField(pkg, "scripts.size", "size-limit");
+      await writeJson(global.projectPath, "package.json", pkg);
+      return { success: true, message: 'Added script "size": "size-limit"' };
+    },
   },
 };

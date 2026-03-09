@@ -31,6 +31,7 @@ import { manualDisabledScreen } from "./screens/manual-disabled.js";
 import { tagsScreen } from "./screens/tags.js";
 import { tagDetailScreen } from "./screens/tag-detail.js";
 import { tagChecksScreen } from "./screens/tag-checks.js";
+import { historyScreen } from "./screens/history.js";
 
 export async function runProjectDoctorApp(projectPath: string): Promise<void> {
   // Check git safety before proceeding
@@ -72,6 +73,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       tagsScreen,
       tagDetailScreen,
       tagChecksScreen,
+      historyScreen,
     ],
     initialScreen: SCREEN.home,
 

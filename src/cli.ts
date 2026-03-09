@@ -20,6 +20,7 @@ import { runInit } from "./utils/init.js";
 import { runProjectDoctorApp } from "./app/index.js";
 import { printCheckResultsAsJson } from "./commands/check.js";
 import { bold, dim, red, yellow } from "./utils/colors.js";
+import { ConfigParseError } from "./config/loader.js";
 import { blank } from "./cli-framework/renderer.js";
 import { safeJsonParse } from "./utils/safe-json.js";
 import {
@@ -245,6 +246,10 @@ process.on("uncaughtException", (error) => {
 });
 
 main().catch((error: unknown) => {
+  if (error instanceof ConfigParseError) {
+    console.error(red("Error:"), error.message);
+    process.exit(2);
+  }
   console.error(red("Fatal error:"), error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

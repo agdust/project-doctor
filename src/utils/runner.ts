@@ -1,33 +1,14 @@
-import type { CheckResult, CheckResultBase, CheckTag, DetectedTools } from "../types.js";
+import type { CheckResult, CheckResultBase, CheckTag } from "../types.js";
 import type { ResolvedConfig } from "../config/types.js";
 import { isGroupOff } from "../config/loader.js";
 import { checkGroups } from "../registry.js";
 import { createGlobalContext, type CreateContextOptions } from "../context/global.js";
-import { isGroupForProjectType, isCheckDisabledByConfig } from "./checks.js";
-
-// Groups that require specific tools to be detected
-const GROUP_TOOL_REQUIREMENTS: Record<string, keyof DetectedTools> = {
-  eslint: "hasEslint",
-  prettier: "hasPrettier",
-  tsconfig: "hasTypeScript",
-};
-
-function isToolDetected(groupName: string, detected: DetectedTools): boolean {
-  const requirement = GROUP_TOOL_REQUIREMENTS[groupName];
-  if (!requirement) {
-    return true;
-  }
-  return Boolean(detected[requirement]);
-}
-
-function getToolName(groupName: string): string {
-  const names: Record<string, string> = {
-    eslint: "ESLint",
-    prettier: "Prettier",
-    tsconfig: "TypeScript",
-  };
-  return names[groupName] ?? groupName;
-}
+import {
+  isGroupForProjectType,
+  isCheckDisabledByConfig,
+  isToolDetectedForGroup,
+  getToolDisplayName,
+} from "./checks.js";
 
 export interface RunnerOptions {
   projectPath: string;
@@ -111,8 +92,8 @@ export async function runChecks(options: RunnerOptions): Promise<RunnerResult> {
     }
 
     // Skip detailed checks if required tool is not detected
-    if (!isToolDetected(group.name, global.detected)) {
-      const toolName = getToolName(group.name);
+    if (!isToolDetectedForGroup(group.name, global.detected)) {
+      const toolName = getToolDisplayName(group.name);
       allResults.push({
         name: `${group.name}-not-detected`,
         group: group.name,

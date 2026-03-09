@@ -8,7 +8,7 @@ import { blank, ICONS } from "../cli-framework/renderer.js";
 import { atomicWriteFile } from "./safe-fs.js";
 import { toDateString } from "./dates.js";
 
-interface SnapshotEntry {
+export interface SnapshotEntry {
   date: string;
   checks: {
     total: number;
@@ -25,7 +25,7 @@ function getToday(): string {
   return toDateString(new Date());
 }
 
-async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
+export async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
   const historyPath = path.join(projectPath, HISTORY_DIR, HISTORY_FILE);
   try {
     const content = await readFile(historyPath, "utf8");
@@ -36,27 +36,35 @@ async function loadHistory(projectPath: string): Promise<SnapshotEntry[]> {
   }
 }
 
-async function saveHistory(projectPath: string, history: SnapshotEntry[]): Promise<void> {
+export async function saveHistory(projectPath: string, history: SnapshotEntry[]): Promise<void> {
   const historyPath = path.join(projectPath, HISTORY_DIR, HISTORY_FILE);
 
   await ensureConfigDir(projectPath);
   await atomicWriteFile(historyPath, JSON.stringify(history, null, 2) + "\n");
 }
 
-export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> {
-  const { results: checkResults } = await runChecks({ projectPath });
+export interface SnapshotCheckResult {
+  status: string;
+  name: string;
+}
 
-  const failingChecks = checkResults.filter((r) => r.status === "fail").map((r) => r.name);
+export function createSnapshotFromResults(results: SnapshotCheckResult[]): SnapshotEntry {
+  const failingChecks = results.filter((r) => r.status === "fail").map((r) => r.name);
 
   return {
     date: getToday(),
     checks: {
-      total: checkResults.length,
-      passed: checkResults.filter((r) => r.status === "pass").length,
-      failed: checkResults.filter((r) => r.status === "fail").length,
+      total: results.length,
+      passed: results.filter((r) => r.status === "pass").length,
+      failed: results.filter((r) => r.status === "fail").length,
     },
     failingChecks,
   };
+}
+
+export async function takeSnapshot(projectPath: string): Promise<SnapshotEntry> {
+  const { results: checkResults } = await runChecks({ projectPath });
+  return createSnapshotFromResults(checkResults);
 }
 
 export async function runSnapshot(projectPath: string): Promise<void> {

@@ -12,6 +12,7 @@ import type {
   ManualCheck,
   ManualCheckState,
 } from "../types.js";
+import type { SnapshotEntry } from "../utils/snapshot.js";
 
 /** An option for fixing an issue */
 export interface FixOptionRunnable {
@@ -120,4 +121,7 @@ export interface AppContext {
 
   /** Whether initial scan is complete */
   scanned: boolean;
+
+  /** History entries (loaded on demand for history screen) */
+  historyEntries: SnapshotEntry[];
 }

@@ -81,6 +81,9 @@ export const homeScreen: Screen<AppContext> = {
       action("rescan", "Rescan", () => {
         return SCREEN.scanning;
       }),
+      nav("history", "History", SCREEN.history, {
+        description: "Snapshots and progress over time",
+      }),
       nav("config", "Configure", SCREEN.config, {
         description: "Manage categories and checks",
       }),

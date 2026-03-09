@@ -169,32 +169,28 @@ describe("config loader", () => {
   });
 
   describe("malformed config handling", () => {
-    it("should return null for malformed JSON config", async () => {
+    it("should throw ConfigParseError for malformed JSON config", async () => {
       const configDir = path.join(tempDir, ".project-doctor");
       await mkdir(configDir, { recursive: true });
       await writeFile(path.join(configDir, "config.json"), "not-valid-json{{{");
 
-      const config = await loadConfig(tempDir);
-      expect(config).toBeNull();
+      await expect(loadConfig(tempDir)).rejects.toThrow("Could not parse config file");
     });
 
-    it("should return null for malformed JSON5 config", async () => {
+    it("should throw ConfigParseError for malformed JSON5 config", async () => {
       const configDir = path.join(tempDir, ".project-doctor");
       await mkdir(configDir, { recursive: true });
       await writeFile(path.join(configDir, "config.json5"), "{{invalid json5");
 
-      const config = await loadConfig(tempDir);
-      expect(config).toBeNull();
+      await expect(loadConfig(tempDir)).rejects.toThrow("Could not parse config file");
     });
 
-    it("should use defaults when config file is malformed", async () => {
+    it("should throw ConfigParseError when loadAndResolveConfig encounters malformed config", async () => {
       const configDir = path.join(tempDir, ".project-doctor");
       await mkdir(configDir, { recursive: true });
       await writeFile(path.join(configDir, "config.json5"), "invalid content");
 
-      const resolved = await loadAndResolveConfig(tempDir);
-      expect(resolved.checks).toEqual({});
-      expect(resolved.tags).toEqual({});
+      await expect(loadAndResolveConfig(tempDir)).rejects.toThrow("Could not parse config file");
     });
   });
 

@@ -33,6 +33,10 @@ Usage:
   project-doctor manual done <name> [path]
   project-doctor manual undone <name> [path]
   project-doctor manual info <name> [options] [path]
+  project-doctor manual mute <name> [options] [path]
+  project-doctor manual unmute <name> [path]
+  project-doctor manual disable <name> [path]
+  project-doctor manual enable <name> [path]
 
   project-doctor overview [path]
   project-doctor snapshot [path]
@@ -53,10 +57,14 @@ Commands:
   unmute       Remove mute from a check
   list         List all available checks
   info         Show detailed info about a check
-  manual       List manual checks (human-verified)
-  manual done  Mark a manual check as done
-  manual undone Mark a manual check as not done
-  manual info  Show detailed info about a manual check
+  manual         List manual checks (human-verified)
+  manual done    Mark a manual check as done
+  manual undone  Mark a manual check as not done
+  manual info    Show detailed info about a manual check
+  manual mute    Temporarily mute a manual check
+  manual unmute  Remove mute from a manual check
+  manual disable Permanently disable a manual check
+  manual enable  Re-enable a disabled manual check
   overview     Show project health summary
   snapshot     Save current status to history
   history      View progress over time
@@ -122,6 +130,10 @@ Examples:
   project-doctor manual done publish-provenance
   project-doctor manual undone publish-provenance
   project-doctor manual info publish-provenance
+  project-doctor manual mute publish-provenance --weeks 4
+  project-doctor manual unmute publish-provenance
+  project-doctor manual disable publish-provenance
+  project-doctor manual enable publish-provenance
 
 Groups:
   ${listGroups().join(", ")}
