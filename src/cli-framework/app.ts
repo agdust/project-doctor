@@ -129,6 +129,7 @@ export class App<TCtx> {
       {
         message: "",
         choices,
+        pageSize: 8,
         loop: false,
         // Disable search to prevent buffered input from resetting cursor position
         // (search with empty string matches first item, causing cursor jump)
