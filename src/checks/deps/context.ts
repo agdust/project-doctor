@@ -10,6 +10,8 @@ export interface DepsContext {
   npmrc: string | null;
   /** Whether .npmrc is gitignored (user stores secrets there) */
   npmrcGitignored: boolean;
+  /** dependencies from package.json */
+  dependencies: Record<string, string>;
   /** devDependencies from package.json */
   devDependencies: Record<string, string>;
   /** scripts from package.json */
@@ -43,6 +45,7 @@ export async function loadContext(global: GlobalContext): Promise<DepsContext> {
     lockfileType,
     npmrc,
     npmrcGitignored: isIgnored(gitignore, ".npmrc"),
+    dependencies: packageJson?.dependencies ?? {},
     devDependencies: packageJson?.devDependencies ?? {},
     scripts: packageJson?.scripts ?? {},
   };

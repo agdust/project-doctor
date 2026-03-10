@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { check as disabledPostInstallScripts } from "./disabled-post-install-scripts/check.js";
 import { check as lockfileLint } from "./lockfile-lint/check.js";
+import { check as replaceableModules } from "./replaceable-modules/check.js";
 import { fixtures } from "../../test/fixtures.js";
 import { loadContext } from "./context.js";
 import { createGlobalContext } from "../../context/global.js";
@@ -17,6 +18,7 @@ function mockCtx(overrides: Partial<DepsContext>): DepsContext {
     lockfileType: null,
     npmrc: null,
     npmrcGitignored: false,
+    dependencies: {},
     devDependencies: {},
     scripts: {},
     ...overrides,
@@ -107,6 +109,61 @@ describe("deps checks", () => {
 
       expect(result.status).toBe("fail");
       expect(result.message).toContain("no script configured");
+    });
+  });
+
+  describe("replaceable-modules", () => {
+    it("should pass when no replaceable dependencies are found", async () => {
+      const ctx = mockCtx({
+        dependencies: { picocolors: "^1.0.0" },
+        devDependencies: { vitest: "^1.0.0" },
+      });
+      const result = await replaceableModules.run(mockGlobal, ctx);
+
+      expect(result.status).toBe("pass");
+    });
+
+    it("should fail when a native-replaceable dependency is found", async () => {
+      const ctx = mockCtx({
+        dependencies: { "is-number": "^7.0.0" },
+      });
+      const result = await replaceableModules.run(mockGlobal, ctx);
+
+      expect(result.status).toBe("fail");
+      expect(result.message).toContain("1 replaceable dependency");
+      expect(result.details).toBeDefined();
+      expect(result.details![0]).toContain("is-number");
+    });
+
+    it("should detect replaceable modules in devDependencies", async () => {
+      const ctx = mockCtx({
+        devDependencies: { "array-includes": "^3.0.0" },
+      });
+      const result = await replaceableModules.run(mockGlobal, ctx);
+
+      expect(result.status).toBe("fail");
+      expect(result.details![0]).toContain("array-includes");
+    });
+
+    it("should report multiple replaceable dependencies", async () => {
+      const ctx = mockCtx({
+        dependencies: { "is-number": "^7.0.0", "array-last": "^1.0.0" },
+        devDependencies: { "array-includes": "^3.0.0" },
+      });
+      const result = await replaceableModules.run(mockGlobal, ctx);
+
+      expect(result.status).toBe("fail");
+      expect(result.message).toContain("3 replaceable dependencies");
+      expect(result.details).toHaveLength(3);
+    });
+
+    it("should mention eslint-plugin-depend in fail message", async () => {
+      const ctx = mockCtx({
+        dependencies: { "is-number": "^7.0.0" },
+      });
+      const result = await replaceableModules.run(mockGlobal, ctx);
+
+      expect(result.message).toContain("eslint-plugin-depend");
     });
   });
 });
