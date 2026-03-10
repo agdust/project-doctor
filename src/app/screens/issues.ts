@@ -16,25 +16,31 @@ export const issuesScreen: Screen<AppContext> = {
   parent: SCREEN.home,
 
   render: (ctx) => {
-    // Total counts (all failed checks)
-    const totalFailed = ctx.failedChecks.length;
-    const totalFixable = ctx.issues.length;
+    const total = ctx.issues.length;
+    const fixable = ctx.issues.filter((i) => i.fixDescription !== null).length;
 
-    text(red(`Issues: ${totalFailed} (${totalFixable} auto-fixable)`));
+    text(red(`Issues: ${total} (${fixable} auto-fixable)`));
     blank();
 
-    // Category breakdown - all failed with fixable count
-    const requiredAll = ctx.failedChecks.filter((c) => c.tags.includes(TAG.required)).length;
-    const requiredFixable = ctx.issues.filter((i) => i.tags.includes(TAG.required)).length;
+    // Category breakdown with fixable count
+    const requiredAll = ctx.issues.filter((i) => i.tags.includes(TAG.required)).length;
+    const requiredFixable = ctx.issues.filter(
+      (i) => i.tags.includes(TAG.required) && i.fixDescription !== null,
+    ).length;
 
-    const recommendedAll = ctx.failedChecks.filter((c) => c.tags.includes(TAG.recommended)).length;
-    const recommendedFixable = ctx.issues.filter((i) => i.tags.includes(TAG.recommended)).length;
+    const recommendedAll = ctx.issues.filter((i) => i.tags.includes(TAG.recommended)).length;
+    const recommendedFixable = ctx.issues.filter(
+      (i) => i.tags.includes(TAG.recommended) && i.fixDescription !== null,
+    ).length;
 
-    const opinionatedAll = ctx.failedChecks.filter(
-      (c) => !c.tags.includes(TAG.required) && !c.tags.includes(TAG.recommended),
+    const opinionatedAll = ctx.issues.filter(
+      (i) => !i.tags.includes(TAG.required) && !i.tags.includes(TAG.recommended),
     ).length;
     const opinionatedFixable = ctx.issues.filter(
-      (i) => !i.tags.includes(TAG.required) && !i.tags.includes(TAG.recommended),
+      (i) =>
+        !i.tags.includes(TAG.required) &&
+        !i.tags.includes(TAG.recommended) &&
+        i.fixDescription !== null,
     ).length;
 
     if (requiredAll > 0) {
@@ -60,12 +66,12 @@ export const issuesScreen: Screen<AppContext> = {
       }),
     );
 
-    // Fix issues - walk through queue (only if there are fixable issues)
+    // Resolve issues - walk through all issues (fixable and non-fixable)
     if (ctx.issues.length > 0) {
       opts.push(
         action(
-          "fix",
-          "Fix issues",
+          "resolve",
+          "Resolve one-by-one",
           (c) => {
             c.currentIssueIndex = 0;
             return SCREEN.issueDetail;

@@ -11,13 +11,14 @@ import type { Severity } from "../../config/types.js";
 import { getErrorMessage } from "../../utils/errors.js";
 import { copyToClipboard } from "../../utils/clipboard.js";
 import { getValidGroupNames } from "../../utils/checks.js";
-import { listChecks } from "../../registry.js";
+import { checkGroups, listChecks } from "../../registry.js";
 import { TAG } from "../../types.js";
-import type { CheckTag, FixResult } from "../../types.js";
+import type { CheckTag, FixResult, GlobalContext } from "../../types.js";
 import type { ActionOption } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 import { rescanProject } from "../loader.js";
+import { createGlobalContext } from "../../context/global.js";
 
 /** Tracks which copy-URL actions have been triggered (for "Copied!" label feedback) */
 const copiedActions = new Set<string>();
@@ -40,6 +41,83 @@ export function moveToNextIssue(ctx: AppContext): string | undefined {
   }
 
   return undefined;
+}
+
+/**
+ * Run a single check by name against a fresh global context.
+ * Only loads the group context for the check's group, not all groups.
+ * Returns true if the check still fails, false if it passes or is skipped.
+ */
+async function runSingleCheck(
+  checkName: string,
+  groupName: string,
+  global: GlobalContext,
+): Promise<boolean> {
+  const group = checkGroups.find((g) => g.name === groupName);
+  if (group === undefined) {
+    return false;
+  }
+
+  const check = group.checks.find((c) => c.name === checkName);
+  if (check === undefined) {
+    return false;
+  }
+
+  const groupContext = await group.loadContext(global);
+  const result = await (
+    check.run as (g: GlobalContext, c: unknown) => Promise<{ status: string }> | { status: string }
+  )(global, groupContext);
+
+  return result.status === "fail";
+}
+
+/**
+ * Recheck handler — runs only the specific failing check against a fresh context.
+ *
+ * If the issue is resolved: shows success, increments stats.fixed, removes the issue
+ * from ctx.issues, and advances to the next issue (or summary).
+ * If still failing: shows error message and stays on the current issue.
+ */
+async function recheckHandler(ctx: AppContext): Promise<string | undefined> {
+  const issue = ctx.issues[ctx.currentIssueIndex];
+  if (issue === undefined) {
+    return SCREEN.summary;
+  }
+
+  muted("Rechecking...", 3);
+
+  // Create fresh global context (fresh file cache) but only run the one check
+  const global = await createGlobalContext(ctx.projectPath);
+  const stillFailing = await runSingleCheck(issue.name, issue.group, global);
+
+  blank();
+
+  if (stillFailing) {
+    error("Still failing — issue not yet resolved", 3);
+    blank();
+    return undefined;
+  }
+
+  success("Issue resolved!", 3);
+  ctx.stats.fixed++;
+
+  // Remove resolved issue from the queue
+  ctx.issues.splice(ctx.currentIssueIndex, 1);
+
+  // Brief delay so user can see the success message
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  // Advance: if no more issues, go to summary
+  if (ctx.currentIssueIndex >= ctx.issues.length) {
+    return SCREEN.summary;
+  }
+
+  // Stay on issue-detail to show the next issue (which slid into current index)
+  return undefined;
+}
+
+export function createRecheckHandler(): (ctx: AppContext) => Promise<string | undefined> {
+  return recheckHandler;
 }
 
 /**

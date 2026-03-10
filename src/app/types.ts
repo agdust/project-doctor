@@ -18,14 +18,14 @@ import type { BoundFixOption } from "../utils/check-loader.js";
 /** An option for fixing an issue */
 export type FixOptionRunnable = BoundFixOption;
 
-/** A check that has an available fix */
-export interface FixableIssue {
+/** A failed check in the issue queue (may or may not have auto-fix) */
+export interface Issue {
   name: string;
   description: string;
   group: string;
   tags: CheckTag[];
   result: CheckResult;
-  fixDescription: string;
+  fixDescription: string | null;
   why: string | null;
   sourceUrl: string | null;
   toolUrl: string | null;
@@ -89,8 +89,8 @@ export interface AppContext {
   /** Failed checks count by category */
   failedByCategory: FailedByCategory;
 
-  /** Fixable issues only (sorted by priority) */
-  issues: FixableIssue[];
+  /** All failed issues (sorted by priority, fixable and non-fixable) */
+  issues: Issue[];
 
   /** Current issue index (for detail screen) */
   currentIssueIndex: number;

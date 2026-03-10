@@ -6,7 +6,16 @@
 
 import { bold, dim, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, nav, blank, title, muted, text, ICONS } from "../../cli-framework/index.js";
+import {
+  action,
+  nav,
+  blank,
+  title,
+  muted,
+  text,
+  ICONS,
+  separator,
+} from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 import {
@@ -14,6 +23,7 @@ import {
   createMuteDisableActions,
   createCopyUrlActions,
   createFixHandler,
+  createRecheckHandler,
 } from "./shared.js";
 
 export const issueDetailScreen: Screen<AppContext> = {
@@ -34,10 +44,15 @@ export const issueDetailScreen: Screen<AppContext> = {
 
     text(`${red(ICONS.fail)}  ${bold(issue.description)}  ${dim(`(${current}/${total})`)}`);
     muted(issue.name, 6);
+    blank();
+
     text(issue.result.message, 6);
     blank();
-    text(`${cyan("Fix:")} ${issue.fixDescription}`, 6);
-    blank();
+
+    if (typeof issue.fixDescription === "string") {
+      text(`${cyan("Fix:")} ${issue.fixDescription}`, 6);
+      blank();
+    }
   },
 
   options: (ctx): Option<AppContext>[] => {
@@ -58,7 +73,7 @@ export const issueDetailScreen: Screen<AppContext> = {
     if (issue.fixOptions && issue.fixOptions.length > 0) {
       // Navigate to fix options submenu
       opts.push(
-        nav("fix-options", "Fix...", SCREEN.fixOptions, {
+        nav("fix-options", "Select fix...", SCREEN.fixOptions, {
           description: "Choose from available fix options",
         }),
       );
@@ -91,8 +106,13 @@ export const issueDetailScreen: Screen<AppContext> = {
     }
 
     opts.push(
+      // Recheck (for all issues — lets user manually fix and verify)
+      action("recheck", "Recheck", createRecheckHandler(), "Verify if issue is resolved"),
+
       // Copy URL actions (tool docs, source reference)
       ...createCopyUrlActions(issue),
+
+      separator(),
 
       action("next", "Next", (c) => {
         c.stats.skipped++;

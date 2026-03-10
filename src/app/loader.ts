@@ -17,13 +17,7 @@ import {
 } from "../utils/checks.js";
 import { getProjectName } from "../utils/project-name.js";
 import { loadAndRunChecks, extractFixableEntries } from "../utils/check-loader.js";
-import type {
-  AppContext,
-  FixableIssue,
-  FailedCheck,
-  FailedByCategory,
-  ManualCheckItem,
-} from "./types.js";
+import type { AppContext, Issue, FailedCheck, FailedByCategory, ManualCheckItem } from "./types.js";
 
 /**
  * Scan project and create initial app context
@@ -34,7 +28,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
 
   const allResults: CheckResult[] = [];
   const failedChecks: FailedCheck[] = [];
-  const fixableIssues: FixableIssue[] = [];
+  const allIssues: Issue[] = [];
   const failedByCategory: FailedByCategory = { required: 0, recommended: 0, opinionated: 0 };
 
   // Run all checks through the unified loader
@@ -70,8 +64,10 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
 
       const fixEntry = fixableByName.get(check.name);
 
-      // Build failed check with full info
-      const failedCheck: FailedCheck = {
+      const fixDescription = fixEntry?.fixDescription ?? check.fix?.description ?? null;
+
+      // Build failed check for overview
+      failedChecks.push({
         name: check.name,
         description: check.description,
         group: groupResult.groupName,
@@ -80,34 +76,30 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         why,
         sourceUrl,
         toolUrl,
-        fixDescription: check.fix?.description ?? null,
+        fixDescription,
         runFix: fixEntry?.runFix,
         fixOptions: fixEntry?.fixOptions,
-      };
+      });
 
-      failedChecks.push(failedCheck);
-
-      // Collect fixable failures (for the fixing flow)
-      if (fixEntry) {
-        fixableIssues.push({
-          name: check.name,
-          description: check.description,
-          group: groupResult.groupName,
-          tags: check.tags,
-          result,
-          fixDescription: fixEntry.fixDescription,
-          why,
-          sourceUrl,
-          toolUrl,
-          runFix: fixEntry.runFix,
-          fixOptions: fixEntry.fixOptions,
-        });
-      }
+      // Build issue for the walk-through queue (all failed checks)
+      allIssues.push({
+        name: check.name,
+        description: check.description,
+        group: groupResult.groupName,
+        tags: check.tags,
+        result,
+        fixDescription,
+        why,
+        sourceUrl,
+        toolUrl,
+        runFix: fixEntry?.runFix,
+        fixOptions: fixEntry?.fixOptions,
+      });
     }
   }
 
   // Sort by dependency chain and priority
-  const sortedIssues = sortFixableChecks(fixableIssues);
+  const sortedIssues = sortFixableChecks(allIssues);
 
   // Load manual check states from config
   const manualCheckItems: ManualCheckItem[] = manualChecks.map((check) => {

@@ -15,7 +15,7 @@ export const summaryScreen: Screen<AppContext> = {
   parent: SCREEN.home,
 
   render: (ctx) => {
-    title("No more issues with auto-fixes");
+    title("No more issues");
     blank();
 
     const { fixed, muted, disabled, skipped } = ctx.stats;

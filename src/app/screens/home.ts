@@ -63,7 +63,7 @@ export const homeScreen: Screen<AppContext> = {
   options: (ctx): Option<AppContext>[] => {
     const opts: Option<AppContext>[] = [];
     const failedCount = ctx.failedChecks.length;
-    const fixableCount = ctx.issues.length;
+    const fixableCount = ctx.issues.filter((i) => i.fixDescription !== null).length;
 
     // Current issues
     if (failedCount > 0) {

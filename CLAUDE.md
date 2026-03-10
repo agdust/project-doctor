@@ -51,7 +51,7 @@ src/
 │   ├── renderer.ts     # Console output helpers
 │   └── index.ts        # Public exports
 ├── app/                # Project Doctor app screens
-│   ├── types.ts        # AppContext, FixableIssue types
+│   ├── types.ts        # AppContext, Issue types
 │   ├── loader.ts       # Scans project, creates context
 │   ├── index.ts        # Main app entry
 │   └── screens/        # Individual screens
