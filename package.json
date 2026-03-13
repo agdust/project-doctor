@@ -62,7 +62,8 @@
     "format": "prettier --write src",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
-    "prepublishOnly": "npm run build && npm test -- --run",
+    "lock-lint": "lockfile-lint --path package-lock.json --validate-https --validate-integrity --validate-package-names --allowed-hosts npm",
+    "prepublishOnly": "npm run build && npm test -- --run && npm run lock-lint",
     "docs": "tsx src/docs/generator.ts",
     "size": "size-limit",
     "size:report": "size-limit --json"
@@ -93,6 +94,7 @@
     "eslint-plugin-unicorn": "^63.0.0",
     "jscpd": "^4.0.8",
     "knip": "^5.83.1",
+    "lockfile-lint": "^5.0.0",
     "marked": "^17.0.2",
     "prettier": "^3.8.1",
     "size-limit": "^12.0.0",
