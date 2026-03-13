@@ -147,6 +147,23 @@ export function sortByChainAndPriority<T extends { name: string }>(
 }
 
 /**
+ * Remove checks whose chain dependencies are also in the list (i.e., also failing).
+ *
+ * If "knip-installed" and "knip-config" both fail, "knip-config" is removed
+ * because it's pointless to show until the prerequisite is resolved.
+ * If only "knip-config" fails (meaning "knip-installed" passed), it stays.
+ */
+export function removeBlockedChecks<T extends { name: string }>(checks: T[]): T[] {
+  const failingNames = new Set(checks.map((c) => c.name));
+
+  return checks.filter((check) => {
+    const deps = getDependencies(check.name);
+    // Keep only if none of its dependencies are also failing
+    return deps.every((dep) => !failingNames.has(dep));
+  });
+}
+
+/**
  * Sort fixable checks by chain dependencies and priority.
  * Uses chain root tags to calculate priority (so dependent checks inherit their root's priority).
  */

@@ -13,7 +13,7 @@
  */
 
 import type { FixResult, GlobalContext, CheckTag } from "../types.js";
-import { sortFixableChecks } from "../utils/fix-chains.js";
+import { sortFixableChecks, removeBlockedChecks } from "../utils/fix-chains.js";
 import { createGlobalContext } from "../context/global.js";
 import { getValidCheckNames } from "../utils/checks.js";
 import { bold, dim, green, red, yellow } from "../utils/colors.js";
@@ -78,7 +78,7 @@ async function collectFixableChecks(
     };
   });
 
-  return { checks: sortFixableChecks(fixableChecks), global };
+  return { checks: sortFixableChecks(removeBlockedChecks(fixableChecks)), global };
 }
 
 /**

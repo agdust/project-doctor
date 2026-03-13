@@ -7,7 +7,7 @@
 import { TAG, type CheckResult } from "../types.js";
 import { manualChecks } from "../registry.js";
 import { createGlobalContext } from "../context/global.js";
-import { sortFixableChecks } from "../utils/fix-chains.js";
+import { sortFixableChecks, removeBlockedChecks } from "../utils/fix-chains.js";
 import {
   loadWhyFromDocs,
   loadSourceUrlFromDocs,
@@ -27,9 +27,8 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
   const projectName = await getProjectName(global, projectPath);
 
   const allResults: CheckResult[] = [];
-  const failedChecks: FailedCheck[] = [];
+  const allFailedChecks: FailedCheck[] = [];
   const allIssues: Issue[] = [];
-  const failedByCategory: FailedByCategory = { required: 0, recommended: 0, opinionated: 0 };
 
   // Run all checks through the unified loader
   const { results, groups: groupResults } = await loadAndRunChecks(global);
@@ -46,15 +45,6 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
         continue;
       }
 
-      // Count by category
-      if (check.tags.includes(TAG.required)) {
-        failedByCategory.required++;
-      } else if (check.tags.includes(TAG.recommended)) {
-        failedByCategory.recommended++;
-      } else {
-        failedByCategory.opinionated++;
-      }
-
       // Load docs metadata for all failed checks
       const [why, sourceUrl, toolUrl] = await Promise.all([
         loadWhyFromDocs(groupResult.groupName, check.name),
@@ -67,7 +57,7 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
       const fixDescription = fixEntry?.fixDescription ?? check.fix?.description ?? null;
 
       // Build failed check for overview
-      failedChecks.push({
+      allFailedChecks.push({
         name: check.name,
         description: check.description,
         group: groupResult.groupName,
@@ -98,8 +88,25 @@ export async function createAppContext(projectPath: string): Promise<AppContext>
     }
   }
 
+  // Remove checks blocked by failing prerequisites (e.g., don't show
+  // "knip not configured" when "knip not installed" is also failing)
+  const failedChecks = removeBlockedChecks(allFailedChecks);
+  const filteredIssues = removeBlockedChecks(allIssues);
+
+  // Count by category after filtering
+  const failedByCategory: FailedByCategory = { required: 0, recommended: 0, opinionated: 0 };
+  for (const check of failedChecks) {
+    if (check.tags.includes(TAG.required)) {
+      failedByCategory.required++;
+    } else if (check.tags.includes(TAG.recommended)) {
+      failedByCategory.recommended++;
+    } else {
+      failedByCategory.opinionated++;
+    }
+  }
+
   // Sort by dependency chain and priority
-  const sortedIssues = sortFixableChecks(allIssues);
+  const sortedIssues = sortFixableChecks(filteredIssues);
 
   // Load manual check states from config
   const manualCheckItems: ManualCheckItem[] = manualChecks.map((check) => {

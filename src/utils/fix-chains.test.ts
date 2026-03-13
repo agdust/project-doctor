@@ -4,6 +4,7 @@ import {
   getChainRoot,
   compareByChain,
   sortByChainAndPriority,
+  removeBlockedChecks,
 } from "./fix-chains.js";
 
 describe("fix-chains", () => {
@@ -117,6 +118,83 @@ describe("fix-chains", () => {
 
       const sorted = sortByChainAndPriority(checks, (c) => c.priority);
       expect(sorted.map((c) => c.name)).toEqual(["size-limit-installed", "size-limit-script"]);
+    });
+  });
+
+  describe("removeBlockedChecks", () => {
+    it("removes checks whose prerequisite is also failing", () => {
+      const checks = [
+        { name: "knip-installed" },
+        { name: "knip-config" },
+      ];
+
+      const filtered = removeBlockedChecks(checks);
+      expect(filtered.map((c) => c.name)).toEqual(["knip-installed"]);
+    });
+
+    it("keeps checks whose prerequisite is not in the list (i.e., passing)", () => {
+      const checks = [
+        { name: "knip-config" },
+      ];
+
+      const filtered = removeBlockedChecks(checks);
+      expect(filtered.map((c) => c.name)).toEqual(["knip-config"]);
+    });
+
+    it("removes all dependents in a multi-step chain", () => {
+      const checks = [
+        { name: "size-limit-installed" },
+        { name: "size-limit-configured" },
+        { name: "size-limit-script" },
+      ];
+
+      const filtered = removeBlockedChecks(checks);
+      expect(filtered.map((c) => c.name)).toEqual(["size-limit-installed"]);
+    });
+
+    it("keeps middle of chain if only root is missing from list", () => {
+      // size-limit-configured fails but size-limit-installed is passing (not in list)
+      const checks = [
+        { name: "size-limit-configured" },
+        { name: "size-limit-script" },
+      ];
+
+      const filtered = removeBlockedChecks(checks);
+      // configured stays (its dep is passing), script is removed (configured is failing)
+      expect(filtered.map((c) => c.name)).toEqual(["size-limit-configured"]);
+    });
+
+    it("keeps checks with no chain dependencies", () => {
+      const checks = [
+        { name: "readme-exists" },
+        { name: "changelog-exists" },
+      ];
+
+      const filtered = removeBlockedChecks(checks);
+      expect(filtered.map((c) => c.name)).toEqual(["readme-exists", "changelog-exists"]);
+    });
+
+    it("handles mixed independent and dependent checks", () => {
+      const checks = [
+        { name: "readme-exists" },
+        { name: "tsconfig-exists" },
+        { name: "tsconfig-strict-enabled" },
+        { name: "license-exists" },
+        { name: "package-json-has-license" },
+        { name: "changelog-exists" },
+      ];
+
+      const filtered = removeBlockedChecks(checks);
+      expect(filtered.map((c) => c.name)).toEqual([
+        "readme-exists",
+        "tsconfig-exists",
+        "license-exists",
+        "changelog-exists",
+      ]);
+    });
+
+    it("returns empty array for empty input", () => {
+      expect(removeBlockedChecks([])).toEqual([]);
     });
   });
 });
