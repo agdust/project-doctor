@@ -165,63 +165,22 @@ describe("package-json fixes", () => {
   });
 
   describe("has-license fix", () => {
-    it("should have multiple license options", () => {
+    it("should have a simple fix with run function", () => {
       const fix = hasLicense.fix;
       expect(fix).toBeDefined();
-      if (!fix || !("options" in fix)) throw new Error("Expected fix with options");
-
-      expect(fix.options.length).toBeGreaterThanOrEqual(4);
-      expect(fix.options.map((o) => o.id)).toContain("mit");
-      expect(fix.options.map((o) => o.id)).toContain("apache");
-      expect(fix.options.map((o) => o.id)).toContain("isc");
-      expect(fix.options.map((o) => o.id)).toContain("gpl3");
+      if (!fix) throw new Error("Expected fix to be defined");
+      expect("run" in fix).toBe(true);
+      expect("options" in fix).toBe(false);
     });
 
-    it("should add MIT license using fixable fixture", async () => {
+    it("should fail for fixable project (missing license)", async () => {
       tempFixture = await copyFixtureToTemp("fixable");
 
       const global = await createGlobalContext(tempFixture.path);
       const ctx = await loadContext(global);
 
-      // Verify check fails
       const checkResult = await hasLicense.run(global, ctx);
       expect(checkResult.status).toBe("fail");
-
-      // Run MIT fix option
-      const fix = hasLicense.fix;
-      if (!fix || !("options" in fix)) throw new Error("Expected fix with options");
-
-      const mitOption = fix.options.find((o) => o.id === "mit");
-      expect(mitOption).toBeDefined();
-
-      const fixResult = await mitOption!.run(global, ctx);
-      expect(fixResult.success).toBe(true);
-
-      // Verify package.json was updated
-      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
-      expect(pkg.license).toBe("MIT");
-
-      // Verify check now passes
-      const global2 = await createGlobalContext(tempFixture.path);
-      const ctx2 = await loadContext(global2);
-      const checkResult2 = await hasLicense.run(global2, ctx2);
-      expect(checkResult2.status).toBe("pass");
-    });
-
-    it("should add Apache-2.0 license", async () => {
-      tempFixture = await copyFixtureToTemp("fixable");
-
-      const global = await createGlobalContext(tempFixture.path);
-      const ctx = await loadContext(global);
-
-      const fix = hasLicense.fix;
-      if (!fix || !("options" in fix)) throw new Error("Expected fix with options");
-
-      const apacheOption = fix.options.find((o) => o.id === "apache");
-      await apacheOption!.run(global, ctx);
-
-      const pkg = await tempFixture.readJson<Record<string, unknown>>("package.json");
-      expect(pkg.license).toBe("Apache-2.0");
     });
 
     it("should pass for healthy project (no fix needed)", async () => {
@@ -232,6 +191,29 @@ describe("package-json fixes", () => {
 
       const checkResult = await hasLicense.run(global, ctx);
       expect(checkResult.status).toBe("pass");
+    });
+
+    it("should decline to auto-fix when LICENSE file exists", async () => {
+      tempFixture = await copyFixtureToTemp("fixable");
+
+      // Create a LICENSE file but no license in package.json
+      await tempFixture.writeFile("LICENSE", "Some license text");
+
+      const global = await createGlobalContext(tempFixture.path);
+      const ctx = await loadContext(global);
+
+      // Verify check fails (no license in package.json)
+      const checkResult = await hasLicense.run(global, ctx);
+      expect(checkResult.status).toBe("fail");
+
+      // Run fix — should decline because LICENSE file exists
+      const fix = hasLicense.fix;
+      if (!fix || "options" in fix) throw new Error("Expected simple fix");
+
+      const fixResult = await fix.run(global, ctx);
+      expect(fixResult.success).toBe(false);
+      expect(fixResult.message).toContain("SPDX");
+      expect(fixResult.message).toContain("spdx.org");
     });
   });
 

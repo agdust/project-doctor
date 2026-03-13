@@ -39,6 +39,8 @@ export const fixChains: string[][] = [
   ["tsconfig-exists", "tsconfig-skip-lib-check"],
   ["tsconfig-exists", "tsconfig-es-module-interop"],
 
+  ["license-exists", "package-json-has-license"],
+
   // Package.json: existence is implicit (always exists for node projects)
   // but some fields depend on others
   ["package-json-has-name", "package-json-has-description"],

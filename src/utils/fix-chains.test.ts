@@ -26,6 +26,10 @@ describe("fix-chains", () => {
       // editorconfig-has-root depends on editorconfig-exists
       expect(getDependencies("editorconfig-has-root")).toEqual(["editorconfig-exists"]);
     });
+
+    it("returns license-exists as dependency for package-json-has-license", () => {
+      expect(getDependencies("package-json-has-license")).toEqual(["license-exists"]);
+    });
   });
 
   describe("getChainRoot", () => {
@@ -40,6 +44,7 @@ describe("fix-chains", () => {
       expect(getChainRoot("size-limit-script")).toBe("size-limit-installed");
       expect(getChainRoot("env-example-not-empty")).toBe("env-example-exists");
       expect(getChainRoot("tsconfig-strict-enabled")).toBe("tsconfig-exists");
+      expect(getChainRoot("package-json-has-license")).toBe("license-exists");
     });
   });
 
@@ -47,11 +52,13 @@ describe("fix-chains", () => {
     it("returns -1 when first check must come before second", () => {
       expect(compareByChain("size-limit-installed", "size-limit-configured")).toBe(-1);
       expect(compareByChain("env-example-exists", "env-example-not-empty")).toBe(-1);
+      expect(compareByChain("license-exists", "package-json-has-license")).toBe(-1);
     });
 
     it("returns 1 when second check must come before first", () => {
       expect(compareByChain("size-limit-configured", "size-limit-installed")).toBe(1);
       expect(compareByChain("env-example-not-empty", "env-example-exists")).toBe(1);
+      expect(compareByChain("package-json-has-license", "license-exists")).toBe(1);
     });
 
     it("returns 0 when checks have no dependency relationship", () => {

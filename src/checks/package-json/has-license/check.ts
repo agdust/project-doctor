@@ -2,6 +2,9 @@ import { TAG, type Check } from "../../../types.js";
 import type { PackageJsonContext } from "../context.js";
 import { pass, fail, skip } from "../../helpers.js";
 import { readJson, writeJson } from "../../../utils/json-editor.js";
+import { select } from "@inquirer/prompts";
+import { copyToClipboard } from "../../../utils/clipboard.js";
+import { licenseRegistry, SPDX_LICENSE_URL } from "../../docs/license-exists/registry.js";
 
 const name = "package-json-has-license";
 
@@ -31,31 +34,46 @@ export const check: Check<PackageJsonContext> = {
   },
   fix: {
     description: "Add license field",
-    options: [
-      {
-        id: "mit",
-        label: "MIT",
-        description: "Permissive license, allows forks to be closed source",
-        run: (global) => setLicense(global.projectPath, "MIT"),
-      },
-      {
-        id: "apache",
-        label: "Apache-2.0",
-        description: "Permissive license with patent protection",
-        run: (global) => setLicense(global.projectPath, "Apache-2.0"),
-      },
-      {
-        id: "isc",
-        label: "ISC",
-        description: "Simplified permissive license (similar to MIT)",
-        run: (global) => setLicense(global.projectPath, "ISC"),
-      },
-      {
-        id: "gpl3",
-        label: "GPL-3.0",
-        description: "Copyleft license, requires derivative works to be open source",
-        run: (global) => setLicense(global.projectPath, "GPL-3.0"),
-      },
-    ],
+    run: async (global) => {
+      // Check if LICENSE file exists — if so, user should pick the SPDX id manually
+      const licenseFile = await global.files.readText("LICENSE");
+      if (licenseFile !== null) {
+        return {
+          success: false,
+          message: `Pick a SPDX identifier matching your LICENSE file. See ${SPDX_LICENSE_URL} for the full list.`,
+        };
+      }
+
+      // No LICENSE file — show interactive prompt
+      const BROWSE_VALUE = "__browse__";
+
+      const chosen = await select({
+        message: "Choose a license SPDX identifier:",
+        choices: [
+          ...licenseRegistry.map((entry) => ({
+            value: entry.spdxId,
+            name: entry.spdxId,
+            description: entry.description,
+          })),
+          {
+            value: BROWSE_VALUE,
+            name: "Browse licenses...",
+            description: "Copy spdx.org/licenses URL to clipboard",
+          },
+        ],
+      });
+
+      if (chosen === BROWSE_VALUE) {
+        const ok = await copyToClipboard(SPDX_LICENSE_URL);
+        return {
+          success: false,
+          message: ok
+            ? `Copied ${SPDX_LICENSE_URL} to clipboard - find the SPDX identifier for your license`
+            : `Visit ${SPDX_LICENSE_URL} to find the SPDX identifier for your license`,
+        };
+      }
+
+      return setLicense(global.projectPath, chosen);
+    },
   },
 };
