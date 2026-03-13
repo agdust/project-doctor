@@ -6,7 +6,14 @@
 
 import { dim, red, green, bold } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { nav, action, separator, blank, text, EXIT_VALUE } from "../../cli-framework/index.js";
+import {
+  nav,
+  action,
+  separator,
+  blank,
+  text,
+  EXIT_VALUE,
+} from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 
@@ -42,6 +49,13 @@ export const homeScreen: Screen<AppContext> = {
       text(green(`All checks passing (${total})`));
     }
     blank();
+
+    // Static celebration when everything is done
+    const allManualDone = ctx.manualCheckItems.every((i) => i.displayState !== "not-done");
+    if (failed === 0 && allManualDone) {
+      text(green("ᕕ( ᐛ )ᕗ"), 4);
+      blank();
+    }
 
     // Category breakdown (only show non-empty)
     if (failed > 0) {
