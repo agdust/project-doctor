@@ -31,6 +31,7 @@ import { manualDisabledScreen } from "./screens/manual-disabled.js";
 import { tagsScreen } from "./screens/tags.js";
 import { tagDetailScreen } from "./screens/tag-detail.js";
 import { tagChecksScreen } from "./screens/tag-checks.js";
+import { overviewCheckTagsScreen } from "./screens/overview-check-tags.js";
 import { historyScreen } from "./screens/history.js";
 
 export async function runProjectDoctorApp(projectPath: string): Promise<void> {
@@ -73,6 +74,7 @@ export async function runProjectDoctorApp(projectPath: string): Promise<void> {
       tagsScreen,
       tagDetailScreen,
       tagChecksScreen,
+      overviewCheckTagsScreen,
       historyScreen,
     ],
     initialScreen: SCREEN.home,

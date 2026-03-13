@@ -27,5 +27,6 @@ export const SCREEN = {
   tags: "tags",
   tagDetail: "tag-detail",
   tagChecks: "tag-checks",
+  overviewCheckTags: "overview-check-tags",
   history: "history",
 } as const;

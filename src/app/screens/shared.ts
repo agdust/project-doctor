@@ -121,6 +121,58 @@ export function createRecheckHandler(): (ctx: AppContext) => Promise<string | un
 }
 
 /**
+ * Recheck handler for overview-detail — runs a specific failed check fresh.
+ *
+ * If resolved: removes from failedChecks, updates category counts, goes back to overview.
+ * If still failing: shows error, stays on overview-detail.
+ */
+async function overviewRecheckHandler(ctx: AppContext): Promise<string | undefined> {
+  const check = ctx.failedChecks[ctx.selectedOverviewIndex];
+  if (check === undefined) {
+    return SCREEN.overview;
+  }
+
+  muted("Rechecking...", 3);
+
+  const global = await createGlobalContext(ctx.projectPath);
+  const stillFailing = await runSingleCheck(check.name, check.group, global);
+
+  blank();
+
+  if (stillFailing) {
+    error("Still failing — issue not yet resolved", 3);
+    blank();
+    return undefined;
+  }
+
+  success("Issue resolved!", 3);
+  ctx.stats.fixed++;
+
+  // Update category counts
+  if (check.tags.includes(TAG.required)) {
+    ctx.failedByCategory.required--;
+  } else if (check.tags.includes(TAG.recommended)) {
+    ctx.failedByCategory.recommended--;
+  } else {
+    ctx.failedByCategory.opinionated--;
+  }
+
+  // Remove from failedChecks
+  ctx.failedChecks.splice(ctx.selectedOverviewIndex, 1);
+  if (ctx.selectedOverviewIndex >= ctx.failedChecks.length) {
+    ctx.selectedOverviewIndex = Math.max(0, ctx.failedChecks.length - 1);
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  return SCREEN.overview;
+}
+
+export function createOverviewRecheckHandler(): (ctx: AppContext) => Promise<string | undefined> {
+  return overviewRecheckHandler;
+}
+
+/**
  * Create an action handler that runs a fix and reports the result.
  *
  * Centralises the try / success / error / catch boilerplate shared by

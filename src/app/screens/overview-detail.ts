@@ -6,11 +6,16 @@
 
 import { bold, red, cyan } from "../../utils/colors.js";
 import type { Screen, Option } from "../../cli-framework/index.js";
-import { action, separator, blank, text, muted, ICONS } from "../../cli-framework/index.js";
+import { action, nav, separator, blank, text, muted, ICONS } from "../../cli-framework/index.js";
 import type { AppContext } from "../types.js";
 import { SCREEN } from "../screen-ids.js";
 import { TAG } from "../../types.js";
-import { createCopyUrlActions, createFixHandler } from "./shared.js";
+import {
+  createCopyUrlActions,
+  createFixHandler,
+  createOverviewRecheckHandler,
+  createMuteDisableActions,
+} from "./shared.js";
 
 export const overviewDetailScreen: Screen<AppContext> = {
   id: SCREEN.overviewDetail,
@@ -125,8 +130,22 @@ export const overviewDetailScreen: Screen<AppContext> = {
       );
     }
 
-    // Copy URL actions (tool docs, source reference)
-    opts.push(...createCopyUrlActions(check));
+    // Recheck, copy URLs, tags, separator, mute/disable
+    opts.push(
+      action("recheck", "Recheck", createOverviewRecheckHandler(), "Verify if issue is resolved"),
+      ...createCopyUrlActions(check),
+      nav("tags", "Tags", SCREEN.overviewCheckTags, {
+        badge: `${check.tags.length}`,
+      }),
+      separator(),
+      ...createMuteDisableActions({
+        getCheckName: (c) => c.failedChecks[c.selectedOverviewIndex].name,
+        onComplete: (c) => {
+          removeFixedCheck(c);
+          return SCREEN.overview;
+        },
+      }),
+    );
 
     return opts;
   },

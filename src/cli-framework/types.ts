@@ -54,7 +54,10 @@ export interface Screen<TCtx> {
   /** Unique screen identifier */
   id: string;
 
-  /** Parent screen ID for back navigation (hierarchy-based, not history) */
+  /** Parent screen ID — defines the structural hierarchy.
+   *  Controls whether a "← Back" option is shown (screens without a parent are roots).
+   *  When the user presses back, the framework uses the navigation history first;
+   *  if history is empty, falls back to this parent. */
   parent?: string;
 
   /** Render screen content (called before showing options) */
@@ -119,4 +122,8 @@ export interface AppState<TCtx> {
 
   /** Last selected option value per screen (for cursor restoration) */
   lastSelected: Map<string, string>;
+
+  /** Navigation history stack — tracks where the user came from.
+   *  Pushed on forward navigation, popped on back. */
+  history: string[];
 }

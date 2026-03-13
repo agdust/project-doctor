@@ -46,6 +46,7 @@ export class App<TCtx> {
       context: config.context,
       shouldExit: false,
       lastSelected: new Map(),
+      history: [],
     };
   }
 
@@ -178,7 +179,8 @@ export class App<TCtx> {
   }
 
   /**
-   * Add back option if appropriate
+   * Add back option if appropriate.
+   * Shows "← Back" when the screen has a parent (structural hierarchy).
    */
   private addBackOption(screen: Screen<TCtx>, options: Option<TCtx>[]): Option<TCtx>[] {
     if (screen.noBack === true || screen.parent === undefined) {
@@ -265,31 +267,45 @@ export class App<TCtx> {
   }
 
   /**
-   * Navigate to a screen
+   * Navigate forward to a screen.
+   * Pushes the current screen onto the history stack so "back" returns here.
    */
   private async navigate(fromScreen: Screen<TCtx>, toScreenId: string): Promise<void> {
     // Lifecycle: onLeave
     await fromScreen.onLeave?.(this.state.context);
+
+    // Push current screen onto history for back navigation
+    this.state.history.push(fromScreen.id);
 
     this.state.lastSelected.delete(toScreenId); // Reset cursor for forward navigation
     this.state.current = toScreenId;
   }
 
   /**
-   * Go back to parent screen, or exit if at root
+   * Go back: pop from history if available, fall back to parent, or exit if at root.
+   *
+   * History tracks the actual path the user took (behavioral).
+   * Parent defines the structural hierarchy (used as fallback when history is empty).
    */
   private async goBack(currentScreen: Screen<TCtx>): Promise<void> {
-    if (currentScreen.parent === undefined) {
-      // At root - ESC exits the app
-      this.state.shouldExit = true;
+    const previous = this.state.history.pop();
+
+    if (previous !== undefined) {
+      // History has an entry — go back to where the user came from
+      await currentScreen.onLeave?.(this.state.context);
+      this.state.current = previous;
       return;
     }
 
-    // Lifecycle: onLeave
-    await currentScreen.onLeave?.(this.state.context);
+    // No history — fall back to structural parent
+    if (currentScreen.parent !== undefined) {
+      await currentScreen.onLeave?.(this.state.context);
+      this.state.current = currentScreen.parent;
+      return;
+    }
 
-    // Go to parent
-    this.state.current = currentScreen.parent;
+    // At root with no history — exit
+    this.state.shouldExit = true;
   }
 
   /**
